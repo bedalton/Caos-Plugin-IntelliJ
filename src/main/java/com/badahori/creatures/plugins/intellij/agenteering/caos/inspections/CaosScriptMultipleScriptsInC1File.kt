@@ -17,6 +17,7 @@ import com.intellij.ide.fileTemplates.FileTemplateUtil
 import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.psi.PsiDirectory
@@ -28,13 +29,13 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextField
 
-class CaosScriptMultipleScriptsInC1File : LocalInspectionTool() {
+class CaosScriptMultipleScriptsInC1File : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = CaosBundle.message("caos.inspections.scripts-after-event-script.display-name")
     override fun getGroupDisplayName(): String = CAOSScript
     override fun getShortName(): String = CaosBundle.message("caos.inspections.scripts-after-event-script.short-name")
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
-        return object : com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor() {
+        return object : CaosScriptVisitor() {
             override fun visitMacro(o: CaosScriptMacro) {
                 super.visitMacro(o)
                 annotate(o, holder)

@@ -2,8 +2,8 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import bedalton.creatures.util.FileNameUtil
-import bedalton.creatures.util.nullIfEmpty
+import bedalton.creatures.common.util.FileNameUtil
+import bedalton.creatures.common.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.likeAny

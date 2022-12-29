@@ -1,9 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor;
 
-import bedalton.creatures.bytes.ByteStreamReader;
+import bedalton.creatures.common.bytes.ByteStreamReader;
 import bedalton.creatures.sprite.parsers.PhotoAlbum;
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFileHolder;
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
@@ -96,25 +95,12 @@ public class SprFileEditor {
     @Nullable
     private List<List<BufferedImage>> readFileAsPhotoAlbum() {
         final ByteStreamReader stream = new VirtualFileStreamReader(file);
-        final PhotoAlbum album = bedalton.creatures.sprite.parsers.SpriteParser.INSTANCE.parsePhotoAlbum(file.getNameWithoutExtension(), stream, 1, (i, total) -> {
-            final double progress = Math.ceil((i * 100.0) / total);
-            ApplicationManager.getApplication().invokeLater(() -> {
-                if (file.isValid()) {
-                    if (loadingLabel != null) {
-                        loadingLabel.setText("Loading sprite... " + ((int) progress) + "%");
-                    }
-                } else {
-                    if (loadingLabel != null) {
-                        initPlaceholder();
-                    }
-                    assert loadingLabel != null;
-                    loadingLabel.setText("Sprite file invalidated");
-                }
-            });
-            return null;
+        final PhotoAlbum album = SpriteEditorViewParser.parse(file, stream, () -> loadingLabel, () -> {
+            initPlaceholder();
+            return loadingLabel;
         });
         if (album == null) {
-            if (loadingLabel != null) {
+            if (loadingLabel == null) {
                 initPlaceholder();
             }
             assert loadingLabel != null;
@@ -126,29 +112,21 @@ public class SprFileEditor {
             moniker = null;
         }
         final List<Bitmap32> bitmaps = SpriteEditorImpl.toBitmapList(album);
-        final List<List<Bitmap32>> images = List.of(bitmaps);
+        final List<List<Bitmap32>> images = new ArrayList<>();
+        images.add(bitmaps);
         SpriteEditorImpl.cache(file, images);
         final List<BufferedImage> bufferedImages = SpriteEditorImpl.toBufferedImages(album);
-        return List.of(bufferedImages);
+        final List<List<BufferedImage>> out = new ArrayList<>();
+        out.add(bufferedImages);
+        return out;
     }
 
     private List<List<BufferedImage>> readFileAsRegularSprite() {
-        final SpriteFileHolder holder = SpriteParser.parse(file, (i, total) -> {
-            final double progress = Math.ceil((i * 100.0) / total);
-            ApplicationManager.getApplication().invokeLater(() -> {
-                if (file.isValid()) {
-                    if (loadingLabel != null) {
-                        loadingLabel.setText("Loading sprite... " + ((int) progress) + "%");
-                    }
-                } else {
-                    if (loadingLabel != null) {
-                        initPlaceholder();
-                    }
-                    assert loadingLabel != null;
-                    loadingLabel.setText("Sprite file invalidated");
-                }
-            });
-            return null;
+        final SpriteFileHolder holder = SpriteEditorViewParser.parseSprite(file, () -> {
+            if (loadingLabel == null) {
+                initPlaceholder();
+            }
+            return loadingLabel;
         });
         SpriteEditorImpl.cache(file, holder.getBitmaps());
         return holder.getImageSets();

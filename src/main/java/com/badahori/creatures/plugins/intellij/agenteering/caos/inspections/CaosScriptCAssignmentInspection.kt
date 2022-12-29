@@ -14,11 +14,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.utils.matchCase
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
+import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptCAssignmentInspection : LocalInspectionTool() {
+class CaosScriptCAssignmentInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = "Assigned value is of expected type"
     override fun getGroupDisplayName(): String = CAOSScript
@@ -95,6 +97,7 @@ class CaosScriptCAssignmentInspection : LocalInspectionTool() {
             problemsHolder.registerProblem(
                 lvalue,
                 CaosBundle.message("caos.annotator.syntax-error-annotator.setv-clas-replaced-in-c2"),
+                ProblemHighlightType.WEAK_WARNING,
                 CaosScriptC1ClasToCls2Fix(element)
             )
         } else if (variant == CaosVariant.C1 && lvalueCommand == "CLS2") {

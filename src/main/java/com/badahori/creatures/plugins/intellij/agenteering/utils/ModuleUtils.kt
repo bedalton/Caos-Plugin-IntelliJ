@@ -1,16 +1,18 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
+import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsService
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceForKey
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
 import com.intellij.notification.Notifications
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.rootManager
+import com.intellij.openapi.vfs.VirtualFile
 
 private const val NOTIFICATION_ERROR_TAG = "CAOS Project: Error"
 private const val NOTIFICATION_WARN_TAG = "CAOS Project: Warning"
@@ -59,9 +61,11 @@ var Module.variant: CaosVariant?
 
 internal fun CaosModuleSettingsService.addIgnoredFile(fileName: String) {
     val state = getState()
-    this.loadState(state.copy(
-        ignoredFiles = state.ignoredFiles + fileName
-    ))
+    this.loadState(
+        state.copy(
+            ignoredFiles = state.ignoredFiles + fileName
+        )
+    )
 }
 
 internal fun CaosModuleSettingsService.removeIgnoredFile(fileName: String) {
@@ -82,7 +86,6 @@ internal var CaosModuleSettingsService.ignoredFiles
         )
     }
 
-
 /*
 get() {
     val virtualFile = moduleFile
@@ -101,13 +104,13 @@ set(newVariant) {
 
 
 
-internal fun CaosModuleSettingsService.lastGameInterface(project: Project): GameInterfaceName? {
+internal fun CaosModuleSettingsService.lastGameInterface(): GameInterfaceName? {
     val state = getState()
     val variant = state.variant
         ?: return null
     val key = state.lastGameInterfaceName
         ?: return null
-    return project.settings.gameInterfaceForKey(variant, key)
+    return CaosApplicationSettingsService.getInstance().gameInterfaceForKey(variant, key)
 }
 
 internal fun CaosModuleSettingsService.lastGameInterface(gameInterfaceName: GameInterfaceName) {
@@ -116,7 +119,10 @@ internal fun CaosModuleSettingsService.lastGameInterface(gameInterfaceName: Game
     if (gameInterfaceName.isVariant(variant))
         loadState(
             state.copy(
-                lastGameInterfaceName = gameInterfaceName.storageKey
+                lastGameInterfaceName = gameInterfaceName.serialize()
             )
         )
 }
+
+internal val Module.myModuleFile: VirtualFile? get() = rootManager.contentRoots.firstOrNull()
+internal val Module.myModulePath: String? get() = rootManager.contentRoots.firstOrNull()?.path

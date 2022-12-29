@@ -690,8 +690,8 @@
                 </constraints>
                 <properties>
                   <model>
-                    <item value="Left"/>
                     <item value="Right"/>
+                    <item value="Left"/>
                     <item value="Forward"/>
                     <item value="Backward"/>
                   </model>

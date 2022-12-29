@@ -10,7 +10,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.DefaultGameFiles
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Pray
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.collectElementsOfType
@@ -19,12 +22,13 @@ import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.util.PsiTreeUtil
 import kotlin.math.min
 
-class Caos2PrayRequiredFileExistsInspection : LocalInspectionTool() {
+class Caos2PrayRequiredFileExistsInspection : LocalInspectionTool(), DumbAware {
 
     override fun getGroupDisplayName(): String = CAOS2Cob
     override fun getGroupPath(): Array<String> = CAOS2Path
@@ -62,7 +66,7 @@ class Caos2PrayRequiredFileExistsInspection : LocalInspectionTool() {
     }
 }
 
-class PrayRequiredFileExistsInspection : LocalInspectionTool() {
+class PrayRequiredFileExistsInspection : LocalInspectionTool(), DumbAware {
 
     override fun getGroupDisplayName(): String = PRAY
     override fun getGroupPath(): Array<String> = CAOS2Path
@@ -146,12 +150,13 @@ private val requiresSpriteRegex = requiresSprite.joinToString("|") { "(" + it.re
     .toRegex(RegexOption.IGNORE_CASE)
 
 internal fun getPrayTagRequiredExtension(tagName: String): List<String>? {
-    return if (requiresSpriteRegex.matches(tagName))
+    return if (requiresSpriteRegex.matches(tagName)) {
         listOf("c16", "s16")
-    else if (requiresScript.matches(tagName))
+    } else if (requiresScript.matches(tagName)) {
         listOf("cos", "caos")
-    else
+    } else {
         null
+    }
 }
 
 private fun annotateCaos2PrayCommand(command: PrayCommand, values: List<CaosScriptCaos2Value>, holder: ProblemsHolder) {
@@ -193,8 +198,10 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
     if (tagName.isEmpty())
         return
 
+    val command = tagName[0] == '@'
+
     // Make sure tag needs file
-    if (!requiresFile(tagName) && tagName[0] != '@' && !force)
+    if (!requiresFile(tagName) && !command && !force)
         return
 
     if (fileName.isNullOrBlank()) {
@@ -210,15 +217,17 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
     val includedFiles = if (file is CaosScriptFile) {
         file.collectElementsOfType(CaosScriptCaos2Command::class.java)
             .flatMap map@{
-                if (PsiTreeUtil.findCommonContext(it,element)?.hasParentOfType(CaosScriptCaos2BlockComment::class.java) == true) {
-                    return@map emptyList()
-                }
+//                if (PsiTreeUtil.findCommonContext(it,element)
+//                        ?.isOrHasParentOfType(CaosScriptCaos2BlockComment::class.java) != true) {
+//                    return@map emptyList()
+//                }
                 if (it.commandName like "Inline")
                     listOfNotNull(it.commandArgs.firstOrNull())
                 else if (it.commandName like "Attach") {
                     it.commandArgs
-                } else
+                } else {
                     emptyList()
+                }
             }
     } else {
         // Is pray file
@@ -233,13 +242,16 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
             }
     }
 
+//    val includedFiles = (includedFilesRaw.map { FileNameUtil.getLastPathComponent(it) ?: it } + includedFilesRaw)
+//        .distinct()
     // If replacement files is null, then the file matches, so return
     val fixes: MutableList<LocalQuickFix> = (getFilenameSuggestions(
         element,
         stripExtension,
         fileName,
         requiredExtensions,
-        includedFiles = includedFiles
+        includedFiles = includedFiles,
+        pathless = !command
     ) ?: return).toMutableList()
 
     fixes += listOfNotNull(

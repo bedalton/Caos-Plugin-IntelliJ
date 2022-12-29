@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
-import bedalton.creatures.util.FileNameUtil
+import bedalton.creatures.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes.Caos2CobMoveFileToCommandFix
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes.Caos2CobRemoveFileFix
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
@@ -16,10 +16,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 
-class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool() {
+class Caos2CobIncludedFileIsCorrectTypeInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String =
         AgentMessages.message("inspections.caos-to-compiler.file-type-check.display-name")
@@ -67,10 +68,11 @@ private fun validateCommand(commandElement: CaosScriptCaos2Command, holder: Prob
     val fileNames = commandElement.commandArgs
     val fileNameElements = commandElement.caos2ValueList
 
-    val expectedExtensions = if (commandType.cosFiles)
+    val expectedExtensions = if (commandType.cosFiles) {
         listOf("cos", "caos")
-    else
+    } else {
         listOf("s16", "wav")
+    }
 
     // Find bad file references and build Element data pairs
     val badFileNameData = fileNames.indices.filter { i ->

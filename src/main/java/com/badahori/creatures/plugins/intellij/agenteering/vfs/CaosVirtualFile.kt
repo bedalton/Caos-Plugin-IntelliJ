@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
@@ -18,6 +20,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileSystem
 import com.intellij.psi.PsiFileFactory
 import com.intellij.psi.PsiManager
+import kotlinx.coroutines.runBlocking
 import java.io.*
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -28,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger
 open class CaosVirtualFile protected constructor(
     private var fileName: String,
     private var stringContents: String? = null,
-    private var byteArrayGetter: (() -> ByteArray?)? = null,
+    private var byteArrayGetter: (suspend () -> ByteArray?)? = null,
     private val isDirectory: Boolean,
     private val allowSubdirectories: Boolean = isDirectory
 ) : VirtualFile(), ModificationTracker, HasVariant, HasVariants {
@@ -39,7 +42,7 @@ open class CaosVirtualFile protected constructor(
 
     constructor(name: String, content: ByteArray) : this(name, null, { content }, false)
 
-    constructor(name: String, content: () -> ByteArray?) : this(name, null, content, false)
+    constructor(name: String, content: suspend () -> ByteArray?) : this(name, null, content, false)
 
     constructor(name: String, content: ByteArray, isDirectory: Boolean) : this(name, null, { content }, isDirectory)
 
@@ -95,11 +98,13 @@ open class CaosVirtualFile protected constructor(
         fileName = name
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     fun setContent(contents: ByteArray?) {
         stringContents = null
         byteArrayGetter = { contents }
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     fun setContent(contents: String?) {
         stringContents = contents
         byteArrayGetter = { null }
@@ -180,14 +185,14 @@ open class CaosVirtualFile protected constructor(
     /** {@inheritDoc}  */
     @Throws(IOException::class)
     override fun contentsToByteArray(): ByteArray {
-        return byteArrayGetter?.invoke() ?: stringContents?.toByteArray() ?: ByteArray(0)
+        return runBlocking { byteArrayGetter?.invoke() } ?: stringContents?.toByteArray() ?: ByteArray(0)
     }
 
     /** {@inheritDoc}  */
     override fun getTimeStamp(): Long = 0L
 
     /** {@inheritDoc}  */
-    override fun getLength(): Long = byteArrayGetter?.invoke()?.size?.toLong() ?: stringContents?.length?.toLong() ?: 0L
+    override fun getLength(): Long = runBlocking { byteArrayGetter?.invoke()?.size?.toLong() } ?: stringContents?.length?.toLong() ?: 0L
 
     /** {@inheritDoc}  */
     override fun refresh(
@@ -286,14 +291,16 @@ open class CaosVirtualFile protected constructor(
         }
     }
 
-    fun createChildWithContent(name: String, content: () -> ByteArray?, overwrite: Boolean = true): CaosVirtualFile {
+    fun createChildWithContent(name: String, content: suspend () -> ByteArray?, overwrite: Boolean = true): CaosVirtualFile {
         if (hasChild(name) && !overwrite)
             throw IOException("Child with name '$name' already exists $name")
-        return CaosVirtualFile(name, content).let {
-            this.addChild(it)
-            if (!this.hasChild(name))
-                throw IOException("Failed to properly add child to filesystem")
-            it
+        return runBlocking {
+            CaosVirtualFile(name, content).let {
+                this@CaosVirtualFile.addChild(it)
+                if (!this@CaosVirtualFile.hasChild(name))
+                    throw IOException("Failed to properly add child to filesystem")
+                it
+            }
         }
     }
 

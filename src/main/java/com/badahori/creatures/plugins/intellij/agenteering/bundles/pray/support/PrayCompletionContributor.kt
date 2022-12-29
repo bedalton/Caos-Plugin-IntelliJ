@@ -5,7 +5,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.direc
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayAgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayElement
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayGroupKw
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
+import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.Caos2CompletionProvider
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionProvider
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.InsertInsideQuoteHandler
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.quoter
@@ -37,7 +39,7 @@ object PrayCompletionProvider : CompletionProvider<CompletionParameters>() {
     override fun addCompletions(
         parameters: CompletionParameters,
         context: ProcessingContext,
-        resultSet: CompletionResultSet
+        resultSet: CompletionResultSet,
     ) {
         val element = parameters.position
 
@@ -51,7 +53,7 @@ object PrayCompletionProvider : CompletionProvider<CompletionParameters>() {
             val parentAgent = prayTagName.getParentOfType(PrayAgentBlock::class.java)
                 ?: return
             val tags = parentAgent.tagStructs
-            CaosScriptCompletionProvider.addCaos2PrayTagCompletions(
+            Caos2CompletionProvider.addCaos2PrayTagCompletions(
                 resultSet,
                 tags,
                 prayTagName,
@@ -69,8 +71,44 @@ object PrayCompletionProvider : CompletionProvider<CompletionParameters>() {
             return
         }
         var previous = element.getPreviousNonEmptySibling(false)
+        if (!element.text.startsWith('"')) {
+            if (previous?.lineNumber?.let { it != element.lineNumber } == true) {
+                for (tag in listOf("group", "inline")) {
+                    resultSet.addElement(
+                        LookupElementBuilder.create(tag)
+                            .withLookupStrings(
+                                listOf(
+                                    tag, tag.upperCaseFirstLetter(), tag.uppercase()
+                                )
+                            )
+                    )
+                }
+            } else if (previous is PrayGroupKw) {
+                val tags = if (parameters.isExtendedCompletion) {
+                    listOf("AGNT", "DSAG", "EGGS", "DSGB")
+                } else {
+                    listOf("AGNT", "DSAG", "EGGS")
+                }
+                for (tag in tags) {
+                    resultSet.addElement(
+                        LookupElementBuilder.create(tag)
+                            .withLookupStrings(
+                                listOf(
+                                    tag, tag.upperCaseFirstLetter(), tag.lowercase()
+                                )
+                            )
+                            .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE)
+                    )
+                }
+            }
+        }
         if (previous is PrayElement) {
-            previous = PsiTreeUtil.findElementOfClassAtOffset(element.containingFile, previous.endOffset - 1, PrayTagName::class.java, false)
+            previous = PsiTreeUtil.findElementOfClassAtOffset(
+                element.containingFile,
+                previous.endOffset - 1,
+                PrayTagName::class.java,
+                false
+            )
         }
 
         val tagValueTag = (previous as? PrayTagName)?.stringValue ?: previous?.getParentOfType(PrayTag::class.java)
@@ -84,17 +122,15 @@ object PrayCompletionProvider : CompletionProvider<CompletionParameters>() {
             val quoter = quoter(text)
             val parentDirectory = element.containingFile?.directory
                 ?: return
-            CaosScriptCompletionProvider.addCaos2PrayFileNameCompletions(
+            Caos2CompletionProvider.addCaos2PrayFileNameCompletions(
                 variant = element.variant ?: CaosVariant.DS,
                 resultSet,
+                parameters.isExtendedCompletion,
                 parentDirectory,
                 tagValue,
                 quoter
             )
         }
-
-        val file = element.containingFile
-
     }
 }
 
@@ -102,7 +138,8 @@ object PrayCompletionProvider : CompletionProvider<CompletionParameters>() {
 private fun getPrayTagCompletions(tags: List<PrayTagStruct<*>>): List<String> {
     val scriptTags = getCountedCompletions(tags, "Script Count", PrayTags.SCRIPT_TAG_FUZZY, "Script")
     val dependencyTags = getCountedCompletions(tags, "Dependency Count", PrayTags.DEPENDENCY_TAG_FUZZY, "Dependency")
-    val dependencyCategoryTags = getCountedCompletions(tags, "Dependency Count", PrayTags.DEPENDENCY_CATEGORY_TAG_FUZZY, "Dependency Category")
+    val dependencyCategoryTags =
+        getCountedCompletions(tags, "Dependency Count", PrayTags.DEPENDENCY_CATEGORY_TAG_FUZZY, "Dependency Category")
     return (scriptTags + dependencyTags + dependencyCategoryTags).distinct()
 }
 
@@ -111,15 +148,15 @@ private fun getCountedCompletions(
     tags: List<PrayTagStruct<*>>,
     countTag: String,
     childrenRegex: Regex,
-    prefix: String
+    prefix: String,
 ): List<String> {
     val out = mutableListOf<String>()
     val children = tags
         .mapNotNull { tag ->
             childrenRegex
                 .matchEntire(tag.tag)
-                        ?.groupValues
-                        ?.getOrNull(1)
+                ?.groupValues
+                ?.getOrNull(1)
                 ?.toIntSafe()
         }
         .distinct()

@@ -15,6 +15,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessag
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 
@@ -29,7 +30,7 @@ private const val SCRIPT_COUNT = "Script Count"
 private val fuzzyDependencyCount = "Dependency\\s*Count".toRegex(RegexOption.IGNORE_CASE)
 private val fuzzyScriptCount = "Script\\s*Count".toRegex(RegexOption.IGNORE_CASE)
 
-class PrayErrorAnnotator : Annotator {
+class PrayErrorAnnotator : Annotator, DumbAware {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         when (element) {
             is PrayString -> annotateStringError(element, holder)

@@ -3,6 +3,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 
+import bedalton.creatures.common.structs.like
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.intellij.openapi.project.Project
@@ -19,7 +20,6 @@ import kotlinx.serialization.encoding.*
 import javax.swing.Icon
 
 
-
 @Serializable(with = CaosVariantSerializer::class)
 sealed class CaosVariant(open val code: String, open val fullName: String, open val index: Int, open val icon: Icon) {
     object C1 : CaosVariant("C1", "Creatures 1", 1, CaosScriptIcons.C1)
@@ -28,6 +28,7 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
     object C3 : CaosVariant("C3", "Creatures 3", 4, CaosScriptIcons.C3)
     object DS : CaosVariant("DS", "Docking Station", 5, CaosScriptIcons.DS)
     object SM : CaosVariant("SM", "Sea Monkeys", 6, CaosScriptIcons.SM)
+    object ANY : CaosVariant("AL", "Any Variant", -1, CaosScriptIcons.MODULE_ICON)
     object UNKNOWN : CaosVariant("??", "Unknown", -1, CaosScriptIcons.MODULE_ICON)
 
 
@@ -52,8 +53,21 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
         }
     }
 
+    fun isDefaultInjectorName(name: String): Boolean {
+        return name  == this.injectorInterfaceName
+    }
+
+    fun isDefaultInjectorName(name: String?, ignoreCase: Boolean): Boolean {
+        return name?.equals(this.injectorInterfaceName, ignoreCase) == true
+    }
+
+    fun getDefaultInjectorInterfaceName(): String? {
+        return this.injectorInterfaceName
+    }
+
     companion object {
         private val others: MutableList<CaosVariant> = mutableListOf()
+        @JvmStatic
         fun fromVal(variant: String?): CaosVariant {
             return when (variant?.uppercase()) {
                 "C1" -> C1
@@ -62,9 +76,11 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
                 "C3" -> C3
                 "DS" -> DS
                 "SM" -> SM
+                "*", "ANY", "AL" -> ANY
                 else -> others.firstOrNull { it.code == variant } ?: UNKNOWN
             }
         }
+
 
         val baseVariants = listOf(
             C1,
@@ -75,6 +91,7 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
             DS
         )
 
+        @JvmStatic
         @Suppress("unused")
         fun registerVariant(
             base: String,
@@ -93,6 +110,7 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
         get() {
             return this in VARIANT_OLD
         }
+
     val isNotOld: Boolean
         get() {
             return this !in VARIANT_OLD
@@ -100,6 +118,10 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
 
     val isC3DS get() = this == C3 || this == DS
 
+
+    val isBase: Boolean get() {
+        return this !is ANY && this !is OTHER && this != UNKNOWN;
+    }
 
     override fun toString(): String {
         return code
@@ -135,6 +157,14 @@ fun CaosVariant?.nullIfUnknown(): CaosVariant? {
         this
 }
 
+
+fun CaosVariant?.nullIfNotConcrete(): CaosVariant? {
+    return if (this == null || this == UNKNOWN || this == ANY)
+        null
+    else
+        this
+}
+
 fun <T> CaosVariant.ifOld(callback: CaosVariant.() -> T): T {
     return callback()
 }
@@ -164,28 +194,38 @@ val CaosVariant.injectorInterfaceName: String?
             C3 -> "Creatures 3"
             DS -> "Docking Station"
             SM -> "Sea-Monkeys"
+            ANY -> null
             else -> null
         }
     }
 
 infix fun CaosVariant?.like(other: CaosVariant?): Boolean {
-    val variant = if (this is OTHER)
+
+    if (this == ANY || other == ANY) {
+        return true
+    }
+
+    val variant = if (this is OTHER) {
         this.base
-    else
+    } else {
         this
-    val otherVariant = if (other is OTHER)
+    }
+    val otherVariant = if (other is OTHER) {
         other.base
-    else
+    } else {
         other
+    }
 
     if (variant == null && otherVariant == null) {
         return true
     }
-    if (variant == null || otherVariant == null)
+    if (variant == null || otherVariant == null) {
         return false
+    }
 
-    if (variant == otherVariant)
+    if (variant == otherVariant) {
         return true
+    }
 
     return variant.isC3DS && otherVariant.isC3DS
 }
@@ -257,7 +297,6 @@ val CaosVariant?.validSpriteExtensions: Set<String>
             else -> setOf("spr", "s16", "c16")
         }
     }
-
 
 
 /**
@@ -338,8 +377,9 @@ internal object CaosVariantSerializer : KSerializer<CaosVariant> {
                 }
             }
             if (variant !is OTHER && variant.code != code) {
-                throw SerializationException("Could not deserialize non-standard CAOS variant. "+
-                        "Code and Index do not match. Code for index: ${variant.code}; Deserialized code value: $code"
+                throw SerializationException(
+                    "Could not deserialize non-standard CAOS variant. " +
+                            "Code and Index do not match. Code for index: ${variant.code}; Deserialized code value: $code"
                 )
             }
             variant

@@ -1,13 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import bedalton.creatures.common.bytes.toBase64
 import org.apache.commons.imaging.palette.Dithering
 import org.apache.commons.imaging.palette.Palette
-import java.awt.Graphics2D
-import java.awt.Image
-import java.awt.Toolkit
+import java.awt.*
 import java.awt.datatransfer.*
 import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
+import java.awt.image.ImageObserver
 import java.awt.image.RenderedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
@@ -75,10 +75,10 @@ fun RenderedImage.toByteArray(formatName:String) : ByteArray {
 }
 
 fun RenderedImage.toPngDataUri() : String {
-    return "data:image/png;base64," + DatatypeConverter.printBase64Binary(toPngByteArray())
+    return "data:image/png;base64," + toPngByteArray().toBase64()
 }
 fun RenderedImage.toJpgDataUri() : String {
-    return "data:image/jpg;base64," + DatatypeConverter.printBase64Binary(toJpgByteArray())
+    return "data:image/jpg;base64," + toJpgByteArray().toBase64()
 }
 
 
@@ -119,4 +119,53 @@ private class CopyImageToClipBoard : ClipboardOwner {
             return false
         }
     }
+}
+
+
+/**
+ * Compares two images pixel by pixel.
+ * @param otherImage the second image.
+ * @return whether the images are both the same or not.
+ */
+internal fun BufferedImage.contentsEqual(otherImage: BufferedImage): Boolean {
+    // The images must be the same size.
+    if (width != otherImage.width || height != otherImage.height) {
+        return false;
+    }
+
+    val width  = width
+    val height = height
+
+    // Loop over every pixel.
+    repeat (height) { y ->
+        repeat(width) { x ->
+            // Compare the pixels for equality.
+            if (getRGB(x, y) != otherImage.getRGB(x, y)) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+
+private val mMediaTracker = MediaTracker(Panel())
+private val mImageObserver = ImageObserver { _, _, _, _, _, _ -> true }
+
+private fun waitForImage(image: Image) {
+    try {
+        mMediaTracker.addImage(image, 0)
+        mMediaTracker.waitForID(0)
+    } finally {
+        mMediaTracker.removeImage(image)
+    }
+}
+val Image.width: Int get() {
+    waitForImage(this)
+    return getWidth(mImageObserver)
+}
+val Image.height: Int get() {
+    waitForImage(this)
+    return getHeight(mImageObserver)
 }

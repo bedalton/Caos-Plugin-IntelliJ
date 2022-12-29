@@ -11,9 +11,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.likeAny
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElementVisitor
 
-class CaosScriptAgentToIntCoercionInspection : LocalInspectionTool() {
+class CaosScriptAgentToIntCoercionInspection : LocalInspectionTool(), DumbAware {
 
     override fun getDisplayName(): String = "Agent to int coercion"
     override fun getGroupDisplayName(): String = CAOSScript

@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseE
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
@@ -24,10 +25,9 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
-import java.util.logging.Logger;
 
 public class AttEditorPanel implements HasSelectedCell, AttEditorController.View {
-    private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
+    //    private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
     public static final Key<Pose> ATT_FILE_POSE_KEY = Key.create("creatures.att.POSE_DATA");
     public static final Key<Pose> REQUESTED_POSE_KEY = Key.create("creatures.att.REQUESTED_POSE");
     private static final boolean EAGER_LOAD_POSE_EDITOR = true;
@@ -63,8 +63,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     private final CaosProjectSettingsService settings;
 
     AttEditorPanel(
-            @NotNull
-            final Project project,
+            @NotNull final Project project,
             final AttEditorHandler handler
     ) {
         this.project = project;
@@ -95,11 +94,9 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         initListeners();
         initPopupMenu();
         initDisplay(controller.getVariant());
-//        poseEditor.init();
-
-        (new RuntimeException()).printStackTrace();
         poseEditor.setRootPath(controller.getRootPath());
         updateUI();
+        CaosProjectSettingsComponent.addSettingsChangedListener(this::onChange);
     }
 
     private void initListeners() {
@@ -213,12 +210,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         menu.add(lockX);
         menu.add(lockY);
         menu.addSeparator();
-//        scrollPane.addMouseListener(new MouseListenerBase() {
-//            @Override
-//            public void mouseClicked(@NotNull MouseEvent e) {
-//                menu.show(scrollPane, e.getX(), e.getY());
-//            }
-//        });
+
         for (int i = 0; i < 6; i++) {
             final JMenuItem pointMenuItem = new JMenuItem("Point " + i);
             JRadioButton button;
@@ -391,16 +383,6 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         labels.setSelected(settings.getShowLabels());
         poseEditor.setRootPath(controller.getRootPath());
         pushAttToPoseEditor(controller.getAttData());
-        final Pose pose = controller.getPose();
-        controller.setPose(null);
-        if (pose != null && (getVariant().isNotOld() || pose.getBody() < 8)) {
-            try {
-                poseEditor.setPose(pose, true);
-            } catch (Exception e) {
-                LOGGER.severe("Failed to set pose during init");
-                e.printStackTrace();
-            }
-        }
         didLoadOnce = true;
 
         // Select defaults
@@ -419,10 +401,11 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         poseViewCheckbox.setSelected(showPoseView);
         showPoseView(showPoseView);
 
+        poseEditor.setAtt(controller.getPart(), controller.getSpriteFile(), controller.getAttData());
 
         loadRequestedPose();
-        poseEditor.setAtt(controller.getPart(), controller.getSpriteFile(), controller.getAttData());
     }
+
 
     private void pushAttToPoseEditor(final AttFileData attFile) {
         if (this.controller.getPart() == 'z') {
@@ -540,8 +523,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     }
 
     private void onPartChange(
-            @NotNull
-            final Character part) {
+            @NotNull final Character part) {
         final char oldChar = controller.getPart();
         if (oldChar >= 'a' && oldChar <= 'q') {
             poseEditor.freeze(oldChar, false);
@@ -698,7 +680,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
                 maxHeight = image.getHeight();
             }
             // Adds this point and image to the list
-            out.add(new AttSpriteCellData(i, image, lines.get(i).getPoints(), pointNames, controller, this));
+            out.add(new AttSpriteCellData(i, image, lines.get(i).getPoints(), pointNames, controller.getFolded(), controller, this));
         }
         spriteCellList.setMaxWidth(maxWidth);
         spriteCellList.setMaxHeight(maxHeight);
@@ -818,7 +800,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         if (didLoadOnce) {
             controller.setPose(null);
         }
-        poseEditor.setPose(requestedPose, true);
+        poseEditor.setNextPose(requestedPose);
         final Integer pose = requestedPose.get(getPart());
         if (pose != null) {
             setSelected(pose);
@@ -849,33 +831,31 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     }
 
     @Override
-    public void setSelected(final int index) {
+    public int setSelected(final int index) {
+        // Set controller first as it may progress index to next/prev non-duplicated ATT line
+        final int actualIndex = controller.setSelected(index);
         int direction;
         if (getVariant().isOld()) {
-            if (index < 4) {
+            if (actualIndex < 4) {
                 direction = 0;
-            } else if (index < 8) {
+            } else if (actualIndex < 8) {
                 direction = 1;
-            } else if (index == 8) {
+            } else if (actualIndex == 8) {
                 direction = 2;
-            } else if (index == 9) {
+            } else if (actualIndex == 9) {
                 direction = 3;
             } else {
-                throw new IndexOutOfBoundsException("Failed to parse direction for part " + getPart() + "; Index: " + index);
+                throw new IndexOutOfBoundsException("Failed to parse direction for part " + getPart() + "; TargetIndex: " + index +"; ActualSelectedIndex: " + actualIndex);
             }
         } else {
             direction = (int) Math.floor((index % 16) / 4.0);
         }
-        poseEditor.setPose(direction, getPart(), index);
-        if (getVariant().isNotOld()) {
-            cell = index % 16;
-        } else {
-            cell = index % 10;
-        }
+        cell = actualIndex;
+        poseEditor.setPose(direction, getPart(), actualIndex);
         spriteCellList.reload();
         redrawPose();
-        spriteCellList.scrollTo(cell);
-        controller.setSelected(cell);
+        spriteCellList.scrollTo(actualIndex);
+        return actualIndex;
     }
 
     private Character getPart() {
@@ -1006,5 +986,9 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     @Override
     public Object getToolbar() {
         return attToolbar;
+    }
+
+    private void onChange(CaosProjectSettingsComponent.State old, CaosProjectSettingsComponent.State settings) {
+        updateCells();
     }
 }

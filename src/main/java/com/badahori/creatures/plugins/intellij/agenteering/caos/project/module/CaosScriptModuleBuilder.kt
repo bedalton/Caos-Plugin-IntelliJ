@@ -3,10 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
-import com.badahori.creatures.plugins.intellij.agenteering.utils.errorNotification
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
-import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
-import com.badahori.creatures.plugins.intellij.agenteering.utils.warningNotification
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.ide.util.projectWizard.*
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -81,7 +78,7 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
     }
 
     override fun modifySettingsStep(settingsStep: SettingsStep): ModuleWizardStep? {
-        settingsStep.addSettingsField("Caos Variant", variantComboBox)
+        settingsStep.addSettingsField("Caos variant", variantComboBox)
         return super.modifySettingsStep(settingsStep)
     }
 
@@ -143,12 +140,12 @@ private fun addModuleToModifiableModel(project: Project, modifiableModel: Modifi
 }
 
 private fun setupContentEntries(project: Project, module: Module, contentEntries: ContentEntry, url: String) {
-    val baseDir = module.moduleFile
+    val baseDir = module.myModuleFile
         ?: contentEntries.sourceFolders.firstOrNull { it.file != null }?.file
         ?: VfsUtil.findFileByIoFile(File(url), true)
     ?: run {
         invokeLater {
-            val temp = module.moduleFile
+            val temp = module.myModuleFile
                 ?: contentEntries.sourceFolders.firstOrNull { it.file != null }?.file
                 ?: VfsUtil.findFileByIoFile(File(url), true)
             if (temp == null) {

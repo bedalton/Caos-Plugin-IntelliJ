@@ -1,44 +1,48 @@
+@file:Suppress("unused")
+
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite
 
-//import bedalton.creatures.bytes.MemoryByteStreamReader
-import bedalton.creatures.bytes.ByteStreamReader
-import bedalton.creatures.bytes.readAt
-import bedalton.creatures.bytes.skip
-import bedalton.creatures.bytes.uInt16
+//import bedalton.creatures.common.bytes.MemoryByteStreamReader
+import bedalton.creatures.common.bytes.ByteStreamReader
+import bedalton.creatures.common.bytes.readAt
+import bedalton.creatures.common.bytes.skip
+import bedalton.creatures.common.bytes.uInt16
+import bedalton.creatures.common.util.FileNameUtil
+import bedalton.creatures.common.util.Log
+import bedalton.creatures.common.util.iIf
+import bedalton.creatures.common.util.toListOf
 import bedalton.creatures.sprite.parsers.*
 import bedalton.creatures.sprite.util.SpriteType
 import bedalton.creatures.sprite.util.SpriteType.*
-import bedalton.creatures.util.Log
-import bedalton.creatures.util.iIf
-import bedalton.creatures.util.ifLog
-import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.SpriteSetUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.openapi.vfs.VirtualFile
 import com.soywiz.korim.awt.toAwt
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.RGBA
+import kotlinx.coroutines.runBlocking
 import java.awt.image.BufferedImage
 
 object SpriteParser {
 
+    private const val BLK_ASYNC_DEFAULT = true
+
+
     @JvmStatic
-    fun parse(virtualFile: VirtualFile): SpriteFileHolder {
+    suspend fun parse(virtualFile: VirtualFile): SpriteFileHolder {
         return parse(virtualFile, null, null)
     }
 
     @JvmStatic
-    fun parse(virtualFile: VirtualFile, bodyPart: Boolean? = null): SpriteFileHolder {
+    suspend fun parse(virtualFile: VirtualFile, bodyPart: Boolean? = null): SpriteFileHolder {
         return parse(virtualFile, bodyPart, null)
     }
 
     @JvmStatic
-    fun parse(
+    suspend fun parse(
         virtualFile: VirtualFile,
         callback: ((i: Int, total: Int) -> Boolean?)?,
     ): SpriteFileHolder {
@@ -46,7 +50,7 @@ object SpriteParser {
     }
 
     @JvmStatic
-    fun parse(
+    suspend fun parse(
         virtualFile: VirtualFile,
         bodyPart: Boolean? = null,
         callback: ((i: Int, total: Int) -> Boolean?)?,
@@ -55,27 +59,27 @@ object SpriteParser {
             ?: throw SpriteParserException("Cannot get sprite parser without file extension")
         val type = SpriteType.fromString(extension)
         val stream = VirtualFileStreamReader(virtualFile)
-        return parse(type, stream, 1, fileName = virtualFile.name, bodyPart, callback)
+        return parse(type, stream, fileName = virtualFile.name, 1, bodyPart, callback)
     }
 
     @JvmStatic
-    fun parse(
+    suspend fun parse(
         extension: String,
         stream: ByteStreamReader,
-        fileName: String? = null,
+        fileName: String,
         bodyPart: Boolean? = null,
         callback: ((i: Int, total: Int) -> Boolean?)? = null,
     ): SpriteFileHolder {
         val type = SpriteType.fromString(extension.uppercase())
-        return parse(type, stream, 1, fileName, bodyPart, callback)
+        return parse(type, stream, fileName, 1, bodyPart, callback)
     }
 
     @JvmStatic
-    fun parse(
+    suspend fun parse(
         spriteType: SpriteType,
         stream: ByteStreamReader,
+        fileName: String,
         progressEvery: Int = 1,
-        fileName: String? = null,
         bodyPart: Boolean? = null,
         callback: ((i: Int, total: Int) -> Boolean?)? = null,
     ): SpriteFileHolder {
@@ -105,11 +109,11 @@ object SpriteParser {
                         throw e
                     }
                 }
-            S16 -> S16SpriteFile(stream, false, progressEvery, callback)
+            S16 -> S16SpriteFile(stream, false, null, progressEvery, callback)
                 .toListOf()
-            C16 -> C16SpriteFile(stream, false, progressEvery, callback)
+            C16 -> C16SpriteFile(stream, false, null, progressEvery, callback)
                 .toListOf()
-            BLK -> BlkSpriteFile(stream, progressEvery, callback)
+            BLK -> BlkSpriteFile(stream, BLK_ASYNC_DEFAULT, progressEvery, callback)
                 .toListOf()
             else -> throw SpriteParserException("Invalid image file extension found")
         }.let { spriteSets ->
@@ -118,13 +122,13 @@ object SpriteParser {
     }
 
     @JvmStatic
-    fun imageCount(virtualFile: VirtualFile): Int? {
+    suspend fun imageCount(virtualFile: VirtualFile): Int? {
         return try {
             val bytesBuffer = VirtualFileStreamReader(virtualFile)
             if (virtualFile.extension?.lowercase() != "spr") {
                 bytesBuffer.skip(4)
             }
-            val size = bytesBuffer.uInt16
+            val size = bytesBuffer.uInt16()
             bytesBuffer.close()
             size
         } catch (e: Exception) {
@@ -134,12 +138,18 @@ object SpriteParser {
 
     @JvmStatic
     fun getBodySpriteVariant(spriteFile: VirtualFile, defaultVariant: CaosVariant): CaosVariant {
+        return runBlocking {
+            getBodySpriteVariantSuspending(spriteFile, defaultVariant)
+        }
+    }
+
+    private suspend fun getBodySpriteVariantSuspending(spriteFile: VirtualFile, defaultVariant: CaosVariant): CaosVariant {
         if (!BreedPartKey.isPartName(spriteFile.nameWithoutExtension)) {
             return defaultVariant
         }
         val extension = spriteFile.extension?.lowercase()
             ?: defaultVariant
-        if (extension !in SpriteParser.VALID_SPRITE_EXTENSIONS) {
+        if (extension !in VALID_SPRITE_EXTENSIONS) {
             return defaultVariant
         }
         if (extension == "spr") {
@@ -178,44 +188,56 @@ object SpriteParser {
 class SpriteParserException(message: String, throwable: Throwable? = null) : Exception(message, throwable)
 
 
-class SpriteFileHolder(sprites: List<SpriteFile>, val fileName: String? = null, private val bodyPart: Boolean = false) {
+class SpriteFileHolder(sprites: List<SpriteFile>, val fileName: String, private val bodyPart: Boolean = false) {
 
 
-    constructor(sprite: SpriteFile, fileName: String? = null) : this(
+    val fileType by lazy {
+        (FileNameUtil.getExtension(fileName) ?: fileName).uppercase().let {
+            when (it) {
+                "SPR" -> if (sprites.size > 0) SpriteType.SPR_SET else SpriteType.SPR
+                "S16" -> S16
+                "C16" -> C16
+                "BLK" -> BLK
+                else -> null
+            }
+        }
+    }
+
+    constructor(sprite: SpriteFile, fileName: String) : this(
         sprite.toListOf(), fileName
     )
 
-    constructor(sprite: SpriteFile, fileName: String? = null, bodyPart: Boolean) : this(
+    constructor(sprite: SpriteFile, fileName: String, bodyPart: Boolean) : this(
         sprite.toListOf(), fileName, bodyPart
     )
-
-    val type = sprites.first().type
 
     private var mSpriteFile: List<SpriteFile> = sprites
 
     val bitmaps: List<List<Bitmap32>>
         get() = mSpriteFile.map {
-            it.frames
+            runBlocking {
+                it.frames()
+            }
         }
 
     val images: List<BufferedImage>
-        get() {
-            return mSpriteFile.first().frames.map(Bitmap32::toAwt)
+        get() = runBlocking {
+            mSpriteFile.first().frames().map(Bitmap32::toAwt)
         }
 
     val imageSets: List<List<BufferedImage>>
-        get() {
-            return mSpriteFile.map { file ->
-                file.frames.map {
+        get() = runBlocking {
+            mSpriteFile.map { file ->
+                file.frames().map {
                     it.toAwt()
                 }
             }
         }
 
-    val size: Int = mSpriteFile.firstOrNull()?.size ?: 0
+    val size: Int = runBlocking { mSpriteFile.firstOrNull()?.size() ?: 0 }
 
     fun getSize(spriteFileIndex: Int): Int? {
-        return mSpriteFile.getOrNull(spriteFileIndex)?.size
+        return runBlocking { mSpriteFile.getOrNull(spriteFileIndex)?.size() }
     }
 
     operator fun get(frame: Int): BufferedImage? {
@@ -250,9 +272,9 @@ private fun List<BufferedImage>.getBodyImageAt(i: Int): BufferedImage {
             }
         }
     }
-    image = when {
-        i in 0..3 -> get(i + 4)
-        i in 4..7 -> get(i - 4)
+    image = when (i) {
+        in 0..3 -> get(i + 4)
+        in 4..7 -> get(i - 4)
         else -> image
     }
     return image.flipHorizontal()

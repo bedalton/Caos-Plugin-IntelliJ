@@ -36,11 +36,16 @@ class PoseEditorModel(
     val poseEditor: BreedPoseHolder,
 ) {
 
+
+    private val allValidPoseChars = "012345xX?!".toCharArray()
+    private val validPartPoseChars = "0123xX?!".toCharArray()
+
     var progressIndicator: ProgressIndicator? = null
     private var spriteSet: CreatureSpriteSet? = null
     private var mLocked: Map<Char, BodyPartFiles> = emptyMap()
     private var updating = AtomicInteger(0)
     private var mRendering: Long? = null
+    private var renderId = AtomicInteger(0)
     val rendering: Boolean get() = mRendering?.let { it < now } ?: false
 
     val locked: Map<Char, BodyPartFiles> get() = mLocked
@@ -153,13 +158,13 @@ class PoseEditorModel(
             val indicator = EmptyProgressIndicator()
             progressIndicator = indicator
             try {
-                requestRenderAsync(indicator, *parts)
+                requestRenderAsync(indicator, renderId.incrementAndGet(), *parts)
             } catch (_: ProcessCanceledException) {
             }
         }
     }
 
-    private fun requestRenderAsync(progressIndicator: ProgressIndicator, vararg parts: Char): Boolean {
+    private fun requestRenderAsync(progressIndicator: ProgressIndicator, id: Int, vararg parts: Char): Boolean {
 
         if (project.isDisposed) {
             return false
@@ -168,24 +173,30 @@ class PoseEditorModel(
 //            return false
         }
         if (DumbService.isDumb(project)) {
-
             progressIndicator.checkCanceled()
             DumbService.getInstance(project).runWhenSmart {
                 progressIndicator.checkCanceled()
+                if (id < renderId.get()) {
+                    return@runWhenSmart
+                }
                 requestRender(*parts)
             }
             return false
         }
-        if (rendering) {
-//            return true
+        if (id < renderId.get()) {
+            return true
         }
 
         progressIndicator.checkCanceled()
         mRendering = now + 900
 
         val updatedSprites = try {
-            getUpdatedSpriteSet(progressIndicator, *parts)
-                ?: getUpdatedSpriteSet(progressIndicator, *allParts)
+            if (id < renderId.get()) {
+                null
+            } else {
+                getUpdatedSpriteSet(progressIndicator, *parts)
+                    ?: getUpdatedSpriteSet(progressIndicator, *allParts)
+            }
         } catch (e: java.lang.Exception) {
             progressIndicator.checkCanceled()
             mRendering = null
@@ -195,7 +206,7 @@ class PoseEditorModel(
             return false
         }
         if (updatedSprites == null) {
-            if (updating.get() == 0) {
+            if (updating.get() == 0 && id == renderId.get()) {
                 LOGGER.severe("Failed to update sprite sets without reason")
             }
             progressIndicator.checkCanceled()
@@ -205,7 +216,11 @@ class PoseEditorModel(
         progressIndicator.checkCanceled()
         val updatedPose: Pose = invokeAndWaitIfNeeded {
             try {
-                poseEditor.updatePoseAndGet(progressIndicator, *parts)
+                if (id < renderId.get()) {
+                    null
+                } else {
+                    poseEditor.updatePoseAndGet(progressIndicator, *parts)
+                }
             } catch (e: ProcessCanceledException) {
                 null
             }
@@ -218,25 +233,32 @@ class PoseEditorModel(
         progressIndicator.checkCanceled()
 
         return try {
-            val image = render(variant, updatedSprites, updatedPose, visibilityMask, poseEditor.zoom)
-            progressIndicator.checkCanceled()
-            invokeLater {
+            if (id < renderId.get()) {
+                false
+            } else {
+                val image = render(variant, updatedSprites, updatedPose, visibilityMask, poseEditor.zoom)
                 progressIndicator.checkCanceled()
-                poseEditor.setRendered(image)
+                invokeLater {
+                    progressIndicator.checkCanceled()
+                    poseEditor.setRendered(image)
+                }
+                true
             }
-
-            true
         } catch (e: ProcessCanceledException) {
             return false
         } catch (e: java.lang.Exception) {
             LOGGER.severe("Failed to render pose. Error:(" + e.javaClass.simpleName + ") " + e.localizedMessage)
             e.printStackTrace()
             progressIndicator.checkCanceled()
-            poseEditor.setRendered(null)
+            if (id == renderId.get()) {
+                poseEditor.setRendered(null)
+            }
             false
         } finally {
             progressIndicator.checkCanceled()
-            mRendering = null
+            if (id == renderId.get()) {
+                mRendering = null
+            }
         }
     }
 
@@ -251,20 +273,25 @@ class PoseEditorModel(
         while (newPoseStringBuilder.length < 15) {
             newPoseStringBuilder.append(" ")
         }
-        val newPoseString = newPoseStringBuilder.toString()
+        val poseStringPadded = newPoseStringBuilder.toString()
         var hasError = false
-        if (newPoseRaw.length < 15) {
+        if (newPoseRaw.length.let { it != 15 && it != 16 } || newPoseRaw.any { it !in allValidPoseChars }) {
             hasError = true
-        } else if (lastPoseString == newPoseString) {
+        } else if (lastPoseString.trim() == newPoseRaw.trim()) {
             return null
         }
-        val lastPose: Pose? = currentPose
-        val (_, newPose) = fromString(variant, facing, lastPose, newPoseString)
+
+        val (_, newPose) = fromString(variant, facing, currentPose, poseStringPadded)
 
         val errorChars = (0..14).filter { i ->
-            val part = ('a'.code + i).toChar()
-            val thisPose = newPose[part]
-            thisPose == null || thisPose < -1
+            val invalidValue = poseStringPadded[i] !in (if (i < 3) { allValidPoseChars } else { validPartPoseChars })
+            if (i > 0) {
+                val part = ('a'.code + i).toChar()
+                val thisPose = newPose[part]
+                thisPose == null || invalidValue
+            } else {
+                invalidValue
+            }
         }
         return Triple(newPose, hasError || errorChars.isNotEmpty(), errorChars.toIntArray())
     }

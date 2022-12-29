@@ -1,9 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
-import bedalton.creatures.bytes.ByteStreamReader
-import bedalton.creatures.bytes.FileStreamByteReader
-import bedalton.creatures.bytes.InputStreamByteReader
-import bedalton.creatures.bytes.MemoryByteStreamReader
+import bedalton.creatures.common.bytes.ByteStreamReader
+import bedalton.creatures.common.bytes.FileStreamByteReader
+import bedalton.creatures.common.bytes.InputStreamByteReader
+import bedalton.creatures.common.bytes.MemoryByteStreamReader
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 
@@ -32,25 +32,25 @@ class VirtualFileStreamReader(private val virtualFile: VirtualFile, start: Int? 
     override val size: Int
         get() = mReader.size
 
-    override fun close(): Boolean {
+    override suspend fun close(): Boolean {
         val didClose = mReader.close()
         mClosed = mClosed || didClose
         return mClosed
     }
 
-    override fun copyOfBytes(start: Int, end: Int): ByteArray {
+    override suspend fun copyOfBytes(start: Int, end: Int): ByteArray {
         return mReader.copyOfBytes(start, end)
     }
 
-    override fun copyOfRange(start: Int, end: Int): ByteStreamReader {
+    override suspend fun copyOfRange(start: Int, end: Int): ByteStreamReader {
         return mReader.copyOfRange(start, end)
     }
 
-    override fun duplicate(): ByteStreamReader {
+    override suspend fun duplicate(): ByteStreamReader {
         return mReader.duplicate()
     }
 
-    override fun get(): Byte {
+    override suspend fun get(): Byte {
         return mReader.get()
     }
 
@@ -63,11 +63,11 @@ class VirtualFileStreamReader(private val virtualFile: VirtualFile, start: Int? 
         }
     }
 
-    override fun setPosition(newPosition: Int): ByteStreamReader {
+    override suspend fun setPosition(newPosition: Int): ByteStreamReader {
         return mReader.setPosition(newPosition)
     }
 
-    override fun toByteArray(): ByteArray {
+    override suspend fun toByteArray(): ByteArray {
         return mReader.toByteArray()
     }
 
@@ -75,7 +75,7 @@ class VirtualFileStreamReader(private val virtualFile: VirtualFile, start: Int? 
         return virtualFile.isValid && !virtualFile.isDirectory && virtualFile.exists()
     }
 
-    override fun copyAsOpened(): VirtualFileStreamReader? {
+    override suspend fun copyAsOpened(): VirtualFileStreamReader? {
         return if (canReopen()) {
             VirtualFileStreamReader(virtualFile)
         } else {

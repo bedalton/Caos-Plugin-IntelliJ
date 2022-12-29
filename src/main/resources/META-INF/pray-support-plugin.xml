@@ -109,6 +109,7 @@
                      groupPath="CaosScript"
                      implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.PrayTagCaseInspection"
     />
+
     <lang.findUsagesProvider
         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayFindUsagesProvider"
         language="CreaturesPRAY" />

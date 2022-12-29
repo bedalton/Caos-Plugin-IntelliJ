@@ -19,6 +19,7 @@ import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import icons.CaosScriptIcons
+import kotlinx.coroutines.runBlocking
 
 /**
  * Creates a file
@@ -74,9 +75,11 @@ class CompileCaos2CobAction : AnAction(
                     progressIndicator.checkCanceled()
                     // Ensure in read action
                     runWriteAction action@{
-                        // Update progress indicator
-                        Caos2CobCompiler.compile(project, compilationResult, file, progressIndicator)
-                        printResult(project, compilationResult)
+                        runBlocking {
+                            // Update progress indicator
+                            Caos2CobCompiler.compile(project, compilationResult, file, progressIndicator)
+                            printResult(project, compilationResult)
+                        }
                     }
                 }
             }
@@ -114,7 +117,7 @@ class CompileCaos2CobAction : AnAction(
                         // Ensure in read action
                         runWriteAction action@{
                             // Update progress indicator
-                            Caos2CobCompiler.compile(project, compilationResult, file, progressIndicator)
+                            runBlocking { Caos2CobCompiler.compile(project, compilationResult, file, progressIndicator) }
                             if (compilationResult.index == numFiles) {
                                 printResult(project, compilationResult)
                             }

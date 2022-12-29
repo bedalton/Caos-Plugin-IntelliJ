@@ -14,6 +14,7 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.impl.PsiFileEx
 import com.intellij.psi.impl.PsiManagerImpl
 import com.intellij.psi.impl.file.PsiBinaryFileImpl
+import kotlinx.coroutines.runBlocking
 
 class SfcCompiledFile(provider: FileViewProvider)
     : PsiBinaryFileImpl(provider.manager as PsiManagerImpl, provider), PsiCompiledFile, PsiFileEx, PsiBinaryFile {
@@ -64,13 +65,18 @@ class SfcCompiledFile(provider: FileViewProvider)
         }
 
         // Read and create json response object
-        val json: String = try {
-            SfcReader.readFile(virtualFile).let {
-                it.data?.toString()
-                        ?: generateErrorJson(virtualFile, "SFC decompile failed ${it.error ?: "without error message."}")
+        val json: String = runBlocking {
+            try {
+                SfcReader.readFile(virtualFile).let {
+                    it.data?.toString()
+                        ?: generateErrorJson(
+                            virtualFile,
+                            "SFC decompile failed ${it.error ?: "without error message."}"
+                        )
+                }
+            } catch (e: Exception) {
+                generateErrorJson(virtualFile, "SFC Decompile failed. ${e.message}")
             }
-        } catch (e: Exception) {
-            generateErrorJson(virtualFile, "SFC Decompile failed. ${e.message}")
         }
         // Write the json response.
         virtualFile.putUserData(SFC_JSON_KEY, json)

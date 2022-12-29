@@ -7,9 +7,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
+import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiElement
 
-class PRAYHighlighterAnnotator: Annotator {
+class PRAYHighlighterAnnotator: Annotator, DumbAware {
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
         when (element) {
             is PrayString -> annotateString(element, holder)

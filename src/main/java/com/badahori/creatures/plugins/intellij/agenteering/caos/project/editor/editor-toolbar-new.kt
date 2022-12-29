@@ -1,22 +1,18 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 
-import bedalton.creatures.structs.Pointer
+import bedalton.creatures.common.structs.Pointer
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CompileCAOS2Action
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.AddGameInterfaceAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosInjectorAction
-import com.badahori.creatures.plugins.intellij.agenteering.caos.action.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectorActionGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceNames
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.DisposablePsiTreChangeListener
-import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosInjectorNotifications
-import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
-import com.badahori.creatures.plugins.intellij.agenteering.injector.Injector
+import com.badahori.creatures.plugins.intellij.agenteering.injector.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.ProjectTopics
@@ -31,7 +27,7 @@ import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicatorProvider
-import com.intellij.openapi.project.DumbService
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
@@ -46,6 +42,7 @@ import com.intellij.psi.text.BlockSupport
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil
+import java.awt.Color
 import java.awt.Component
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
@@ -61,7 +58,8 @@ import javax.swing.*
  * An editor notification provider
  * Though not its original purpose, the notification provider functions as a persistent toolbar
  */
-class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provider<EditorNotificationPanel>() {
+class CaosScriptEditorToolbar(val project: Project)
+    : EditorNotifications.Provider<EditorNotificationPanel>(), DumbAware {
 
     override fun getKey(): Key<EditorNotificationPanel> = KEY
 
@@ -85,15 +83,17 @@ class CaosScriptEditorToolbar(val project: Project) : EditorNotifications.Provid
             return null
         }
         ProgressIndicatorProvider.checkCanceled()
-        val panel = EditorNotificationPanel(UIUtil.TRANSPARENT_COLOR)
+        val backgroundColor: Color = UIUtil.getPanelBackground()
+        val panel = EditorNotificationPanel(backgroundColor)
         try {
             val headerComponent = createCaosScriptHeaderComponent(
                 project = project,
                 fileEditor = fileEditor,
                 virtualFile = virtualFile,
-                caosFile = caosFile
+                caosFile = caosFile,
             )
                 ?: return panel
+            headerComponent.background = backgroundColor
             panel.add(headerComponent)
         } catch (e: ProcessCanceledException) {
             LOGGER.severe("Process was canceled during notification panel creation")
@@ -140,22 +140,22 @@ internal fun createCaosScriptHeaderComponent(
         return null
     }
 
-    if (DumbService.isDumb(project)) {
-        DumbService.getInstance(project).runWhenSmart {
-            if (project.isDisposed) {
-                return@runWhenSmart
-            }
-            runReadAction {
-                populate(project, fileEditor, virtualFile, pointer, toolbar)
-            }
-        }
-    } else {
+//    if (DumbService.isDumb(project)) {
+//        DumbService.getInstance(project).runWhenSmart {
+//            if (project.isDisposed) {
+//                return@runWhenSmart
+//            }
+//            runReadAction {
+//                populate(project, fileEditor, virtualFile, pointer, toolbar)
+//            }
+//        }
+//    } else {
         invokeLater {
             runReadAction {
                 populate(project, fileEditor, virtualFile, pointer, toolbar)
             }
         }
-    }
+//    }
     return toolbar
 }
 
@@ -229,13 +229,13 @@ private fun populate(
         virtualFile.path,
         ActionToolbar.NAVBAR_MINIMUM_BUTTON_SIZE
     )
-    var injectorList: List<GameInterfaceName> = project.settings.gameInterfaceNames
+    var injectorList: List<GameInterfaceName> = CaosApplicationSettingsService.getInstance().gameInterfaceNames
     val updateInjectors: (variant: CaosVariant?, GameInterfaceName?) -> Unit = update@{ variant, newGameInterface ->
 
         val newActions: List<AnAction> = InjectorActionGroup
             .getActions(pointer)
             .filter {
-                it !is CaosInjectorAction || (OsUtil.isWindows || it.gameInterfaceName.url.startsWith("http"))
+                it !is CaosInjectorAction || (OsUtil.isWindows || it.gameInterfaceName !is NativeInjectorInterface)
             }
         val injectorActions = newActions.filterIsInstance<CaosInjectorAction>()
         val injectorNames = injectorActions.map { it.gameInterfaceName }
@@ -402,7 +402,7 @@ private fun populate(
         variantPanel.isVisible = false
     }
 
-    CaosProjectSettingsComponent.addSettingsChangedListener(fileEditor) { _, settings ->
+    CaosApplicationSettingsComponent.addSettingsChangedListener(fileEditor) { _, settings ->
         if ((settings.gameInterfaceNames + injectorList).distinct().isEmpty())
             return@addSettingsChangedListener
         injectorList = settings.gameInterfaceNames
@@ -416,7 +416,7 @@ private fun populate(
             val newActions: Array<AnAction> = InjectorActionGroup
                 .getActions(pointer)
                 .filter {
-                    it !is CaosInjectorAction || (OsUtil.isWindows || it.gameInterfaceName.url.startsWith("http"))
+                    it !is CaosInjectorAction || OsUtil.isWindows || it.gameInterfaceName !is NativeInjectorInterface
                 }
                 .toTypedArray()
             injectorModel.removeAllElements()
@@ -499,6 +499,13 @@ private fun populate(
     toolbar.add(Box.createHorizontalGlue())
     toolbar.add(docsButton)
 
+    pointer.element?.apply {
+        this.addListener { newVariant ->
+            if (newVariant != null) {
+                assignVariant(newVariant, false)
+            }
+        }
+    }
     invokeLater {
         interruptedInitializer(
             project,
@@ -588,8 +595,9 @@ private fun interruptedInitializer(
             if (eventFile.virtualFile.path != file.virtualFile?.path && eventFile.virtualFile != file.virtualFile) {
                 return
             }
-            if (event.propertyName != "propUnloadedPsi")
+            if (event.propertyName != "propUnloadedPsi") {
                 return
+            }
             reschedule()
         }
 
@@ -614,17 +622,17 @@ fun setWhenReady(
         return
     }
 
-    if (DumbService.isDumb(project)) {
-        DumbService.getInstance(project).runWhenSmart {
-            if (project.isDisposed) {
-                return@runWhenSmart
-            }
-            runWriteAction {
-                setWhenReady(project, pointer, setVariant, setInitialInjector)
-            }
-        }
-        return
-    }
+//    if (DumbService.isDumb(project)) {
+//        DumbService.getInstance(project).runWhenSmart {
+//            if (project.isDisposed) {
+//                return@runWhenSmart
+//            }
+//            runWriteAction {
+//                setWhenReady(project, pointer, setVariant, setInitialInjector)
+//            }
+//        }
+//        return
+//    }
 
     val file = pointer.element
         ?: return
@@ -657,13 +665,15 @@ private class RunInjectorAction(
         mAction = action
     }
 
-    fun setAction(action: AnAction?, presentation: Presentation = this.templatePresentation) {
+    fun setAction(action: AnAction?, presentation: Presentation? = null) {
         if (action !is CaosInjectorAction) {
             LOGGER.severe("RunInjector action is not CAOS injector")
             return
         }
         this.mAction = action
-        updatePresentation(presentation, action)
+        if (presentation != null) {
+            updatePresentation(presentation, action)
+        }
     }
 
     override fun update(e: AnActionEvent) {

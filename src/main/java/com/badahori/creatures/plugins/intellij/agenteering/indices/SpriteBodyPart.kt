@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.Sprite
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import kotlinx.coroutines.runBlocking
 
 
 data class SpriteBodyPart(
@@ -29,8 +30,9 @@ data class BodyPartFiles(
         )
     }
     fun data(project:Project): SpriteBodyPart {
+        val sprite = runBlocking { SpriteParser.parse(spriteFile, bodyPart = true) }
         return SpriteBodyPart(
-            sprite = SpriteParser.parse(spriteFile, bodyPart = true),
+            sprite = sprite,
             bodyData = runReadAction { AttFileParser.parse(project, bodyDataFile) }
         )
     }

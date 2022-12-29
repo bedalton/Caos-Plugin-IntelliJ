@@ -30,7 +30,7 @@ internal enum class CaosExpressionValueType(val value: Int, val simpleName: Stri
          */
         @Suppress("SpellCheckingInspection")
         fun fromSimpleName(simpleName: String): CaosExpressionValueType {
-            return when (val typeToLower = simpleName.trim().toLowerCase()) {
+            return when (val typeToLower = simpleName.trim().lowercase()) {
                 "any" -> ANY
                 "agent" -> AGENT
                 "[anim]" -> ANIMATION

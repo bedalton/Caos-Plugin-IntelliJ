@@ -4,7 +4,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.canonicalName
-import com.badahori.creatures.plugins.intellij.agenteering.utils.className
+import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.now
 import com.intellij.openapi.vfs.*
