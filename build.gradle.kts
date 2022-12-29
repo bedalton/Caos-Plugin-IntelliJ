@@ -22,7 +22,7 @@ plugins {
 
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2022.03.00"
+version = "2022.03.01"
 
 
 val ideaVersionStart: String by project
