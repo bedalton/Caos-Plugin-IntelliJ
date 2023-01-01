@@ -131,6 +131,8 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     private boolean didRenderOnce = false;
     private Pose nextPose = null;
 
+    private boolean breedChanged = false;
+
     private final Map<Character, BodyPartFiles> last = new HashMap<>();
 
     public PoseEditorImpl(
@@ -646,6 +648,8 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
                 clearManualAttOnChange(theseFiles, part);
             }
 
+            breedChanged = true;
+
             if (didInitOnce) {
                 redraw(parts);
             }
@@ -797,7 +801,8 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             return;
         }
 
-        ApplicationManager.getApplication().runReadAction(() -> model.requestRender(theParts));
+        ApplicationManager.getApplication().runReadAction(() -> model.requestRender(theParts, breedChanged));
+        breedChanged = false;
     }
 
     @Override
@@ -2222,7 +2227,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         }
         updateBreedsList();
         initOpenRelatedComboBox();
-        model.requestRender(ALL_PARTS);
+        model.requestRender(ALL_PARTS, true);
     }
 
     public interface PoseChangeListener {

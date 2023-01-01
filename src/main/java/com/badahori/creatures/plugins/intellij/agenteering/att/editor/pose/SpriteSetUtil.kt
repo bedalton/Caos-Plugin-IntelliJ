@@ -51,9 +51,9 @@ object SpriteSetUtil {
             locked = locked
         )
         ?: return null
-        if (parts.isEmpty()) {
-            realParts = PoseEditorSupport.allParts
-        }
+//        if (parts.isEmpty()) {
+//            realParts = PoseEditorSupport.allParts
+//        }
         for (part in realParts) {
             progressIndicator.checkCanceled()
             val files = when (part.lowercase()) {
