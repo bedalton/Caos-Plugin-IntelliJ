@@ -112,7 +112,7 @@ class PoseEditorModel(
             spriteSet = sprites
             poseEditor.setFiles(mappedParts.values.filterNotNull())
             @Suppress("SpellCheckingInspection")
-            requestRender(*("abcdefghijklmnopq").toCharArray())
+            requestRender(*("abcdefghijklmnopq").toCharArray(), breedChanged = true)
             updating.set(0)
             executeOnPooledThread(this@PoseEditorModel::updateFiles)
         }
@@ -152,19 +152,19 @@ class PoseEditorModel(
         }
     }
 
-    fun requestRender(vararg parts: Char) {
+    fun requestRender(vararg parts: Char, breedChanged: Boolean) {
         GlobalScope.launch(Dispatchers.IO) {
             progressIndicator?.cancel()
             val indicator = EmptyProgressIndicator()
             progressIndicator = indicator
             try {
-                requestRenderAsync(indicator, renderId.incrementAndGet(), *parts)
+                requestRenderAsync(indicator, renderId.incrementAndGet(), *parts, breedChanged = breedChanged)
             } catch (_: ProcessCanceledException) {
             }
         }
     }
 
-    private fun requestRenderAsync(progressIndicator: ProgressIndicator, id: Int, vararg parts: Char): Boolean {
+    private fun requestRenderAsync(progressIndicator: ProgressIndicator, id: Int, vararg parts: Char, breedChanged: Boolean): Boolean {
 
         if (project.isDisposed) {
             return false
@@ -179,7 +179,7 @@ class PoseEditorModel(
                 if (id < renderId.get()) {
                     return@runWhenSmart
                 }
-                requestRender(*parts)
+                requestRender(*parts, breedChanged = breedChanged)
             }
             return false
         }
@@ -194,8 +194,9 @@ class PoseEditorModel(
             if (id < renderId.get()) {
                 null
             } else {
-                getUpdatedSpriteSet(progressIndicator, *parts)
-                    ?: getUpdatedSpriteSet(progressIndicator, *allParts)
+                val newParts: CharArray = if (breedChanged) parts else charArrayOf()
+                getUpdatedSpriteSet(progressIndicator, *newParts)
+                    ?: getUpdatedSpriteSet(progressIndicator, *newParts)
             }
         } catch (e: java.lang.Exception) {
             progressIndicator.checkCanceled()
@@ -360,7 +361,7 @@ class PoseEditorModel(
         }
         manualAtts[part] = BodyPartFiles(spriteFile!!, file!!)
         this.spriteSet = spriteSet.replacing(part, att)
-        requestRender(part)
+        requestRender(part, breedChanged = false)
     }
 
     /**
@@ -425,7 +426,7 @@ class PoseEditorModel(
             .map { obj: Char -> obj.toString() }
             .collect(Collectors.joining())
             .toCharArray()
-        requestRender(*chars)
+        requestRender(*chars, breedChanged = false)
     }
 
     private fun getUpdatedSpriteSet(progressIndicator: ProgressIndicator, vararg parts: Char): CreatureSpriteSet? {
@@ -455,7 +456,7 @@ class PoseEditorModel(
         val progressIndicator = EmptyProgressIndicator()
         try {
             getUpdatedSpriteSet(progressIndicator, *allParts)
-            requestRender(*allParts)
+            requestRender(*allParts, breedChanged = false)
         } catch (_: Exception) {}
     }
 
