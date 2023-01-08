@@ -1,8 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import bedalton.creatures.common.bytes.MemoryByteStreamReader
 import bedalton.creatures.common.util.FileNameUtil
-import bedalton.creatures.common.util.Log
+import com.bedalton.log.*
 import bedalton.creatures.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.*
@@ -15,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.nullI
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.bedalton.io.bytes.internal.MemoryByteStreamReaderEx
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
@@ -45,7 +45,7 @@ internal class CobFileTreeNode(
         runBlocking {
             try {
                 CobToDataObjectDecompiler.decompile(
-                    MemoryByteStreamReader(file.contentsToByteArray()),
+                    MemoryByteStreamReaderEx(file.contentsToByteArray()),
                     file.nameWithoutExtension
                 )
             } catch (e: Exception) {

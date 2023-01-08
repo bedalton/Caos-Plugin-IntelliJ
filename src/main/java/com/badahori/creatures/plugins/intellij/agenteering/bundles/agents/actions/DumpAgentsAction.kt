@@ -11,7 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifica
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
 import com.bedalton.vfs.LocalFileSystem
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -27,7 +27,7 @@ import icons.CaosScriptIcons
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
-import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicInteger
 
 class DumpAgentAction : AnAction(
@@ -77,7 +77,7 @@ class DumpAgentAction : AnAction(
                     CommandProcessor.getInstance().runUndoTransparentAction {
                         dump(project, files, parentPath, useChildDirectories, createdFiles)
                     }
-                    val parent = VfsUtil.findFile(Path.of(parentPath), true)
+                    val parent = VfsUtil.findFile(Paths.get(parentPath), true)
                     parent?.parent?.refresh(true, true)
                 }
         }.apply {
@@ -200,7 +200,7 @@ class DumpAgentAction : AnAction(
         createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>
     ): Boolean {
         // Parse Agent and write files
-        val stream = VirtualFileStreamReader(file)
+        val stream = VirtualFileStreamReaderEx(file)
         val prefix = if (useChildDirectories) "" else file.nameWithoutExtension
         val relativeWriter = RelativeFileSystem(LocalFileSystem!!, parentVirtualFile.path)
 

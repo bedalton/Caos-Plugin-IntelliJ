@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
-import bedalton.creatures.common.bytes.*
-import bedalton.creatures.sprite.parsers.parseS16Frame
+import com.bedalton.io.bytes.*
+import bedalton.creatures.sprite.parsers.parseS16FrameAtCurrentPosition
 import bedalton.creatures.sprite.util.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
@@ -11,7 +11,7 @@ import com.soywiz.korim.awt.toAwt
 import java.util.*
 
 
-internal suspend fun ByteStreamReader.readC2CobBlock() : CobBlock? {
+internal suspend fun ByteStreamReaderEx.readC2CobBlock() : CobBlock? {
     val type = try {
         string(4)
     } catch (e: Exception) {
@@ -26,7 +26,7 @@ internal suspend fun ByteStreamReader.readC2CobBlock() : CobBlock? {
     }
 }
 
-private suspend fun ByteStreamReader.readC2AgentBlock() : CobBlock.AgentBlock {
+private suspend fun ByteStreamReaderEx.readC2AgentBlock() : CobBlock.AgentBlock {
     val quantityAvailable = uInt16().let { if (it == 0xffff) -1 else it }
     val lastUsageDate = uInt32()
     val reuseInterval = uInt32()
@@ -54,7 +54,7 @@ private suspend fun ByteStreamReader.readC2AgentBlock() : CobBlock.AgentBlock {
     val thumbWidth = uInt16()
     val thumbHeight = uInt16()
     val image = if (thumbWidth > 0 && thumbHeight > 0)
-        parseS16Frame(this, position().toLong(), thumbWidth, thumbHeight, ColorEncoding.X_565, transparentBlack).toAwt()
+        parseS16FrameAtCurrentPosition(this, thumbWidth, thumbHeight, ColorEncoding.X_565, transparentBlack).toAwt()
     else
         null
     skip(thumbWidth * thumbHeight * 2)
@@ -75,7 +75,7 @@ private suspend fun ByteStreamReader.readC2AgentBlock() : CobBlock.AgentBlock {
     )
 }
 
-private suspend fun ByteStreamReader.readC2AuthorBlock() : CobBlock.AuthorBlock {
+private suspend fun ByteStreamReaderEx.readC2AuthorBlock() : CobBlock.AuthorBlock {
     val creationDay = uInt8()
     val creationMonth = uInt8()
     val creationYear = uInt16()
@@ -99,7 +99,7 @@ private suspend fun ByteStreamReader.readC2AuthorBlock() : CobBlock.AuthorBlock 
     )
 }
 
-private suspend fun ByteStreamReader.readC2FileBlock() : CobBlock.FileBlock {
+private suspend fun ByteStreamReaderEx.readC2FileBlock() : CobBlock.FileBlock {
     val type = when (val typeInt = uInt16()) {
         0 -> CobFileBlockType.SPRITE
         1 -> CobFileBlockType.SOUND

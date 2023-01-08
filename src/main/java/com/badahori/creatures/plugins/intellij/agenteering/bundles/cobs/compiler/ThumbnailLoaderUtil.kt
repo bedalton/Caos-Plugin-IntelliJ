@@ -1,11 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import bedalton.creatures.common.bytes.MemoryByteStreamReader
 import bedalton.creatures.sprite.parsers.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.VALID_SPRITE_EXTENSIONS
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getAllBytes
 import com.badahori.creatures.plugins.intellij.agenteering.utils.likeAny
+import com.bedalton.io.bytes.MemoryByteStreamReader
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.format.BMP

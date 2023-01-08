@@ -1,12 +1,17 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 
 /**
  * Service for fetching CAOS project settings
  */
-interface CaosApplicationSettingsService: PersistentStateComponent<CaosApplicationSettingsComponent.State>, HasIgnoredCatalogueTags {
+interface CaosApplicationSettingsService:
+    PersistentStateComponent<CaosApplicationSettingsComponent.State>,
+    HasIgnoredCatalogueTags,
+        Disposable
+{
     var isAutoPoseEnabled: Boolean
     var lastWineDirectory: String?
     var combineAttNodes: Boolean

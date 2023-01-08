@@ -67,7 +67,7 @@ class CompileCAOS2Action: AnAction(
                 CompilePrayFileAction.compile(project, allPrayFiles.toTypedArray())
             }
         } catch (e: Exception) {
-            LOGGER.info("Failed to compile CAOS2Pray; ${e.className}(${e.message}) files: ${caos2Pray.joinToString { it.name }}")
+            LOGGER.severe("Failed to compile CAOS2Pray; ${e.className}(${e.message}) files: ${caos2Pray.joinToString { it.name }}")
         }
 
         LOGGER.info("Compiled CAOS2Pray files")

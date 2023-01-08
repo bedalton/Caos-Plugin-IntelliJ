@@ -25,7 +25,7 @@ internal class AttEditorImpl(
     project: Project,
     file: VirtualFile,
     spriteFile: VirtualFile,
-) : UserDataHolderBase(), FileEditor, DumbAware {
+) : UserDataHolderBase(), FileEditor {
     private val myFile: VirtualFile = file
     private var myProject: Project = project
     private val variant: CaosVariant = getInitialVariant(project, file)
@@ -33,6 +33,7 @@ internal class AttEditorImpl(
     private val controller by lazy {
         AttEditorController(
             project,
+            this,
             file,
             spriteFile,
             variant,

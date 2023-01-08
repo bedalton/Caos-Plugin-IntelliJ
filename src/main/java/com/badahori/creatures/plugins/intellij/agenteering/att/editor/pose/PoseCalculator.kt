@@ -36,10 +36,10 @@ object PoseCalculator {
     /**
      * Gets the pose for a given combobox
      *
-     * @param box             combo box to check
+     * @param selectedIndex The index that is currently selected in this parts box
      * @param facingDirection facing direction of creature
      * @param offset          offset into sprite set
-     * @param invert          whether or not to invert the pose from 1-4
+     * @param invert          whether to invert the pose from 1-4
      * @return pose index in sprite file
      */
     @JvmStatic
@@ -74,7 +74,7 @@ object PoseCalculator {
             }
         } else {
             if (invert) {
-                pose = 3 - pose
+                pose =  3 - pose
             }
             pose += offset
         }
@@ -155,7 +155,7 @@ object PoseCalculator {
                         LOGGER.severe("Part '$part' has invalid pose offset '$offsetPose' expected 0..3")
                         return null
                     }
-                    3 - offsetPose
+                    offsetPose
                 }
             }
         } else {
@@ -164,7 +164,7 @@ object PoseCalculator {
                 LOGGER.severe("Part '$part' has invalid pose offset '$offsetPose' expected 0..3; Pose: $pose; Offset: $offset; Facing: $facing")
                 return null
             }
-            3 - offsetPose
+            offsetPose
         }
     }
 
@@ -172,7 +172,7 @@ object PoseCalculator {
      * Calculates the combo box pose, tilt and mood.
      */
     @JvmStatic
-    fun getHeadPose(variant: CaosVariant, facing: Int, pose: Int): HeadPoseData? {
+    fun getHeadPose(variant: CaosVariant, facing: Int, pose: Int): HeadPoseData {
         return if (variant.isOld) {
             getHeadPoseOldVariant(variant, facing, pose)
         } else {
@@ -231,16 +231,9 @@ object PoseCalculator {
         }
         val calculated = when {
             facingDirection >= 2 -> {
-                if (headPose < 0) {
-                    LOGGER.severe("No head pose selected")
-                    return ERROR_HEAD_POSE_C1E
-                } else if (headPose > 9) {
-                    LOGGER.severe("Invalid head pose encountered for pose '$headPose' expected 0..10")
-                    return ERROR_HEAD_POSE_C1E
-                }
                 when {
-                    headPose < 4 -> 3 - headPose
-                    headPose < 8 -> 4 + (3 - (headPose - 4))
+                    headPose < 4 -> headPose
+                    headPose < 8 -> 4 + headPose
                     facingDirection == 3 -> 9
                     else -> headPose
                 }
@@ -248,8 +241,8 @@ object PoseCalculator {
             headPose == 4 -> 8
             headPose == 5 -> 9
             headPose > 5 -> headPose
-            facingDirection == 0 -> 3 - headPose
-            facingDirection == 1 -> 4 + (3 - headPose)
+            facingDirection == 0 -> headPose
+            facingDirection == 1 -> 4 + headPose
             else -> {
                 LOGGER.severe("Invalid head pose $headPose found. SelectedIndex: $headPose; Facing: $facingDirection; tilt: $tilt; mood: $mood; eyesClosed: $eyesClosed")
                 Exception().printStackTrace()
@@ -279,18 +272,21 @@ object PoseCalculator {
                 // If first option (Can be left or right)
                 val headDirection = if (headPose == 0) {
                     // If facing is right, value is right (1)
-                    if (facingDirection == 1)
+                    if (facingDirection == 1) {
                         1
-                    else // Else: Value is truly left (0)
+                    } else {// Else: Value is truly left (0)
                         headPose
+                    }
                 } else if (headPose == 1) {
                     // Second slot can be right or forward
                     // If facing left or right
-                    if (facingDirection < 2)
-                    //  slot is Forward
+                    if (facingDirection < 2) {
+                        //  slot is Forward
                         2
-                    else // else slot is right
+                    }
+                    else { // else slot is right
                         headPose
+                    }
                 } else if (headPose == 2) {
                     // Head pose 2 can only be forward if facing backward
                     facingDirection
@@ -427,14 +423,14 @@ private fun getHeadPoseOldVariant(variant: CaosVariant, facing: Int, pose: Int):
     val headPose: Int = when {
         facing < 2 -> {
             when {
-                pose < 8 -> 3 - (pose % 4)
-                pose == 8 -> 4
+                pose < 8 -> pose % 4
                 pose == 9 -> 5
-                else -> {
-                    LOGGER.severe("Invalid head pose '$pose' with facing: $facing")
-                    (Exception()).printStackTrace()
-                    0
-                }
+                else -> 4
+//                else -> {
+//                    LOGGER.severe("Invalid head pose '$pose' with facing: $facing")
+//                    (Exception()).printStackTrace()
+//                    0
+//                }
             }
         }
         facing == 3 -> 8
@@ -466,7 +462,7 @@ private fun getHeadPoseNewVariant(facing: Int, pose: Int): PoseCalculator.HeadPo
         offset < 12 -> if (facing < 2) 1 else 2 // If face is facing forward
         else -> 2
     }
-    val tilt: Int = 3 - (pose % 4)
+    val tilt: Int = pose % 4
     val mood: Int? = if (pose > 32) floor(pose / 32.0).toInt() else null
     return PoseCalculator.HeadPoseData(headPose, tilt = tilt, mood = mood)
 }

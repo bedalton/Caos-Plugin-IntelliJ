@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import bedalton.creatures.common.bytes.string
+import com.bedalton.io.bytes.string
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.Vector2
 

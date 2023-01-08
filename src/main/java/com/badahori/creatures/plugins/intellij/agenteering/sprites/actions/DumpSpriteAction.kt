@@ -10,7 +10,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileTy
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
+import com.bedalton.io.bytes.ByteStreamReaderBase
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.UndoConfirmationPolicy
@@ -26,7 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.awt.image.BufferedImage
 import java.io.File
-import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicInteger
 
 class DumpSpriteAction : AnAction(
@@ -85,7 +86,7 @@ class DumpSpriteAction : AnAction(
                             useChildDirectories,
                             createdFiles
                         )
-                        val parent = VfsUtil.findFile(Path.of(parentPath), true)
+                        val parent = VfsUtil.findFile(Paths.get(parentPath), true)
                         parent?.parent?.refresh(true, true)
                     }
                 }
@@ -196,7 +197,7 @@ class DumpSpriteAction : AnAction(
 
         if (blk) {
             return try {
-                val stream = VirtualFileStreamReader(file)
+                val stream = ByteStreamReaderBase(VirtualFileStreamReaderEx(file))
                 val png = bedalton.creatures.sprite.parsers.SpriteParser.getStitched(stream).toAwt()
                 write(parentVirtualFile, file.nameWithoutExtension + ".png", png, createdFiles)
                 true

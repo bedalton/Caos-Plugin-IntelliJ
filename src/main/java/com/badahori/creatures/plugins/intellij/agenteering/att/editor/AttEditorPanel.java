@@ -11,9 +11,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.uiDesigner.core.Spacer;
@@ -26,7 +28,7 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
 
-public class AttEditorPanel implements HasSelectedCell, AttEditorController.View {
+public class AttEditorPanel implements HasSelectedCell, AttEditorController.View, Disposable {
     //    private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
     public static final Key<Pose> ATT_FILE_POSE_KEY = Key.create("creatures.att.POSE_DATA");
     public static final Key<Pose> REQUESTED_POSE_KEY = Key.create("creatures.att.REQUESTED_POSE");
@@ -64,8 +66,12 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
 
     AttEditorPanel(
             @NotNull final Project project,
+            @NotNull final Disposable parent,
             final AttEditorHandler handler
     ) {
+        if (!project.isDisposed()) {
+            Disposer.register(parent, this);
+        }
         this.project = project;
         this.controller = handler;
         this.settings = CaosProjectSettingsService.getInstance(project);
@@ -734,12 +740,19 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
 
         final BreedPartKey key = controller.getBreedPartKey();
 
-        poseEditor = new PoseEditorImpl(project, getVariant(), Objects.requireNonNull(key), EAGER_LOAD_POSE_EDITOR, (rendered) -> {
-            if (posePanel.isVisible() != rendered) {
-                posePanel.setVisible(rendered);
-            }
-            return null;
-        });
+        poseEditor = new PoseEditorImpl(
+                project,
+                this,
+                getVariant(),
+                Objects.requireNonNull(key),
+                EAGER_LOAD_POSE_EDITOR,
+                (rendered) -> {
+                    if (posePanel.isVisible() != rendered) {
+                        posePanel.setVisible(rendered);
+                    }
+                    return null;
+                }
+        );
         poseEditor.init();
         posePanel = poseEditor.getMainPanel();
         poseEditor.showFacing(false);
@@ -845,13 +858,13 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
             } else if (actualIndex == 9) {
                 direction = 3;
             } else {
-                throw new IndexOutOfBoundsException("Failed to parse direction for part " + getPart() + "; TargetIndex: " + index +"; ActualSelectedIndex: " + actualIndex);
+                throw new IndexOutOfBoundsException("Failed to parse direction for part " + getPart() + "; TargetIndex: " + index + "; ActualSelectedIndex: " + actualIndex);
             }
         } else {
             direction = (int) Math.floor((index % 16) / 4.0);
         }
         cell = actualIndex;
-        poseEditor.setPose(direction, getPart(), actualIndex);
+        poseEditor.setPose(direction, getPart(), actualIndex, true);
         spriteCellList.reload();
         redrawPose();
         spriteCellList.scrollTo(actualIndex);

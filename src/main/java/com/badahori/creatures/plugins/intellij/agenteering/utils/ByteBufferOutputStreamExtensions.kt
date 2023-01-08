@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import bedalton.creatures.common.bytes.CREATURES_CHARACTER_ENCODING
+import com.bedalton.io.bytes.CREATURES_CHARACTER_ENCODING
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.nio.charset.Charset

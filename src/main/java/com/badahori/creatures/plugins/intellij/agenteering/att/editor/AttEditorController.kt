@@ -1,20 +1,22 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
-import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.image.BufferedImage
 import javax.swing.JComponent
 
 internal class AttEditorController(
     val project: Project,
+    parent: Disposable,
     attFile: VirtualFile,
     spriteFile: VirtualFile,
     variant: CaosVariant,
@@ -23,6 +25,7 @@ internal class AttEditorController(
 
     private val model: AttEditorModel = AttEditorModel(
         project,
+        parent,
         attFile,
         spriteFile,
         variant,
@@ -94,6 +97,11 @@ internal class AttEditorController(
     override val selectedCell: Int
         get() = model.selectedCell
 
+    init {
+        if (!project.isDisposed) {
+            Disposer.register(parent, this)
+        }
+    }
 
     /**
      * Gets the point that will be updated when changes are made
@@ -202,7 +210,7 @@ internal class AttEditorController(
      * Creates the ATT view panel
      */
     private fun createView(): AttEditorPanel {
-        val mView = AttEditorPanel(project, this)
+        val mView = AttEditorPanel(project, this, this)
         if (project.isDisposed) {
             return mView
         }

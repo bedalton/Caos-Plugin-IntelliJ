@@ -2,14 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite
 
-//import bedalton.creatures.common.bytes.MemoryByteStreamReader
-import bedalton.creatures.common.bytes.ByteStreamReader
-import bedalton.creatures.common.bytes.readAt
-import bedalton.creatures.common.bytes.skip
-import bedalton.creatures.common.bytes.uInt16
 import bedalton.creatures.common.util.FileNameUtil
-import bedalton.creatures.common.util.Log
-import bedalton.creatures.common.util.iIf
 import bedalton.creatures.common.util.toListOf
 import bedalton.creatures.sprite.parsers.*
 import bedalton.creatures.sprite.util.SpriteType
@@ -19,6 +12,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
+import com.bedalton.io.bytes.*
+import com.bedalton.log.*
 import com.intellij.openapi.vfs.VirtualFile
 import com.soywiz.korim.awt.toAwt
 import com.soywiz.korim.bitmap.Bitmap32
@@ -97,24 +93,26 @@ object SpriteParser {
                 } catch (e: Exception) {
                     Log.iIf(SPR_SHORT_DEBUG_LOGGING) { "Parsing SPR short: $fileName" }
                     try {
-                        stream.readAt(0) {
-                            SprSetDecompiler.decompileSets(
-                                stream,
-                                keepBlack = false,
-                                null,
-                                null,
-                            )!!
-                        }
+                        SprSetDecompiler.decompileSets(
+                            stream,
+                            keepBlack = false,
+                            null,
+                            null,
+                        )!!
                     } catch (_: Exception) {
                         throw e
                     }
                 }
+
             S16 -> S16SpriteFile(stream, false, null, progressEvery, callback)
                 .toListOf()
+
             C16 -> C16SpriteFile(stream, false, null, progressEvery, callback)
                 .toListOf()
+
             BLK -> BlkSpriteFile(stream, BLK_ASYNC_DEFAULT, progressEvery, callback)
                 .toListOf()
+
             else -> throw SpriteParserException("Invalid image file extension found")
         }.let { spriteSets ->
             SpriteFileHolder(spriteSets, fileName, bodyPart ?: false)
@@ -124,7 +122,7 @@ object SpriteParser {
     @JvmStatic
     suspend fun imageCount(virtualFile: VirtualFile): Int? {
         return try {
-            val bytesBuffer = VirtualFileStreamReader(virtualFile)
+            val bytesBuffer = VirtualFileStreamReaderEx(virtualFile)
             if (virtualFile.extension?.lowercase() != "spr") {
                 bytesBuffer.skip(4)
             }
@@ -143,7 +141,10 @@ object SpriteParser {
         }
     }
 
-    private suspend fun getBodySpriteVariantSuspending(spriteFile: VirtualFile, defaultVariant: CaosVariant): CaosVariant {
+    private suspend fun getBodySpriteVariantSuspending(
+        spriteFile: VirtualFile,
+        defaultVariant: CaosVariant
+    ): CaosVariant {
         if (!BreedPartKey.isPartName(spriteFile.nameWithoutExtension)) {
             return defaultVariant
         }
@@ -222,7 +223,7 @@ class SpriteFileHolder(sprites: List<SpriteFile>, val fileName: String, private 
 
     val images: List<BufferedImage>
         get() = runBlocking {
-            mSpriteFile.first().frames().map(Bitmap32::toAwt)
+            bitmaps[0].map(Bitmap32::toAwt)
         }
 
     val imageSets: List<List<BufferedImage>>
@@ -234,7 +235,11 @@ class SpriteFileHolder(sprites: List<SpriteFile>, val fileName: String, private 
             }
         }
 
-    val size: Int = runBlocking { mSpriteFile.firstOrNull()?.size() ?: 0 }
+    val size: Int by lazy {
+        runBlocking {
+            mSpriteFile.firstOrNull()?.size() ?: 0
+        }
+    }
 
     fun getSize(spriteFileIndex: Int): Int? {
         return runBlocking { mSpriteFile.getOrNull(spriteFileIndex)?.size() }

@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
-import bedalton.creatures.common.bytes.CREATURES_CHARACTER_ENCODING
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileParser
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
@@ -8,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.parser.toFileText
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.runUndoTransparentWriteAction
+import com.bedalton.io.bytes.CREATURES_CHARACTER_ENCODING
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.runBlocking

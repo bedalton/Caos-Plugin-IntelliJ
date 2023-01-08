@@ -1,22 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import bedalton.creatures.common.bytes.MemoryByteStreamWriter
-import bedalton.creatures.common.bytes.writeNullByte
-import bedalton.creatures.common.bytes.writeSfcString
 import bedalton.creatures.common.util.FileNameUtil
 import bedalton.creatures.common.util.ensureEndsWith
 import bedalton.creatures.common.util.nullIfEmpty
 import bedalton.creatures.common.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
+import com.bedalton.io.bytes.ByteStreamWriter
+import com.bedalton.io.bytes.writeNullByte
+import com.bedalton.io.bytes.writeSfcString
 import com.soywiz.korim.bitmap.Bitmap32
 import kotlinx.serialization.Serializable
-import kotlin.ByteArray
-import kotlin.Int
-import kotlin.String
-import kotlin.getValue
-import kotlin.lazy
-import kotlin.let
 
 @Serializable
 data class Caos2CobC1(
@@ -62,34 +56,38 @@ data class Caos2CobC1(
     }
 
     override suspend fun compile(): ByteArray {
-        val buffer = MemoryByteStreamWriter()
-        buffer.writeUInt16(1) // Cob Version
-        buffer.writeUInt16(quantityAvailable ?: -1)
-        buffer.writeUInt32(expiresMonth)
-        buffer.writeUInt32(expiresDay)
-        buffer.writeUInt32(expiresYear)
-        buffer.writeUInt16(objectScripts.size)
-        buffer.writeUInt16(installScripts.size)
-        buffer.writeUInt32(quantityUsed ?: 0)
-        objectScripts.forEach { script ->
-            buffer.writeSfcString(script)
+        return ByteStreamWriter.writeBytes {
+            writeUInt16(1) // Cob Version
+            writeUInt16(quantityAvailable ?: -1)
+            writeUInt32(expiresMonth)
+            writeUInt32(expiresDay)
+            writeUInt32(expiresYear)
+            writeUInt16(objectScripts.size)
+            writeUInt16(installScripts.size)
+            writeUInt32(quantityUsed ?: 0)
+            objectScripts.forEach { script ->
+                writeSfcString(script)
+            }
+            installScripts.forEach { script ->
+                writeSfcString(script)
+            }
+            val image = thumbnail
+            if (image != null && (image.width > 1000 || image.height > 1000)) {
+                throw Exception("Cannot compile COB1. Thumbnail image is too large. Width: ${image.width}; Height: ${image.height}")
+            }
+            writeUInt32(image?.width ?: 0)
+            writeUInt32(image?.height ?: 0)
+            writeUInt16(image?.width ?: 0)
+            image?.flipY()?.let { thumbnail ->
+                bedalton.creatures.sprite.compilers.SprCompiler.writeCompiledImage(
+                    thumbnail.toBMP32IfRequired(),
+                    false,
+                    this
+                )
+            }
+            writeSfcString(agentName)
+            writeNullByte()
         }
-        installScripts.forEach { script ->
-            buffer.writeSfcString(script)
-        }
-        val image = thumbnail
-        if (image != null && (image.width > 1000 || image.height > 1000)) {
-            throw Exception("Cannot compile COB1. Thumbnail image is too large. Width: ${image.width}; Height: ${image.height}")
-        }
-        buffer.writeUInt32(image?.width ?: 0)
-        buffer.writeUInt32(image?.height ?: 0)
-        buffer.writeUInt16(image?.width ?: 0)
-        image?.flipY()?.let { thumbnail ->
-            bedalton.creatures.sprite.compilers.SprCompiler.writeCompiledImage(thumbnail.toBMP32IfRequired(), false, buffer)
-        }
-        buffer.writeSfcString(agentName)
-        buffer.writeNullByte()
-        return buffer.bytes
     }
 
     val removerCob: Caos2CobC1? by lazy {

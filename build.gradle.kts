@@ -22,7 +22,7 @@ plugins {
 
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2022.03.01"
+version = "2022.03.02"
 
 
 val ideaVersionStart: String by project
@@ -35,6 +35,8 @@ val creaturesSpriteUtilVersion: String by project
 val creaturesCommonCliVersion: String by project
 val creaturesCommonCoreVersion: String by project
 val localFilesVersion: String by project
+val byteUtilVersion: String by project
+val commonLogVersion: String by project
 
 repositories {
     mavenLocal()
@@ -83,6 +85,14 @@ dependencies {
         excludeKotlin()
     }
 
+    implementation("com.bedalton:ByteUtil:$byteUtilVersion") {
+        excludeKotlin()
+    }
+
+    implementation("com.bedalton:CommonLog:$commonLogVersion") {
+        excludeKotlin()
+    }
+
     testImplementation("junit:junit:4.13.2")
 
 
@@ -96,7 +106,7 @@ sourceSets.main {
 }
 
 java {
-    val javaSdkString = "VERSION_" + javaVersion.replace('.', '_')
+    val javaSdkString = "VERSION_" + (if (javaVersion == "9") "1_" else "") + javaVersion.replace('.', '_')
     val javaSdkVersion = JavaVersion.valueOf(javaSdkString)
     sourceCompatibility = javaSdkVersion
     targetCompatibility = javaSdkVersion

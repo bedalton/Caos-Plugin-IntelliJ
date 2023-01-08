@@ -18,6 +18,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.ProjectTopics
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -32,6 +33,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
@@ -59,7 +61,7 @@ import javax.swing.*
  * Though not its original purpose, the notification provider functions as a persistent toolbar
  */
 class CaosScriptEditorToolbar(val project: Project)
-    : EditorNotifications.Provider<EditorNotificationPanel>(), DumbAware {
+    : EditorNotifications.Provider<EditorNotificationPanel>(), DumbAware, Disposable {
 
     override fun getKey(): Key<EditorNotificationPanel> = KEY
 
@@ -108,6 +110,9 @@ class CaosScriptEditorToolbar(val project: Project)
     companion object {
         private val KEY: Key<EditorNotificationPanel> = Key.create("creatures.caos.CaosEditorToolbar")
 
+    }
+
+    override fun dispose() {
     }
 }
 

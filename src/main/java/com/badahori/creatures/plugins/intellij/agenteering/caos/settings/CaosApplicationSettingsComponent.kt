@@ -5,6 +5,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInjectorInterface
 import com.badahori.creatures.plugins.intellij.agenteering.utils.GameInterfaceListConverter
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -23,7 +24,7 @@ import com.intellij.openapi.components.Storage
     storages = [Storage(value = "CAOS.xml")]
 )
 class CaosApplicationSettingsComponent : CaosApplicationSettingsService,
-    PersistentStateComponent<CaosApplicationSettingsComponent.State> {
+    PersistentStateComponent<CaosApplicationSettingsComponent.State>, Disposable {
 
     private var state: State = State()
 
@@ -174,6 +175,10 @@ class CaosApplicationSettingsComponent : CaosApplicationSettingsService,
 
             }
         }
+
+    }
+
+    override fun dispose() {
     }
 }
 

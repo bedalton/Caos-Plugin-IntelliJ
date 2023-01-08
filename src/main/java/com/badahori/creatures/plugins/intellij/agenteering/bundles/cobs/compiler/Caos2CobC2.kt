@@ -1,9 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import bedalton.creatures.common.bytes.ByteStreamWriter
-import bedalton.creatures.common.bytes.CREATURES_CHARACTER_ENCODING
-import bedalton.creatures.common.bytes.MemoryByteStreamWriter
-import bedalton.creatures.common.bytes.writeNullTerminatedString
+import com.bedalton.io.bytes.*
 import bedalton.creatures.common.util.FileNameUtil
 import bedalton.creatures.sprite.compilers.S16Compiler
 import bedalton.creatures.sprite.util.ColorEncoding
@@ -86,59 +83,59 @@ data class Caos2CobC2(
 
     override suspend fun compile(): ByteArray {
         // Initialize Output
-        val outputStream = MemoryByteStreamWriter()
-        outputStream.write(COB2_HEADER)
-
-        // Write Blocks
-        writeAgent(outputStream)
-        writeAuthor(outputStream)
-        writeFiles(outputStream)
-
-        return outputStream.bytes
+        return ByteStreamWriter.writeBytes {
+            write(COB2_HEADER)
+            // Write Blocks
+            writeAgent(this)
+            writeAuthor(this)
+            writeFiles(this)
+        }
     }
 
-    private suspend fun writeAgent(outputStream: ByteStreamWriter) {
-        val buffer = MemoryByteStreamWriter()
-        buffer.writeUInt16(quantityAvailable ?: -1)
-        buffer.writeUInt32(0)
-        buffer.writeUInt32(reuseInterval ?: 0)
-        buffer.writeUInt8(expiresDay ?: 0)
-        buffer.writeUInt8(expiresMonth ?: 0)
-        buffer.writeUInt16(expiresYear ?: 0)
-        buffer.writeUInt32(0) // Reserved 1
-        buffer.writeUInt32(0) // Reserved 2
-        buffer.writeUInt32(0) // Reserved 3
-        buffer.writeNullTerminatedString(agentName)
-        buffer.writeNullTerminatedString(description ?: "")
-        buffer.writeNullTerminatedString(installScript ?: "")
-        buffer.writeNullTerminatedString(removalScript ?: "")
-        buffer.writeUInt16(objectScripts.size)
-        objectScripts.forEach { script -> buffer.writeNullTerminatedString(script) }
-        buffer.writeUInt16(dependencies.size)
-        dependencies.forEach { fileName ->
-            val tag = when (FileNameUtil.getExtension(fileName)?.lowercase()) {
-                "s16" -> 0
-                "wav" -> 1
-                else -> throw Caos2CobException("Invalid dependency declared. Valid filetypes are S16 and WAV")
+    private suspend fun writeAgent(outputStream: ByteStreamWriterEx) {
+        val chunk = ByteStreamWriter.writeBytes {
+            val buffer = this
+            buffer.writeUInt16(quantityAvailable ?: -1)
+            buffer.writeUInt32(0)
+            buffer.writeUInt32(reuseInterval ?: 0)
+            buffer.writeUInt8(expiresDay ?: 0)
+            buffer.writeUInt8(expiresMonth ?: 0)
+            buffer.writeUInt16(expiresYear ?: 0)
+            buffer.writeUInt32(0) // Reserved 1
+            buffer.writeUInt32(0) // Reserved 2
+            buffer.writeUInt32(0) // Reserved 3
+            buffer.writeNullTerminatedString(agentName)
+            buffer.writeNullTerminatedString(description ?: "")
+            buffer.writeNullTerminatedString(installScript ?: "")
+            buffer.writeNullTerminatedString(removalScript ?: "")
+            buffer.writeUInt16(objectScripts.size)
+            objectScripts.forEach { script -> buffer.writeNullTerminatedString(script) }
+            buffer.writeUInt16(dependencies.size)
+            dependencies.forEach { fileName ->
+                val tag = when (FileNameUtil.getExtension(fileName)?.lowercase()) {
+                    "s16" -> 0
+                    "wav" -> 1
+                    else -> throw Caos2CobException("Invalid dependency declared. Valid filetypes are S16 and WAV")
+                }
+                buffer.writeUInt16(tag)
+                buffer.writeNullTerminatedString(fileName)
             }
-            buffer.writeUInt16(tag)
-            buffer.writeNullTerminatedString(fileName)
-        }
 
-        val thumbnail = thumbnail
+            val thumbnail = thumbnail
 
-        buffer.writeUInt16(thumbnail?.width ?: 0)
-        buffer.writeUInt16(thumbnail?.height ?: 0)
-        if (thumbnail != null) {
-            S16Compiler.writeCompiledImage(thumbnail, buffer, false, ColorEncoding.X_565)
+            buffer.writeUInt16(thumbnail?.width ?: 0)
+            buffer.writeUInt16(thumbnail?.height ?: 0)
+            if (thumbnail != null) {
+                S16Compiler.writeCompiledImage(thumbnail, buffer, false, ColorEncoding.X_565)
+            }
         }
 
         // Actually write chunk
-        writeChunk(outputStream, AGNT_HEADER, buffer.bytes)
+        writeChunk(outputStream, AGNT_HEADER, chunk)
 
     }
 
-    private suspend fun writeAuthor(outputStream: MemoryByteStreamWriter) {
+    private suspend fun writeAuthor(outputStream: ByteStreamWriterEx) {
         if (!hasAuthProperties)
             return
         val buffer = ByteArrayOutputStream()
@@ -160,34 +157,30 @@ data class Caos2CobC2(
         writeChunk(outputStream, AUTH_HEADER, buffer.toByteArray())
     }
 
-    private suspend fun writeFiles(outputStream: ByteStreamWriter) {
+    private suspend fun writeFiles(outputStream: ByteStreamWriterEx) {
         if (filesToInline.isEmpty())
             return
-        var buffer: MemoryByteStreamWriter
         for (file in filesToInline) {
-            buffer = MemoryByteStreamWriter()
-            val tag = when (file.extension?.lowercase()) {
-                "s16" -> 0
-                "wav" -> 1
-                else -> throw Caos2CobException("Invalid dependency declared. Valid filetypes are S16 and WAV")
+            val bytes = ByteStreamWriter.writeBytes {
+                val buffer = this
+                val tag = when (file.extension?.lowercase()) {
+                    "s16" -> 0
+                    "wav" -> 1
+                    else -> throw Caos2CobException("Invalid dependency declared. Valid filetypes are S16 and WAV")
+                }
+                buffer.writeUInt16(tag)
+                buffer.writeUInt32(0)
+                val fileBytes = file.contentsToByteArray()
+                buffer.writeUInt32(fileBytes.size)
+                buffer.writeNullTerminatedString(file.name)
+                buffer.write(fileBytes)
             }
-            buffer.writeUInt16(tag)
-            buffer.writeUInt32(0)
-            val fileBytes = file.contentsToByteArray()
-            buffer.writeUInt32(fileBytes.size)
-            buffer.writeNullTerminatedString(file.name)
-            buffer.write(fileBytes)
             // Actually write chunk
-            writeChunk(outputStream, FILE_HEADER, buffer)
+            writeChunk(outputStream, FILE_HEADER, bytes)
         }
     }
-    private suspend fun writeChunk(outputStream: ByteStreamWriter, blockType: ByteArray, data: ByteStreamWriter) {
-        outputStream.write(blockType)
-        outputStream.writeUInt32(data.size)
-        outputStream.write(data.bytes)
-    }
 
-    private suspend fun writeChunk(outputStream: ByteStreamWriter, blockType: ByteArray, data: ByteArray) {
+    private suspend fun writeChunk(outputStream: ByteStreamWriterEx, blockType: ByteArray, data: ByteArray) {
         outputStream.write(blockType)
         outputStream.writeUInt32(data.size)
         outputStream.write(data)

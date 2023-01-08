@@ -1,11 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import bedalton.creatures.common.util.Log
 import bedalton.creatures.common.util.className
-import org.apache.commons.io.IOUtils
+import com.bedalton.log.Log
 import java.io.File
 import java.io.IOException
-import java.nio.file.Files
 
 
 private var wasSuccessful: Boolean? = null

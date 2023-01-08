@@ -4,6 +4,8 @@ import bedalton.creatures.common.util.pathSeparator
 import bedalton.creatures.common.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport.getPartName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C2
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -20,6 +22,9 @@ import javax.swing.DefaultListCellRenderer
 import javax.swing.JList
 
 object PoseEditorSupport {
+
+    internal const val DEFAULT_POSE_STRING = "212222222111112"
+    internal const val DEFAULT_POSE_STRING_VERSION = 2
 
     @Suppress("SpellCheckingInspection")
     @JvmStatic
@@ -74,7 +79,7 @@ object PoseEditorSupport {
     @JvmStatic
     fun getMoodOptions(variant: CaosVariant): Array<String> {
         return when (variant) {
-            CaosVariant.C1 -> moodsC1
+            C1 -> moodsC1
             CaosVariant.CV -> moodsCV
             else -> moods
         }
@@ -110,7 +115,8 @@ interface BreedPoseHolder {
     fun setFiles(files: List<BodyPartFiles>)
     fun setRendered(image: BufferedImage?)
     fun getPartPose(partChar: Char): Int?
-    fun updatePoseAndGet(progressIndicator: ProgressIndicator?, vararg parts: Char): Pose
+    fun getPose(progressIndicator: ProgressIndicator?, vararg parts: Char): Pose
+    fun updatePose(vararg parts: Char)
     fun getVisibilityMask(): Map<Char, PoseRenderer.PartVisibility>?
     fun getPartPose(part: Char, facingDirection: Int, offset: Int): Int?
     fun getHeadPoseActual(): Int
@@ -153,9 +159,12 @@ private class BreedFileCellRenderer : DefaultListCellRenderer() {
         }
 
         val parentPaths = items.map map@{ tripleIn ->
-            val triple = (tripleIn as? Triple<*,*,*>)
+            val triple = (tripleIn as? Triple<*, *, *>)
                 ?: return@map null
-            Pair((triple.second as BreedPartKey).copyWithPart(null), ((triple.third as? List<*>)?.firstOrNull() as? BodyPartFiles)?.spriteFile?.parent)
+            Pair(
+                (triple.second as BreedPartKey).copyWithPart(null),
+                ((triple.third as? List<*>)?.firstOrNull() as? BodyPartFiles)?.spriteFile?.parent
+            )
         }
 
         val triple = value as Triple<*, *, *>
@@ -176,7 +185,7 @@ private class BreedFileCellRenderer : DefaultListCellRenderer() {
             parentPaths
                 .filterNotNull()
                 .filter { other ->
-                    BreedPartKey.isGenericMatch(other.first,breed) && other.second != self.second
+                    BreedPartKey.isGenericMatch(other.first, breed) && other.second != self.second
                 }
                 .nullIfEmpty()
                 ?.mapNotNull { other ->
@@ -189,12 +198,13 @@ private class BreedFileCellRenderer : DefaultListCellRenderer() {
             null
         } ?: ""
 
-        text = (breed.copyWithPart(null).code ?: "${breed.genus.orElse("?")}${breed.ageGroup.orElse("?")}${breed.breed.orElse("?")}") + relativePath
+        text = (breed.copyWithPart(null).code
+            ?: "${breed.genus.orElse("?")}${breed.ageGroup.orElse("?")}${breed.breed.orElse("?")}") + relativePath
         return this
     }
 
 
-    private fun getRelativePath(list:List<VirtualFile>, parent: VirtualFile): String {
+    private fun getRelativePath(list: List<VirtualFile>, parent: VirtualFile): String {
         val myComponents = parent.path.split(pathSeparatorChar).reversed()
         var matches = list.map { it.path.split(pathSeparatorChar).reversed() }
         for (i in myComponents.indices) {
@@ -228,11 +238,13 @@ private class PartFileCellRenderer(val strict: Boolean = false) : DefaultListCel
                 disable = strict && value.spriteFile.nameWithoutExtension != value.bodyDataFile.nameWithoutExtension
                 value.spriteFile.nameWithoutExtension
             }
+
             null -> {
                 text = "..related part"
                 foreground = TRANSLUCENT
                 return this
             }
+
             else -> {
                 foreground = TRANSLUCENT
                 isVisible = false
@@ -337,6 +349,25 @@ data class Pose(
         }
     }
 
+    fun getTranslatedForComboBox(variant: CaosVariant, part: Char, default: Int): Int {
+        if (part == 'a') {
+            throw Exception("Cannot get translated combo-box head pose with simple getter")
+        }
+        if (part == 'b') {
+            throw Exception("Cannot get translated combo-box body pose with simple getter")
+        }
+        val pose = this[part]
+            ?: default
+        return if (variant.isOld) {
+            if (pose > 8) {
+                return default
+            }
+            pose % 4
+        } else {
+            pose % 16
+        }
+    }
+
     operator fun set(part: Char, value: Int?) {
         when (part) {
             'a' -> head = value!!
@@ -358,6 +389,45 @@ data class Pose(
         }
     }
 
+    fun getHeadFacing(variant: CaosVariant): Int {
+        return if (variant == C1) {
+            val pose = head % 13
+            when {
+                pose < 4 -> 2
+                pose <= 8 -> 3
+                pose == 9 -> 0
+                else -> 0
+            }
+        } else if (variant == C2) {
+            getFacing(variant, head % 10)
+        } else {
+            getFacing(variant, head % 16)
+        }
+    }
+    fun getBodyFacing(variant: CaosVariant): Int {
+        return if (variant.isOld) {
+            getFacing(variant, body)
+        } else {
+            return getFacing(variant, body % 16)
+        }
+    }
+
+    private fun getFacing(variant: CaosVariant, pose: Int): Int {
+        return when {
+            pose < 4 -> 2
+            pose < 8 -> 3
+            variant.isOld -> {
+                when (pose) {
+                    8 -> 1
+                    9 -> 0
+                    else -> throw IndexOutOfBoundsException("Head pose $head is out of bounds for variant ${variant.code}")
+                }
+            }
+            pose < 12 -> 1
+            else -> 0
+        }
+    }
+
 
     // Example pose: 241000330022333
     fun poseString(variant: CaosVariant, facing: Int): String? {
@@ -375,9 +445,54 @@ data class Pose(
         out.append(direction)
         if (variant.isOld) {
             getPoseStringC1e(this, out)
-        } else
+        } else {
             getPoseStringC2e(this, out)
+        }
         return out.toString()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Pose
+
+        if (head != other.head) return false
+        if (body != other.body) return false
+        if (leftThigh != other.leftThigh) return false
+        if (leftShin != other.leftShin) return false
+        if (leftFoot != other.leftFoot) return false
+        if (rightThigh != other.rightThigh) return false
+        if (rightShin != other.rightShin) return false
+        if (rightFoot != other.rightFoot) return false
+        if (leftUpperArm != other.leftUpperArm) return false
+        if (leftForearm != other.leftForearm) return false
+        if (rightUpperArm != other.rightUpperArm) return false
+        if (rightForearm != other.rightForearm) return false
+        if (tailBase != other.tailBase) return false
+        if (tailTip != other.tailTip) return false
+        if (ears != other.ears) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = head
+        result = 31 * result + body
+        result = 31 * result + leftThigh
+        result = 31 * result + leftShin
+        result = 31 * result + leftFoot
+        result = 31 * result + rightThigh
+        result = 31 * result + rightShin
+        result = 31 * result + rightFoot
+        result = 31 * result + leftUpperArm
+        result = 31 * result + leftForearm
+        result = 31 * result + rightUpperArm
+        result = 31 * result + rightForearm
+        result = 31 * result + tailBase
+        result = 31 * result + tailTip
+        result = 31 * result + ears
+        return result
     }
 
 
@@ -460,6 +575,7 @@ data class Pose(
                 } else {
                     null
                 }
+
                 '5' -> if (part == 'a') {
                     if (variant.isOld)
                         9
@@ -470,6 +586,7 @@ data class Pose(
                 } else {
                     null
                 }
+
                 else -> {
                     null
                 }
