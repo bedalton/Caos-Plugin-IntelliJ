@@ -5,7 +5,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 import bedalton.creatures.sprite.parsers.PhotoAlbum
 import bedalton.creatures.sprite.parsers.SPR_SHORT_DEBUG_LOGGING
 import bedalton.creatures.sprite.parsers.image
-import bedalton.creatures.common.util.Log
+import com.bedalton.log.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ensureMacOsCopyLib
 import com.badahori.creatures.plugins.intellij.agenteering.utils.md5
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
@@ -13,6 +13,7 @@ import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
 import com.intellij.openapi.fileEditor.FileEditorState
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderBase
@@ -28,7 +29,7 @@ import javax.swing.JLabel
 /**
  * Sprite viewer (eventually will be editor) for various Creatures file types
  */
-internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserDataHolderBase(), FileEditor {
+internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserDataHolderBase(), FileEditor, DumbAware {
     private var myFile: VirtualFile = file
     private var myProject: Project? = project
     private lateinit var editor:SprFileEditor

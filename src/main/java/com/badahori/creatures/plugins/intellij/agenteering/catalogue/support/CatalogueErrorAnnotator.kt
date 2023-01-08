@@ -82,7 +82,6 @@ class CatalogueErrorAnnotator : Annotator, DumbAware {
     private fun annotateErrorElement(element: CatalogueErrorItem, holder: AnnotationHolder) {
         val text = element.text
         if (text.startsWith('"') || text.startsWith('\'')) {
-            LOGGER.info("ErrorText: <$text>")
             annotateErrorString(element, holder)
             return
         }

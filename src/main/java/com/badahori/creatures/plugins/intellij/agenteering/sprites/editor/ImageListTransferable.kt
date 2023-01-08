@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
-import bedalton.creatures.common.util.Log
+import com.bedalton.log.*
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException

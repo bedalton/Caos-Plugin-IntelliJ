@@ -9,7 +9,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.common.saveImageWithD
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.editor.SpriteEditorImpl.Companion.cache
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
+import com.bedalton.io.bytes.ByteStreamReaderBase
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.notification.Notification
 import com.intellij.openapi.actionSystem.AnAction
@@ -211,7 +212,7 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
 
     private suspend fun stitchActual() {
         try {
-            val reader = VirtualFileStreamReader(file)
+            val reader = ByteStreamReaderBase(VirtualFileStreamReaderEx(file))
             var percent = 0
             val stitched = BlkParser.parse(
                 reader,

@@ -1,11 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor;
-
-import bedalton.creatures.common.bytes.ByteStreamReader;
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader;
+import com.bedalton.io.bytes.*;
 import bedalton.creatures.sprite.parsers.PhotoAlbum;
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFileHolder;
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader;
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.io.FileUtil;
@@ -94,7 +95,8 @@ public class SprFileEditor {
 
     @Nullable
     private List<List<BufferedImage>> readFileAsPhotoAlbum() {
-        final ByteStreamReader stream = new VirtualFileStreamReader(file);
+
+        final ByteStreamReader stream = new VirtualFileStreamReader(file, null, null);
         final PhotoAlbum album = SpriteEditorViewParser.parse(file, stream, () -> loadingLabel, () -> {
             initPlaceholder();
             return loadingLabel;
@@ -137,7 +139,26 @@ public class SprFileEditor {
      * Executed on background thread
      */
     private void loadSprite() {
+
         ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            if (DumbService.isDumb(project)) {
+                if (loadingLabel == null) {
+                    initPlaceholder();
+                }
+                loadingLabel.setText("Wait while indices are built");
+                DumbService.getInstance(project).runWhenSmart(() -> {
+                    try {
+                        loadSprite();
+                    } catch (Exception e) {
+                        try {
+                            loadSprite();
+                        } catch (Exception e2) {
+                            showException(e);
+                        }
+                    }
+                });
+                return;
+            }
             if (!file.isValid()) {
                 return;
             }

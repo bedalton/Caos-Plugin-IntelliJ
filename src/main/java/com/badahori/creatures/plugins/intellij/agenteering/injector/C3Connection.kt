@@ -2,8 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import bedalton.creatures.common.util.Log
-import bedalton.creatures.common.util.iIf
+import com.bedalton.log.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle.message
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant

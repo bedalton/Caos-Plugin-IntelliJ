@@ -93,6 +93,7 @@
                 </constraints>
                 <properties>
                   <minimumSize width="84" height="25"/>
+                  <model/>
                   <nextFocusableComponent value="418a5"/>
                   <preferredSize width="76" height="25"/>
                   <toolTipText value="Left forearm and hand pose"/>

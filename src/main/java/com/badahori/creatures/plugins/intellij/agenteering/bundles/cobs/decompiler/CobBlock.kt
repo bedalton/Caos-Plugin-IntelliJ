@@ -2,12 +2,12 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
-import bedalton.creatures.common.bytes.MemoryByteStreamReader
 import bedalton.creatures.sprite.parsers.S16SpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFileHolder
+import com.bedalton.io.bytes.MemoryByteStreamReader
 import java.awt.image.BufferedImage
 import java.util.*
 

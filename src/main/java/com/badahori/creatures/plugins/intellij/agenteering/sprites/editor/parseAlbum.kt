@@ -1,10 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
-import bedalton.creatures.common.bytes.ByteStreamReader
+import com.bedalton.io.bytes.*
 import bedalton.creatures.sprite.parsers.PhotoAlbum
 import bedalton.creatures.sprite.parsers.SpriteParser.parsePhotoAlbum
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFileHolder
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.parse
+import com.bedalton.log.Log
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.runBlocking
@@ -16,7 +17,7 @@ object SpriteEditorViewParser {
     fun parse(file: VirtualFile, stream: ByteStreamReader, loadingLabel: () -> JLabel?, initPlaceholder: () -> JLabel): PhotoAlbum? {
         return runBlocking {
             parsePhotoAlbum(file.nameWithoutExtension, stream, 1) { i, total ->
-                val progress = Math.ceil(i * 100.0 / total)
+                val progress = ceil(i * 100.0 / total)
                 ApplicationManager.getApplication().invokeLater {
                     if (file.isValid) {
                         loadingLabel()?.text = "Loading sprite... " + progress.toInt() + "%"
@@ -31,6 +32,9 @@ object SpriteEditorViewParser {
 
     @JvmStatic
     fun parseSprite(file: VirtualFile, loadingLabel: () -> JLabel): SpriteFileHolder {
+        if (!file.isValid) {
+            throw Exception("Cannot parse sprite file with invalid virtual file")
+        }
         return runBlocking {
             parse(file) { i, total ->
                 val progress = ceil(i * 100.0 / total)

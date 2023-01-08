@@ -119,14 +119,16 @@ object CaosBundleSourcesRegistrationUtil {
 
 
     private fun cleanAndReturnLibrary(modifiableModel: ModifiableModel, libraryPath: String): Library? {
-        val oldLibrary = modifiableModel.getLibraryByName(LIBRARY_NAME) ?: return null
-        oldLibrary.modifiableModel.removeRoot(BUNDLE_DEFINITIONS_FOLDER, OrderRootType.SOURCES)
-        oldLibrary.modifiableModel.removeRoot(libraryPath, OrderRootType.SOURCES)
-        oldLibrary.modifiableModel.getUrls(OrderRootType.SOURCES).forEach { url ->
-            oldLibrary.modifiableModel.removeRoot(url, OrderRootType.SOURCES)
-            oldLibrary.modifiableModel.removeRoot(url.split('!').first(), OrderRootType.SOURCES)
+        val oldLibrary = modifiableModel.getLibraryByName(LIBRARY_NAME)
+            ?: return null
+        val oldModifiableModel = oldLibrary.modifiableModel
+        oldModifiableModel.removeRoot(BUNDLE_DEFINITIONS_FOLDER, OrderRootType.SOURCES)
+        oldModifiableModel.removeRoot(libraryPath, OrderRootType.SOURCES)
+        oldModifiableModel.getUrls(OrderRootType.SOURCES).forEach { url ->
+            oldModifiableModel.removeRoot(url, OrderRootType.SOURCES)
+            oldModifiableModel.removeRoot(url.split('!').first(), OrderRootType.SOURCES)
         }
-        oldLibrary.modifiableModel.commit()
+        oldModifiableModel.commit()
         return oldLibrary
     }
 

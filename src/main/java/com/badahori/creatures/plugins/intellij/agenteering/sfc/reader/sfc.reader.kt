@@ -1,16 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import bedalton.creatures.common.bytes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C2
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SFC_DECOMPILED_DATA_KEY
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcDecompiledFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcObjectPtr
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcSceneryPtr
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
+import com.bedalton.io.bytes.*
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.File
 import java.io.IOException
@@ -19,7 +19,7 @@ import java.io.IOException
 /**
  * A reader class for SFC Files.
  */
-internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val sfcFilePath: String? = null) {
+internal class SfcReader(internal val byteBuffer: ByteStreamReaderEx, private val sfcFilePath: String? = null) {
     lateinit var variant: CaosVariant
     // Ptr objects are required as objects are accessed by child creation calls
     // while still being constructed by decompiler.
@@ -250,7 +250,7 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
         }
 
         private suspend fun readRaw(virtualFile: VirtualFile): SfcFileDataHolder {
-            val byteBuffer = MemoryByteStreamReader(virtualFile.contentsToByteArray())
+            val byteBuffer = VirtualFileStreamReaderEx(virtualFile)
             val dumper = SfcReader(byteBuffer, virtualFile.path)
             val data = dumper.readFile()
             return SfcFileDataHolder(data)

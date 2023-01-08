@@ -9,7 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
@@ -41,7 +41,7 @@ internal class PrayFileTreeNode(
      * PRAY blocks in file
      */
     private val blocks: List<PrayBlock> by lazy {
-        val stream = VirtualFileStreamReader(file)
+        val stream = VirtualFileStreamReaderEx(file)
         runBlocking {
             try {
                 parsePrayAgentBlocks(stream, "*", true)

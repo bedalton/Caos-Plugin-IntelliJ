@@ -11,8 +11,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedIfNotCached
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey.Companion.fromFileName
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
@@ -29,6 +27,7 @@ import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
+import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileEvent
@@ -47,6 +46,7 @@ import kotlin.math.abs
 
 internal class AttEditorModel(
     project: Project,
+    disposable: Disposable,
     val attFile: VirtualFile,
     val spriteFile: VirtualFile,
     variant: CaosVariant,
@@ -137,8 +137,16 @@ internal class AttEditorModel(
     private var mFoldedLines: List<Int>? = null
 
     init {
+        if (!project.isDisposed) {
+            // Register disposer to prevent memory leaks
+            Disposer.register(disposable, this)
+        }
+
+        // Add document listeners
         val psiFile = attFile.getPsiFile(project)
         initDocumentListeners(project, psiFile)
+
+        // Add application level settings listener
         CaosApplicationSettingsComponent.addSettingsChangedListener(this) { _, it ->
             replicateAttsToDuplicateSprites = it.replicateAttToDuplicateSprite
             mFoldedLines = null
@@ -146,6 +154,8 @@ internal class AttEditorModel(
                 attChangeListener?.onAttUpdate()
             }
         }
+
+        // Run first update to get everything going
         update(variant, part)
     }
 

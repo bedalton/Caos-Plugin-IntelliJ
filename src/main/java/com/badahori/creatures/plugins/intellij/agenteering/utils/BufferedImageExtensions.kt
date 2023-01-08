@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import bedalton.creatures.common.bytes.toBase64
+import com.bedalton.io.bytes.toBase64
 import org.apache.commons.imaging.palette.Dithering
 import org.apache.commons.imaging.palette.Palette
 import java.awt.*
@@ -11,7 +11,6 @@ import java.awt.image.ImageObserver
 import java.awt.image.RenderedImage
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
-import javax.xml.bind.DatatypeConverter
 
 fun BufferedImage.copy(): BufferedImage {
     val b = BufferedImage(width, height, type);

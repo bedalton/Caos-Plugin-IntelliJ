@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
-import bedalton.creatures.common.bytes.MemoryByteStreamReader
+import com.bedalton.io.bytes.*
 import bedalton.creatures.sprite.parsers.SprSpriteFile
 import bedalton.creatures.sprite.parsers.readSprFrame
 import bedalton.creatures.sprite.util.ColorPalette

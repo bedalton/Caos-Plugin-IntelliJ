@@ -16,6 +16,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem.Companion.instance
+import com.bedalton.log.LOG_DEBUG
+import com.bedalton.log.Log
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.progress.ProcessCanceledException
@@ -23,10 +25,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
 
@@ -158,13 +157,19 @@ class PoseEditorModel(
             val indicator = EmptyProgressIndicator()
             progressIndicator = indicator
             try {
+                indicator.start()
                 requestRenderAsync(indicator, renderId.incrementAndGet(), *parts, breedChanged = breedChanged)
             } catch (_: ProcessCanceledException) {
             }
         }
     }
 
-    private fun requestRenderAsync(progressIndicator: ProgressIndicator, id: Int, vararg parts: Char, breedChanged: Boolean): Boolean {
+    private fun requestRenderAsync(
+        progressIndicator: ProgressIndicator,
+        id: Int,
+        vararg parts: Char,
+        breedChanged: Boolean
+    ): Boolean {
 
         if (project.isDisposed) {
             return false
@@ -177,6 +182,7 @@ class PoseEditorModel(
             DumbService.getInstance(project).runWhenSmart {
                 progressIndicator.checkCanceled()
                 if (id < renderId.get()) {
+                    progressIndicator.cancel()
                     return@runWhenSmart
                 }
                 requestRender(*parts, breedChanged = breedChanged)
@@ -192,6 +198,7 @@ class PoseEditorModel(
 
         val updatedSprites = try {
             if (id < renderId.get()) {
+                progressIndicator.cancel()
                 null
             } else {
                 val newParts: CharArray = if (breedChanged) parts else charArrayOf()
@@ -199,9 +206,12 @@ class PoseEditorModel(
                     ?: getUpdatedSpriteSet(progressIndicator, *newParts)
             }
         } catch (e: java.lang.Exception) {
-            progressIndicator.checkCanceled()
+            if (e is ProcessCanceledException) {
+                throw e
+            }
+            progressIndicator.cancel()
             mRendering = null
-            LOGGER.severe("Failed to located required sprites Error:(" + e.javaClass.simpleName + ") " + e.localizedMessage)
+            LOGGER.severe("Failed to locate required sprites Error:(" + e.javaClass.simpleName + ") " + e.localizedMessage)
             e.printStackTrace()
             poseEditor.setRendered(null)
             return false
@@ -210,7 +220,7 @@ class PoseEditorModel(
             if (updating.get() == 0 && id == renderId.get()) {
                 LOGGER.severe("Failed to update sprite sets without reason")
             }
-            progressIndicator.checkCanceled()
+            progressIndicator.cancel()
             mRendering = null
             return false
         }
@@ -218,11 +228,13 @@ class PoseEditorModel(
         val updatedPose: Pose = invokeAndWaitIfNeeded {
             try {
                 if (id < renderId.get()) {
+                    progressIndicator.cancel()
                     null
                 } else {
-                    poseEditor.updatePoseAndGet(progressIndicator, *parts)
+                    poseEditor.getPose(progressIndicator)
                 }
             } catch (e: ProcessCanceledException) {
+                progressIndicator.cancel()
                 null
             }
         } ?: return false
@@ -235,17 +247,19 @@ class PoseEditorModel(
 
         return try {
             if (id < renderId.get()) {
+                progressIndicator.cancel()
                 false
             } else {
                 val image = render(variant, updatedSprites, updatedPose, visibilityMask, poseEditor.zoom)
-                progressIndicator.checkCanceled()
+//                progressIndicator.checkCanceled()
                 invokeLater {
-                    progressIndicator.checkCanceled()
+//                    progressIndicator.checkCanceled()
                     poseEditor.setRendered(image)
                 }
                 true
             }
         } catch (e: ProcessCanceledException) {
+            e.printStackTrace()
             return false
         } catch (e: java.lang.Exception) {
             LOGGER.severe("Failed to render pose. Error:(" + e.javaClass.simpleName + ") " + e.localizedMessage)
@@ -256,7 +270,7 @@ class PoseEditorModel(
             }
             false
         } finally {
-            progressIndicator.checkCanceled()
+            progressIndicator.cancel()
             if (id == renderId.get()) {
                 mRendering = null
             }
@@ -285,7 +299,11 @@ class PoseEditorModel(
         val (_, newPose) = fromString(variant, facing, currentPose, poseStringPadded)
 
         val errorChars = (0..14).filter { i ->
-            val invalidValue = poseStringPadded[i] !in (if (i < 3) { allValidPoseChars } else { validPartPoseChars })
+            val invalidValue = poseStringPadded[i] !in (if (i < 3) {
+                allValidPoseChars
+            } else {
+                validPartPoseChars
+            })
             if (i > 0) {
                 val part = ('a'.code + i).toChar()
                 val thisPose = newPose[part]
@@ -457,19 +475,20 @@ class PoseEditorModel(
         try {
             getUpdatedSpriteSet(progressIndicator, *allParts)
             requestRender(*allParts, breedChanged = false)
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
     fun getBodyPoseActual(bodyDirection: Int, tilt: Int): Int {
         return if (variant.isOld) {
             when (bodyDirection) {
-                0 -> 3 - tilt
-                1 -> 4 + (3 - tilt)
+                0 -> tilt
+                1 -> 4 + tilt
                 2 -> 8
                 else -> 9
             }
         } else {
-            bodyDirection * 4 + (3 - tilt)
+            bodyDirection * 4 + tilt
         }
     }
 
@@ -483,7 +502,8 @@ class PoseEditorModel(
         eyesClosed: Boolean,
     ): Int {
         val faceIsBack = headPoseString != null && headPoseString.lowercase().startsWith("back")
-        val pose = calculateHeadPose(variant,
+        val pose = calculateHeadPose(
+            variant,
             if (headPose == 2 && faceIsBack) 3 else facing,
             headPose,
             headDirection2,

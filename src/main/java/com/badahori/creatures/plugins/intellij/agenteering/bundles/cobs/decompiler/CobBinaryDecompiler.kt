@@ -2,8 +2,6 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
-import bedalton.creatures.common.bytes.MemoryByteStreamReader
-import bedalton.creatures.common.bytes.string
 import bedalton.creatures.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
@@ -11,6 +9,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptL
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.runInspections
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.bedalton.io.bytes.MemoryByteStreamReader
+import com.bedalton.io.bytes.internal.MemoryByteStreamReaderEx
+import com.bedalton.io.bytes.string
 import com.intellij.openapi.fileTypes.BinaryFileDecompiler
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -34,17 +35,19 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
         private val DATE_FORMAT = SimpleDateFormat("MM/dd/YYYY")
 
         internal suspend fun decompileToString(fileName: String, byteArray: ByteArray): String {
-            val byteBuffer = MemoryByteStreamReader(byteArray)
-            if (byteBuffer.string(4) == "****") {
-                return byteArray.contentToString()
+            return MemoryByteStreamReader(byteArray).readAtCurrentPositionReturning {
+                if (this.string(4) == "****") {
+                    return@readAtCurrentPositionReturning byteArray.contentToString()
+                }
+                val cobData =
+                    CobToDataObjectDecompiler.decompile(this, FileNameUtil.getFileNameWithoutExtension(fileName))
+                presentCobData(fileName, cobData)
             }
-            val cobData = CobToDataObjectDecompiler.decompile(byteBuffer, FileNameUtil.getFileNameWithoutExtension(fileName))
-            return presentCobData(fileName, cobData)
         }
 
         fun decompileToPsiFile(project: Project, fileName: String, byteArray: ByteArray): PsiFile {
             val cobData = runBlocking {
-                CobToDataObjectDecompiler.decompile(MemoryByteStreamReader(byteArray), FileNameUtil.getFileNameWithoutExtension(fileName))
+                CobToDataObjectDecompiler.decompile(MemoryByteStreamReaderEx(byteArray), FileNameUtil.getFileNameWithoutExtension(fileName))
             }
             val text = presentCobData(fileName, cobData)
             val psiFile = PsiFileFactory.getInstance(project)

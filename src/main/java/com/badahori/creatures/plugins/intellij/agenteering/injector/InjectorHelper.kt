@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import bedalton.creatures.common.bytes.toBase64
+import com.bedalton.io.bytes.toBase64
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
 import java.io.ByteArrayOutputStream

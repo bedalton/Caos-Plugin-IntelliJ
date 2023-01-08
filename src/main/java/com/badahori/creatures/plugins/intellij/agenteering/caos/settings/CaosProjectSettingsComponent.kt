@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport.DEFAULT_POSE_STRING_VERSION
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
@@ -25,6 +27,7 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
 
     override fun getState(): State {
         return this.state
+            .migrate()
     }
 
     override fun loadState(state: State) {
@@ -173,12 +176,15 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
         @Attribute(converter = StringListConverter::class)
         val ignoredFilenames: List<String> = listOf(),
         val lastGameInterfaceNames: List<String> = listOf(),
-        val defaultPoseString: String = "313122122111111",
+        val defaultPoseString: String = PoseEditorSupport.DEFAULT_POSE_STRING,
+        val defaultPoseStringVersion: Int? = null,
         val useJectByDefault: Boolean = false,
         val trimBLKs: Boolean? = null,
         @Attribute(converter = StringListConverter::class)
-        val ignoredCatalogueTags: List<String> = emptyList()
+        val ignoredCatalogueTags: List<String> = emptyList(),
+        val stateVersion: Int? = null
     ) {
+
 
         @Transient
         private var mInjectionCheckDisabled: Boolean = false
@@ -193,6 +199,28 @@ class CaosProjectSettingsComponent : CaosProjectSettingsService,
          * Checks if this settings object is set to the given CAOS variant
          */
         fun isVariant(variant: CaosVariant): Boolean = variant == this.lastVariant
+
+        fun migrate(): State {
+            if (stateVersion == STATE_VERSION) {
+                return this
+            }
+            var out = this
+            if (defaultPoseStringVersion != DEFAULT_POSE_STRING_VERSION) {
+                out = out.copy(
+                    defaultPoseStringVersion = DEFAULT_POSE_STRING_VERSION,
+                    defaultPoseString = PoseEditorSupport.DEFAULT_POSE_STRING
+                )
+            }
+
+            return out.copy(
+                stateVersion = STATE_VERSION
+            )
+        }
+
+        companion object {
+            private const val DATA_VERSION = 1
+            private const val STATE_VERSION = DATA_VERSION + DEFAULT_POSE_STRING_VERSION
+        }
     }
 
     private fun onUpdate(oldState: State, newState: State) {

@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import bedalton.creatures.common.bytes.skip
-import bedalton.creatures.common.bytes.uInt8
+import com.bedalton.io.bytes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 

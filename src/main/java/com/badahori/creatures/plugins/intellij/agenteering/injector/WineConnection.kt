@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import bedalton.creatures.common.bytes.decodeToCreaturesEncoding
+import com.bedalton.io.bytes.decodeToCreaturesEncoding
 import bedalton.creatures.common.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.messageOrNoneText
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
@@ -12,6 +12,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CLIInjectFla
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.bedalton.log.Log
+import com.bedalton.log.eIf
+import com.bedalton.log.iIf
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.soywiz.korio.util.escape
