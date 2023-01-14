@@ -1,13 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.parser
 
-import bedalton.creatures.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
-import com.badahori.creatures.plugins.intellij.agenteering.utils.WHITESPACE
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
+import com.bedalton.common.util.FileNameUtil
 import com.intellij.openapi.vfs.VirtualFile
 
 object AttAutoFill {

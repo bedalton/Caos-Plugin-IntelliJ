@@ -2,10 +2,10 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
-import bedalton.creatures.common.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
+import com.bedalton.common.util.*
 import com.intellij.icons.AllIcons
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.fileEditor.FileEditorManager

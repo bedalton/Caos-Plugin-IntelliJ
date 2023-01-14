@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.catalogue.support
 
-import bedalton.creatures.common.util.stripSurroundingQuotes
+import com.bedalton.common.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newErrorAnnotation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.DeleteElementFix

@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 
-import bedalton.creatures.common.util.OS
+import com.bedalton.common.util.OS
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
@@ -11,7 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CreateInject
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInjectorInterface
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
-import bedalton.creatures.common.util.className
+import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.like
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfNotConcrete
 import com.intellij.icons.AllIcons

@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.general.actions
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import bedalton.creatures.common.util.className
+import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
 import com.badahori.creatures.plugins.intellij.agenteering.utils.virtualFile
 import com.intellij.codeInspection.LocalQuickFix

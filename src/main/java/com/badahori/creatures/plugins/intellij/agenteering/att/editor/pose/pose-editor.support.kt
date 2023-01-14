@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
-import bedalton.creatures.common.util.pathSeparator
-import bedalton.creatures.common.util.pathSeparatorChar
+import com.bedalton.common.util.pathSeparator
+import com.bedalton.common.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport.getPartName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1

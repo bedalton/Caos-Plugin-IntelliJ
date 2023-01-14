@@ -15,7 +15,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.psi.PsiElement
-import bedalton.creatures.common.util.stripSurroundingQuotes
+import com.bedalton.common.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newInfoAnnotation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.LinkFilesInsertHandler
 import com.intellij.openapi.project.DumbAware

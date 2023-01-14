@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import bedalton.creatures.common.util.FileNameUtil
+import com.bedalton.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.myModulePath
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse

@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
-import bedalton.creatures.common.util.FileNameUtil
-import bedalton.creatures.common.util.pathSeparatorChar
+import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil

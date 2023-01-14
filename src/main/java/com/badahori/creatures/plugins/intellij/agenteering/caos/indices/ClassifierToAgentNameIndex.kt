@@ -2,9 +2,9 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.indices
 
-import bedalton.creatures.common.util.className
-import bedalton.creatures.common.util.nullIfEmpty
-import bedalton.creatures.common.util.stripSurroundingQuotes
+import com.bedalton.common.util.className
+import com.bedalton.common.util.nullIfEmpty
+import com.bedalton.common.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.MyDataIndexer.Companion.DELIMITER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.lang.CatalogueFileType

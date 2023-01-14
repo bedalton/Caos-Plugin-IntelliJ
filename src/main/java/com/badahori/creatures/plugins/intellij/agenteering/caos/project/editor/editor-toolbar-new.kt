@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 
-import bedalton.creatures.common.structs.Pointer
-import bedalton.creatures.common.util.className
+import com.bedalton.common.structs.Pointer
+import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CompileCAOS2Action
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.AddGameInterfaceAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosInjectorAction

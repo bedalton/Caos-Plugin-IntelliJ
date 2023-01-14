@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 
-import bedalton.creatures.common.util.PathUtil
-import bedalton.creatures.common.util.className
+import com.bedalton.common.util.PathUtil
+import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.getScripts
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob

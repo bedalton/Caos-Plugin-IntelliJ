@@ -1,7 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import com.bedalton.io.bytes.*
-import bedalton.creatures.common.util.FileNameUtil
 import bedalton.creatures.sprite.compilers.S16Compiler
 import bedalton.creatures.sprite.util.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
@@ -9,6 +7,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeNullTerminatedString
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt16
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt8
+import com.bedalton.common.util.FileNameUtil
+import com.bedalton.io.bytes.ByteStreamWriter
+import com.bedalton.io.bytes.ByteStreamWriterEx
+import com.bedalton.io.bytes.CREATURES_CHARACTER_ENCODING
+import com.bedalton.io.bytes.writeNullTerminatedString
 import com.intellij.openapi.vfs.VirtualFile
 import com.soywiz.korim.bitmap.Bitmap32
 import java.io.ByteArrayOutputStream
