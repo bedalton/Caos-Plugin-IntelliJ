@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang
 
 import bedalton.creatures.agents.pray.compiler.PrayCompileOptions
 import bedalton.creatures.agents.pray.compiler.PrayCompileOptionsImpl
-import bedalton.creatures.common.util.stripSurroundingQuotes
+import com.bedalton.common.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayAgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayFileHeader
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayInlineFile

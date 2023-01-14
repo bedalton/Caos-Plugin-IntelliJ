@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
-import bedalton.creatures.common.util.className
+import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.bedalton.io.bytes.AbstractByteStreamReader
 import com.bedalton.io.bytes.ByteStreamReaderBase

@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.inspections
 
-import bedalton.creatures.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes.Caos2CobMoveFileToCommandFix
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.fixes.Caos2CobRemoveFileFix
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
@@ -13,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobComma
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobCommand.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.bedalton.common.util.FileNameUtil
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder

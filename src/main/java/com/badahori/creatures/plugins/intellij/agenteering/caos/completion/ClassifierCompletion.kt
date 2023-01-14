@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
-import bedalton.creatures.common.util.className
+import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant

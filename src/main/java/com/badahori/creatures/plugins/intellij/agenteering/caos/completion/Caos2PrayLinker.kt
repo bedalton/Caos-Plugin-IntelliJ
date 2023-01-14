@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
-import bedalton.creatures.common.structs.Pointer
-import bedalton.creatures.common.util.ensureEndsWith
+import com.bedalton.common.structs.Pointer
+import com.bedalton.common.util.ensureEndsWith
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileType
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayAgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayBlockElement

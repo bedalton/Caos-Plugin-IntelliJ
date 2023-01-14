@@ -5,8 +5,8 @@ import bedalton.creatures.agents.pray.compiler.PrayCompilerTask
 import bedalton.creatures.agents.pray.compiler.compilePrayAndWrite
 import bedalton.creatures.agents.pray.compiler.pray.PrayParseValidationFailException
 import com.bedalton.log.logProgress
-import bedalton.creatures.common.util.className
-import bedalton.creatures.common.util.nullIfEmpty
+import com.bedalton.common.util.className
+import com.bedalton.common.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files

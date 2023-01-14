@@ -1,9 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.general
 
-import bedalton.creatures.common.util.FileNameUtil
-import bedalton.creatures.common.util.FileNameUtil.getExtension
-import bedalton.creatures.common.util.PathUtil
-import bedalton.creatures.common.util.toListOf
+import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.FileNameUtil.getExtension
+import com.bedalton.common.util.PathUtil
+import com.bedalton.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ignoredFiles

@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actio
 
 import bedalton.creatures.agents.pray.parser.parsePrayAgentToFiles
 import bedalton.creatures.agents.util.RelativeFileSystem
-import bedalton.creatures.common.structs.Pointer
+import com.bedalton.common.structs.Pointer
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files

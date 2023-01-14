@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.editor
 
 import bedalton.creatures.agents.pray.compiler.PrayCompileOptions
-import bedalton.creatures.common.util.FileNameUtil
+import com.bedalton.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile

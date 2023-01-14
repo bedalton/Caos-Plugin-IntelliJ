@@ -1,11 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
-import bedalton.creatures.common.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.indices.breedFileSort
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
+import com.bedalton.common.util.nullIfEmpty
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
 import java.util.logging.Logger

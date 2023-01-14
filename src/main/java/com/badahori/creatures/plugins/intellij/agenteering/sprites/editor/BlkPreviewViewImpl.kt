@@ -1,9 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import bedalton.creatures.sprite.parsers.BlkParser
-import bedalton.creatures.common.structs.Pointer
-import bedalton.creatures.common.util.FileNameUtil
-import bedalton.creatures.common.util.className
+import com.bedalton.common.structs.Pointer
+import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.common.saveImageWithDialog
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications

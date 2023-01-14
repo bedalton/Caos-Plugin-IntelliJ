@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
-import bedalton.creatures.common.util.FileNameUtil
+import com.bedalton.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import java.io.File

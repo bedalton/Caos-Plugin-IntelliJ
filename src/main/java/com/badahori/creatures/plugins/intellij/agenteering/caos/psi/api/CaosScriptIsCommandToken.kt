@@ -4,7 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandTokenReference
 import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import bedalton.creatures.common.util.toListOf
+import com.bedalton.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNamedElement

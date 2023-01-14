@@ -16,7 +16,7 @@ import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElementVisitor
-import bedalton.creatures.common.util.nullIfEmpty
+import com.bedalton.common.util.nullIfEmpty
 import com.intellij.openapi.project.DumbAware
 
 class PrayDependencyCategoryMatchesFileType: LocalInspectionTool(), DumbAware {

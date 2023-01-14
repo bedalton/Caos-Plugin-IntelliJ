@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections
 
-import bedalton.creatures.common.util.FileNameUtil
+import com.bedalton.common.util.FileNameUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Path
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags

@@ -33,7 +33,8 @@ val korImagesVersion: String by project
 val creaturesAgentUtilVersion: String by project
 val creaturesSpriteUtilVersion: String by project
 val creaturesCommonCliVersion: String by project
-val creaturesCommonCoreVersion: String by project
+val creaturesCommonVersion: String by project
+val commonCoreVersion: String by project
 val localFilesVersion: String by project
 val byteUtilVersion: String by project
 val commonLogVersion: String by project
@@ -61,11 +62,11 @@ dependencies {
         excludeKotlin()
     }
 
-    implementation("bedalton.creatures:AgentUtil:$creaturesAgentUtilVersion") {
+    implementation("bedalton.creatures:agent-util:$creaturesAgentUtilVersion") {
         excludeKotlin()
     }
 
-    implementation("bedalton.creatures:SpriteUtil:$creaturesSpriteUtilVersion") {
+    implementation("bedalton.creatures:common-sprite:$creaturesSpriteUtilVersion") {
         excludeKotlin()
     }
 
@@ -73,23 +74,27 @@ dependencies {
         excludeKotlin()
     }
 
-    implementation("bedalton.creatures:CommonCore:$creaturesCommonCoreVersion") {
+    implementation("com.bedalton:common-core:$commonCoreVersion") {
         excludeKotlin()
     }
 
-    implementation("bedalton.creatures:CommonCLI:$creaturesCommonCliVersion") {
+    implementation("bedalton.creatures:creatures-common:$creaturesCommonVersion") {
         excludeKotlin()
     }
 
-    implementation("com.bedalton:LocalFiles:$localFilesVersion") {
+    implementation("bedalton.creatures:creatures-common-cli:$creaturesCommonCliVersion") {
         excludeKotlin()
     }
 
-    implementation("com.bedalton:ByteUtil:$byteUtilVersion") {
+    implementation("com.bedalton:local-files:$localFilesVersion") {
         excludeKotlin()
     }
 
-    implementation("com.bedalton:CommonLog:$commonLogVersion") {
+    implementation("com.bedalton:common-byte:$byteUtilVersion") {
+        excludeKotlin()
+    }
+
+    implementation("com.bedalton:common-log:$commonLogVersion") {
         excludeKotlin()
     }
 

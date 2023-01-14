@@ -2,8 +2,8 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite
 
-import bedalton.creatures.common.util.FileNameUtil
-import bedalton.creatures.common.util.toListOf
+import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.toListOf
 import bedalton.creatures.sprite.parsers.*
 import bedalton.creatures.sprite.util.SpriteType
 import bedalton.creatures.sprite.util.SpriteType.*

@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
-import bedalton.creatures.common.util.className
+import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.CaosInvalidTokenLengthException
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.psi.PsiElement

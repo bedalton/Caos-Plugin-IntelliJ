@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector;
 
-import bedalton.creatures.common.util.OS;
+import com.bedalton.common.util.OS;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService;

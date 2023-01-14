@@ -2,8 +2,8 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
-import bedalton.creatures.common.util.className
-import bedalton.creatures.common.util.toListOf
+import com.bedalton.common.util.className
+import com.bedalton.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
