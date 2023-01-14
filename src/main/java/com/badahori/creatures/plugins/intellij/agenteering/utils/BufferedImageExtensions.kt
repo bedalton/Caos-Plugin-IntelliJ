@@ -168,3 +168,14 @@ val Image.height: Int get() {
     waitForImage(this)
     return getHeight(mImageObserver)
 }
+
+fun Image.scaleNearestNeighbor(scale: Double): BufferedImage {
+    val newWidth = (width * scale).toInt()
+    val newHeight = (height * scale).toInt()
+    val destinationBufferedImage = BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_ARGB)
+    val g2: Graphics2D = destinationBufferedImage.createGraphics()
+    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR)
+    g2.drawImage(this, 0, 0, newWidth, newHeight, null)
+    g2.dispose()
+    return destinationBufferedImage
+}
