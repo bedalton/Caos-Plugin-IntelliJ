@@ -2,9 +2,11 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.height
+import com.badahori.creatures.plugins.intellij.agenteering.utils.scaleNearestNeighbor
 import com.badahori.creatures.plugins.intellij.agenteering.utils.width
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.ui.JBColor
+import com.soywiz.korim.bitmap.Bitmap32
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
@@ -102,11 +104,7 @@ internal class AttSpriteCellComponent : JPanel() {
         var width = if (folded) -1 else (imageValue.width * scale).toInt()
         var height = if (folded) -1 else (imageValue.height * scale).toInt()
         val image: Image = if (width > 0 && height > 0) {
-            imageValue.getScaledInstance(
-                width,
-                height,
-                Image.SCALE_AREA_AVERAGING
-            ) // scale it the smooth way
+            imageValue.scaleNearestNeighbor(scale)
         } else {
             imageValue
         }
@@ -133,7 +131,7 @@ internal class AttSpriteCellComponent : JPanel() {
             // If not folded, update canvas
             val canvas = getCanvas(image)
             canvas.selected = selected
-            canvas.image
+            canvas.image = image
             canvas.labels = labels
             canvas.pointNames = value.pointNames
             canvas.scaledPoints = scalePoints(value.points, scale)
