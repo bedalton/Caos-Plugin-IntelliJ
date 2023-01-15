@@ -251,11 +251,16 @@ internal class AttEditorModel(
      * @param psiFile the psi file for this att editor
      */
     private fun initDocumentListeners(project: Project, psiFile: PsiFile?) {
+
         // If file is not null. add commit file listeners
         if (psiFile != null && psiFile.isValid) {
             // Get document for psi file
             PsiDocumentManager.getInstance(project)
-                .getDocument(psiFile)
+                .getDocument(psiFile)?.apply {
+                    if (this@AttEditorModel.document == null) {
+                        this@AttEditorModel.document = this
+                    }
+                }
                 ?.addDocumentListener(this@AttEditorModel)
         }
 
@@ -326,7 +331,7 @@ internal class AttEditorModel(
         }
         val newMD5 = MD5.fromString(text)
         if (md5 != null && md5 == newMD5) {
-            return
+//            return
         }
         md5 = newMD5
 
@@ -731,8 +736,8 @@ internal class AttEditorModel(
     }
 
     override fun setSelected(index: Int): Int {
-        var targetIndex = index
-        val lastIndex = (if (variant.isOld) 10 else 16) - 1
+        var targetIndex: Int
+        val lastIndex = (if (variant.isOld) 10 else 16) - 1 // Last possible line in file
         targetIndex = if (index < 0) {
             0
         } else if (index > lastIndex) {
@@ -813,6 +818,7 @@ internal class AttEditorModel(
     }
 
     override fun dispose() {
+        LOGGER.info("Disposing Editor Model")
         if (disposed.getAndSet(true)) {
             return
         }

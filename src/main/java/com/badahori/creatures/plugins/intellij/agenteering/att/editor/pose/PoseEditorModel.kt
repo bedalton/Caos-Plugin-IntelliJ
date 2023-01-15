@@ -16,8 +16,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem.Companion.instance
-import com.bedalton.log.LOG_DEBUG
-import com.bedalton.log.Log
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.progress.ProcessCanceledException
@@ -42,6 +40,7 @@ class PoseEditorModel(
     var progressIndicator: ProgressIndicator? = null
     private var spriteSet: CreatureSpriteSet? = null
     private var mLocked: Map<Char, BodyPartFiles> = emptyMap()
+    private var settingImmediate = AtomicInteger(0)
     private var updating = AtomicInteger(0)
     private var mRendering: Long? = null
     private var renderId = AtomicInteger(0)
@@ -65,11 +64,11 @@ class PoseEditorModel(
 
     fun setImmediate(directory: VirtualFile, key: BreedPartKey) {
         if (project.isDisposed) {
-            updating.set(0)
+            settingImmediate.set(10000)
             return
         }
-        if (updating.getAndIncrement() > 0) {
-            updating.decrementNotNegative()
+        if (settingImmediate.getAndIncrement() > 0) {
+            settingImmediate.decrementNotNegative()
             return
         }
         GlobalScope.launch(Dispatchers.IO) launch@{
@@ -79,40 +78,51 @@ class PoseEditorModel(
                 return@launch
             }
 
+            if (DumbService.isDumb(project)) {
+                DumbService.getInstance(project).runWhenSmart {
+                    executeOnPooledThread {
+                        setImmediate(directory, key)
+                    }
+                }
+                return@launch
+            }
             val mappedParts = BodyPartsIndex.getImmediate(project, directory, key)
 
             if (mappedParts == null) {
-                updating.decrementNotNegative()
-                updating.set(0)
+                settingImmediate.set(0)
                 executeOnPooledThread(this@PoseEditorModel::updateFiles)
                 return@launch
             }
 
-            val sprites = CreatureSpriteSet(
-                head = mappedParts['a']!!.data(project),
-                body = mappedParts['b']!!.data(project),
-                leftThigh = mappedParts['c']!!.data(project),
-                leftShin = mappedParts['d']!!.data(project),
-                leftFoot = mappedParts['e']!!.data(project),
-                rightThigh = mappedParts['f']!!.data(project),
-                rightShin = mappedParts['g']!!.data(project),
-                rightFoot = mappedParts['h']!!.data(project),
-                leftUpperArm = mappedParts['i']!!.data(project),
-                leftForearm = mappedParts['j']!!.data(project),
-                rightUpperArm = mappedParts['k']!!.data(project),
-                rightForearm = mappedParts['l']!!.data(project),
-                tailBase = mappedParts['m']?.data(project),
-                tailTip = mappedParts['n']?.data(project),
-                leftEar = mappedParts['o']?.data(project),
-                rightEar = mappedParts['p']?.data(project),
-                hair = mappedParts['q']?.data(project)
-            )
+            val sprites = try {
+                CreatureSpriteSet(
+                    head = mappedParts['a']!!.data(project),
+                    body = mappedParts['b']!!.data(project),
+                    leftThigh = mappedParts['c']!!.data(project),
+                    leftShin = mappedParts['d']!!.data(project),
+                    leftFoot = mappedParts['e']!!.data(project),
+                    rightThigh = mappedParts['f']!!.data(project),
+                    rightShin = mappedParts['g']!!.data(project),
+                    rightFoot = mappedParts['h']!!.data(project),
+                    leftUpperArm = mappedParts['i']!!.data(project),
+                    leftForearm = mappedParts['j']!!.data(project),
+                    rightUpperArm = mappedParts['k']!!.data(project),
+                    rightForearm = mappedParts['l']!!.data(project),
+                    tailBase = mappedParts['m']?.data(project),
+                    tailTip = mappedParts['n']?.data(project),
+                    leftEar = mappedParts['o']?.data(project),
+                    rightEar = mappedParts['p']?.data(project),
+                    hair = mappedParts['q']?.data(project)
+                )
+            } catch (e: NullPointerException) {
+                null
+            }
 
             spriteSet = sprites
             poseEditor.setFiles(mappedParts.values.filterNotNull())
             @Suppress("SpellCheckingInspection")
             requestRender(*("abcdefghijklmnopq").toCharArray(), breedChanged = true)
-            updating.set(0)
+            settingImmediate.set(0)
             executeOnPooledThread(this@PoseEditorModel::updateFiles)
         }
     }
@@ -141,7 +151,9 @@ class PoseEditorModel(
             }
             try {
                 val files = BodyPartsIndex.variantParts(project, variant, null)
-                poseEditor.setFiles(files)
+                if (files.isNotEmpty()) {
+                    poseEditor.setFiles(files)
+                }
                 updating.set(0)
             } catch (e: ProcessCanceledException) {
                 updating.set(0)
@@ -203,7 +215,7 @@ class PoseEditorModel(
             } else {
                 val newParts: CharArray = if (breedChanged) parts else charArrayOf()
                 getUpdatedSpriteSet(progressIndicator, *newParts)
-                    ?: getUpdatedSpriteSet(progressIndicator, *newParts)
+                    ?: getUpdatedSpriteSet(progressIndicator, *allParts)
             }
         } catch (e: java.lang.Exception) {
             if (e is ProcessCanceledException) {
@@ -377,7 +389,7 @@ class PoseEditorModel(
             file = CaosVirtualFile("${breedString}_${randomString(8)}.att", att.toFileText(variant))
             instance.addFile(file, true)
         }
-        manualAtts[part] = BodyPartFiles(spriteFile!!, file!!)
+        manualAtts[part.lowercaseChar()] = BodyPartFiles(spriteFile!!, file!!)
         this.spriteSet = spriteSet.replacing(part, att)
         requestRender(part, breedChanged = false)
     }
@@ -449,6 +461,7 @@ class PoseEditorModel(
 
     private fun getUpdatedSpriteSet(progressIndicator: ProgressIndicator, vararg parts: Char): CreatureSpriteSet? {
         if (project.isDisposed) {
+            LOGGER.info("Project is disposed on getUpdatedSpriteSet")
             return null
         }
         val updatedSprites = SpriteSetUtil.getUpdatedSpriteSet(
@@ -496,26 +509,27 @@ class PoseEditorModel(
     fun getHeadPoseActual(
         facing: Int,
         headPoseString: String?,
-        headPose: Int,
-        headDirection2: Int,
+        headDirection: Int,
+        tilt: Int,
         mood: Int,
         eyesClosed: Boolean,
     ): Int {
-        val faceIsBack = headPoseString != null && headPoseString.lowercase().startsWith("back")
-        val pose = calculateHeadPose(
+
+        val faceIsBack = facing == 3 || (headPoseString != null && headPoseString.lowercase().startsWith("back"))
+
+        if (facing < 0 || headDirection < 0 || tilt < 0 || mood < 0) {
+            // UI is not fully initialized
+            return 0
+        }
+
+        return calculateHeadPose(
             variant,
-            if (headPose == 2 && faceIsBack) 3 else facing,
-            headPose,
-            headDirection2,
+            if (headDirection == 2 && faceIsBack) 3 else facing,
+            headDirection,
+            tilt,
             mood,
             eyesClosed
         )
-        if (variant.isOld && pose == 8) {
-            if (faceIsBack) {
-                return pose + 1
-            }
-        }
-        return pose
     }
 
     fun hasTail(files: List<BodyPartFiles>): Boolean {

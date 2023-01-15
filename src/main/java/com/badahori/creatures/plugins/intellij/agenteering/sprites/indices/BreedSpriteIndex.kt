@@ -38,7 +38,7 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
         val NAME: ID<BreedPartKey, Void> =
             ID.create("com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex")
 
-        private const val THIS_VERSION = 2
+        private const val THIS_VERSION = 3
         const val VERSION = THIS_VERSION + BreedPartKey.VERSION + BreedKeyIndexer.VERSION + BreedPartDescriptor.VERSION + BreedFileInputFilter.VERSION
         private var didIndexOnce: Boolean = false
 

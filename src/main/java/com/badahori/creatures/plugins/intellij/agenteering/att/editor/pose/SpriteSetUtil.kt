@@ -34,6 +34,7 @@ object SpriteSetUtil {
         vararg parts: Char,
     ): PoseRenderer.CreatureSpriteSet? {
         if (project.isDisposed) {
+            LOGGER.severe("getUpdatedSpriteSet()->Project.isDisposed == true")
             return null
         }
         progressIndicator.checkCanceled()
@@ -195,7 +196,7 @@ object SpriteSetUtil {
         }
         val breedFile = files
             .firstOrNull {
-                it.spriteFile.name[0].lowercase() == part.lowercase()
+                it.spriteFile.name[0].lowercaseChar() == part.lowercaseChar()
             }
             ?: return null
         // Check if manual att exists

@@ -38,10 +38,21 @@
     <change-notes><![CDATA[
         <ul>
             <li>
+                <b>Version: 2022.03.03</b>
+                <b>Fixes</b>
+                <ul>
+                    <li>Fix ATT editing issues for C1/C2 breeds</li>
+                </ul>
+            </li>
+            <li>
                 <b>Version: 2022.03.02</b>
                 <b>Improvements</b>
                 <ul>
                     <li>Cache sprite/ATT pairs for faster re-render</li>
+                </ul>
+                <b>Fixes</b>
+                <ul>
+                    <li>Fix ATT editor cell images not scaling</li>
                 </ul>
             </li>
             <li>

@@ -550,7 +550,7 @@ object BodyPartsIndex {
         if (DumbService.isDumb(project)) {
             return null
         }
-        val parent = if (directory.isDirectory) {
+        val thisDirectory = if (directory.isDirectory) {
             directory
         } else {
             directory.parent
@@ -581,8 +581,8 @@ object BodyPartsIndex {
                     partFiles.spriteFile.isValid
                             && partFiles.bodyDataFile.isValid
                             && partFiles.key!!.part == part
-                            && isAncestor(directory, parent, partFiles.spriteFile)
-                            && isAncestor(directory, parent, partFiles.bodyDataFile)
+                            && isAncestor(thisDirectory, thisDirectory.parent, partFiles.spriteFile)
+                            && isAncestor(thisDirectory, thisDirectory.parent, partFiles.bodyDataFile)
                 }?.sortedBy {
                     val age = it.bodyDataFile.name[2].lowercase() - '0'
                     if (bodyPartKey.ageGroup != null) {
@@ -598,7 +598,8 @@ object BodyPartsIndex {
                 ?.firstOrNull()
 
             if (bodyPart == null && part in 'a'..'l') {
-                return null
+                LOGGER.warning("Body part is null for part $part")
+                return@mapNotNull null
             }
             part to bodyPart
         }.toMap()

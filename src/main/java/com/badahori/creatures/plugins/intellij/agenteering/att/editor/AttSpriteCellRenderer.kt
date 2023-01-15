@@ -37,6 +37,7 @@ data class AttSpriteCellData(
     val isFolded: Boolean get() = index in folded
 
     val isFocused: Boolean get() = changeCellListener.selectedCell == index
+
     fun onPlace(point: Pair<Int, Int>) {
         if (changeCellListener.selectedCell == index) {
             changePointListener.onChangePoint(index, point)
@@ -144,11 +145,12 @@ internal class AttSpriteCellComponent : JPanel() {
         }
 
         // Set sizing information
-        val padWidth = if (folded) 0 else 120
-        val padHeight = if (folded) 0 else 40
-        val dimension = Dimension(width + padWidth, height + padHeight)
-//        this.size = dimension
-//        this.preferredSize = dimension
+        val padWidth = if (folded) 0 else 10
+        val padHeight = if (folded) 0 else 0
+        val dimension = if (width > 0 && height > 0) Dimension(width + padWidth, height + padHeight) else Dimension(1, 1)
+        this.size = dimension
+        this.preferredSize = dimension
+//        this.canvas?.preferredSize = Dimension(width, height)
         this.minimumSize = dimension
 
         // Redraw
@@ -312,8 +314,8 @@ internal class AttSpriteCellComponent : JPanel() {
 internal class AttSpriteCellList(
     private var listItems: List<AttSpriteCellData>,
     private var scale: Double = 1.0,
-    var maxWidth: Int = 300,
-    var maxHeight: Int = 300,
+    private var maxWidth: Int = 300,
+    private var maxHeight: Int = 300,
     var labels: Boolean = true,
 ) : JPanel() {
 
@@ -339,6 +341,12 @@ internal class AttSpriteCellList(
 
     fun setScale(scale: Double) {
         this.scale = scale
+        reload()
+    }
+
+    fun setMaxWidthHeight(width: Int, height: Int) {
+        this.maxWidth = width;
+        this.maxHeight = height;
         reload()
     }
 
