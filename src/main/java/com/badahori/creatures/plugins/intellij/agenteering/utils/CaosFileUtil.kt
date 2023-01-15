@@ -44,7 +44,16 @@ val Document.virtualFile
 val Editor.virtualFile
     get() = document.virtualFile
 
-fun VirtualFile.getPsiFile(project: Project): PsiFile? = PsiManager.getInstance(project).findFile(this)
+fun VirtualFile.getPsiFile(project: Project): PsiFile? {
+    if (project.isDisposed) {
+        return null
+    }
+    val file = PsiManager.getInstance(project).findFile(this)
+    if (file.isInvalid) {
+        return null
+    }
+    return file
+}
 
 
 private const val PLUGIN_ID = "com.badahori.creatures.plugins.intellij.agenteering"
