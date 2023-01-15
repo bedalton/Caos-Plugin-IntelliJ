@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
-import bedalton.creatures.common.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.tagRequiresFileOfType
@@ -17,6 +16,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.bedalton.common.util.*
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionUtilCore
 import com.intellij.codeInsight.completion.InsertHandler
@@ -26,8 +26,8 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.TokenType
-import com.intellij.psi.util.elementType
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.math.max
 import kotlin.math.min
 
@@ -118,7 +118,7 @@ internal object Caos2CompletionProvider {
         }
 
         // Get child as pray tag value
-        val value = caos2Child as PrayTagValue
+        val value = caos2Child
 
         val directory = caos2Child.directory
             ?: return
@@ -497,7 +497,7 @@ internal object Caos2CompletionProvider {
         var trueDirectory = directory
         for (component in components) {
             val testPath = PathUtil.combine(trueDirectory.path, component)
-            val temp = VfsUtil.findFile(Path.of(testPath), false)
+            val temp = VfsUtil.findFile(Paths.get(testPath), false)
                 ?: break
             if (!temp.isDirectory) {
                 break
