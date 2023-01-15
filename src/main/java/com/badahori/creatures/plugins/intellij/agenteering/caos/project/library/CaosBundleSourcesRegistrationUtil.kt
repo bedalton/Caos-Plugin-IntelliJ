@@ -85,9 +85,11 @@ object CaosBundleSourcesRegistrationUtil {
             registeredOnce = true
             false
         } else {
-           true
+            if (!modifiableModel.isChanged) {
+                modifiableModel.dispose()
+            }
+            true
         }
-        modifiableModel.dispose()
         registeredOnce = true
         return didSucceedOnce
     }
@@ -104,6 +106,9 @@ object CaosBundleSourcesRegistrationUtil {
         libModel.addRoot(libraryPath, OrderRootType.SOURCES)
         libModel.commit()
         modifiableModel.commit()
+        if (modifiableModel.isChanged) {
+            LOGGER.info("Modifiable Model is still marked as changed")
+        }
         return true
     }
 
@@ -114,7 +119,8 @@ object CaosBundleSourcesRegistrationUtil {
             ?: ""
         if (versionString.isEmpty())
             throw Exception("Caos definitions versions cannot be null")
-        return model.getLibraryByName(LIBRARY_NAME)?.getUrls(OrderRootType.SOURCES)?.size == 1 && versionString == oldVersionString
+        return model.getLibraryByName(LIBRARY_NAME)
+            ?.getUrls(OrderRootType.SOURCES)?.size == 1 && versionString == oldVersionString
     }
 
 

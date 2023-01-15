@@ -115,7 +115,9 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
         return null
     }
 
-    override fun dispose() {}
+    override fun dispose() {
+
+    }
 
     override fun <T> getUserData(key: Key<T>): T? {
         return myFile.getUserData(key)

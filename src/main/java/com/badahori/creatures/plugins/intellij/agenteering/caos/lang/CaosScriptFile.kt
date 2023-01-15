@@ -400,7 +400,9 @@ fun VirtualFile.getVariant(project: Project, walk: Boolean): CaosVariant? {
 }
 
 private fun deduceVariant(project: Project, virtualFile: VirtualFile, walk: Boolean): CaosVariant? {
-
+    if (project.isDisposed || !virtualFile.isValid) {
+        return null
+    }
     val psi = virtualFile.getPsiFile(project)
     if (psi is CaosScriptFile) {
         return psi.variant.nullIfUnknown()
