@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -85,7 +86,8 @@ internal class AttEditorImpl(
     }
 
     override fun dispose() {
-        this.controller.dispose()
+        LOGGER.info("Disposing ATT editor IMPL")
+//        this.controller.dispose()
     }
 
     override fun <T> getUserData(key: Key<T>): T? {

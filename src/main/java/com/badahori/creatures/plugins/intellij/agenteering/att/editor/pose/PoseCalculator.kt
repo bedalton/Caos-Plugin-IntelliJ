@@ -2,7 +2,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.intellij.openapi.progress.ProgressIndicator
-import java.util.*
 import java.util.logging.Logger
 import kotlin.math.floor
 
@@ -83,20 +82,16 @@ object PoseCalculator {
 
     @JvmStatic
     fun getHeadComboBoxOptions(variant: CaosVariant, direction: Int, oldDirection: Int): Pair<Array<String>, Int>? {
-        return if (variant.isOld) {
+        return if (false && variant.isOld) {
             if (direction >= 2 && oldDirection != direction) {
                 return Pair(
                     arrayOf(
-                        "L. Far Up",
-                        "L. Up",
-                        "L. Straight",
-                        "L. Down",
-                        "R. Up",
-                        "R. Far Up",
-                        "R. Straight",
-                        "R. Down",
+                        "Far Up",
+                        "Up",
+                        "Straight",
+                        "Down",
                         if (direction == 2) "Forward" else "Backward"
-                    ), 8
+                    ), 4
                 )
             } else if (oldDirection >= 2 && direction < 2) {
                 Pair(
@@ -184,7 +179,7 @@ object PoseCalculator {
     fun calculateHeadPose(
         variant: CaosVariant,
         facingDirection: Int,
-        headPose: Int,
+        headDirection: Int,
         tilt: Int,
         mood: Int,
         eyesClosed: Boolean,
@@ -195,7 +190,7 @@ object PoseCalculator {
             calculateHeadPoseOldVariant(
                 variant,
                 facingDirection,
-                headPose,
+                headDirection,
                 tilt,
                 mood,
                 eyesClosed
@@ -203,56 +198,47 @@ object PoseCalculator {
         else {
             calculateHeadPoseNewVariant(
                 facingDirection,
-                headPose,
+                headDirection,
                 tilt,
                 mood,
                 eyesClosed
             )
         }.apply {
             if (this < 0) {
-                LOGGER.severe("Failed to calculate head pose: Variant:$variant; FacingDirection:$facingDirection; HeadPose: $headPose; Tilt: $tilt; Mood: $mood; EyesClosed: $eyesClosed")
+                LOGGER.severe("Failed to calculate head pose: Variant:$variant; FacingDirection:$facingDirection; HeadPose: $headDirection; Tilt: $tilt; Mood: $mood; EyesClosed: $eyesClosed")
 
             }
         }
     }
 
+    /**
+     * @param headDirection 0..3 - 0.left, 1.right, 2.front, 3.back
+     */
     private fun calculateHeadPoseOldVariant(
         variant: CaosVariant,
         facingDirection: Int,
-        headPose: Int,
+        headDirection: Int,
         tilt: Int,
         mood: Int,
         eyesClosed: Boolean,
     ): Int {
-        if (headPose !in 0..9) {
-            LOGGER.severe("Invalid head pose $headPose found. SelectedIndex: $headPose; Facing: $facingDirection; tilt: $tilt; mood: $mood; eyesClosed: $eyesClosed")
+        if (headDirection !in 0 .. 3) {
+            LOGGER.severe("Invalid head pose $headDirection found. SelectedIndex: $headDirection; Facing: $facingDirection; tilt: $tilt; mood: $mood; eyesClosed: $eyesClosed")
             Exception().printStackTrace()
             return ERROR_HEAD_POSE_C1E
         }
         val calculated = when {
-            facingDirection >= 2 -> {
-                when {
-                    headPose < 4 -> headPose
-                    headPose < 8 -> 4 + headPose
-                    facingDirection == 3 -> 9
-                    else -> headPose
-                }
-            }
-            headPose == 4 -> 8
-            headPose == 5 -> 9
-            headPose > 5 -> headPose
-            facingDirection == 0 -> headPose
-            facingDirection == 1 -> 4 + headPose
-            else -> {
-                LOGGER.severe("Invalid head pose $headPose found. SelectedIndex: $headPose; Facing: $facingDirection; tilt: $tilt; mood: $mood; eyesClosed: $eyesClosed")
-                Exception().printStackTrace()
-                return ERROR_HEAD_POSE_C1E
-            }
+            facingDirection == 0 -> tilt
+            facingDirection == 1 -> 4 + tilt
+            headDirection == 2 -> if (facingDirection == 3) 9 else 8
+            else /* == 3 */ -> 9 // Already checked that head direction in 0..3
         }
         return if (variant == CaosVariant.C1) {
             val eyesMod = if (eyesClosed) {
                 8
-            } else 0
+            } else {
+                0
+            }
             val moodMod = if (calculated == 8 && mood > 0) mood + 1 else 0
             calculated + eyesMod + moodMod
         } else {
@@ -295,8 +281,9 @@ object PoseCalculator {
                     facingDirection
                 }
                 val offsetBase = headDirection * 4
-                val tiltOffset = 3 - tilt
-                tiltOffset + offsetBase
+//                val tiltOffset = 3 - tilt
+//                tiltOffset + offsetBase
+                tilt + offsetBase
             }
             else -> {
                 LOGGER.severe("Head pose is set to a number less than 0. Perhaps no head pose index is selected")
@@ -379,23 +366,27 @@ object PoseCalculator {
             Pose(offset + 2, def, def, def, def, def, def, def, def, def, def, def, def, def, def)
         }
 
+        if ('b' in parts) {
+            poseTemp.body = poseHolder.getBodyPoseActual()
+        }
+
         // Go through each part passed in for updating, and update it.
         for (part in parts) {
             progressIndicator?.checkCanceled()
-            if (part !in PoseEditorSupport.allParts)
+            if (part !in PoseEditorSupport.allParts) {
                 continue
+            }
             when (part) {
                 'a' -> poseTemp.head = poseHolder.getHeadPoseActual().apply {
-                    if (this < 0)
+                    if (this < 0) {
                         throw Exception("Invalid head pose calculated. FacingDirection:$facingDirection; Output: $this")
-                }
-                'b' -> {
-                    poseTemp.body = poseHolder.getBodyPoseActual()
+                    }
                 }
                 'o', 'p' -> {
                     poseTemp.ears = getEars(poseHolder.getHeadPoseActual()).apply {
-                        if (this < 0)
+                        if (this < 0) {
                             throw Exception("Invalid ears pose. FacingDirection:$facingDirection; Output: $this")
+                        }
                     }
                 }
                 else -> {
@@ -418,23 +409,20 @@ object PoseCalculator {
  */
 private fun getHeadPoseOldVariant(variant: CaosVariant, facing: Int, pose: Int): PoseCalculator.HeadPoseData {
 
+    val isC1 = variant == CaosVariant.C1
+    val offset = if (isC1) pose % 26 else pose % 10
+
+    val headDirection = when {
+        offset < 4 -> 0
+        offset < 8 -> if (facing < 2) 0 else 1
+        offset == 9 -> 2
+        else -> if (facing < 2) 1 else 2 // If face is facing forward
+    }
     // If head is facing forward or backwards,
     // Leave pose the way it is
-    val headPose: Int = when {
-        facing < 2 -> {
-            when {
-                pose < 8 -> pose % 4
-                pose == 9 -> 5
-                else -> 4
-//                else -> {
-//                    LOGGER.severe("Invalid head pose '$pose' with facing: $facing")
-//                    (Exception()).printStackTrace()
-//                    0
-//                }
-            }
-        }
-        facing == 3 -> 8
-        else -> pose
+    val headTilt: Int =  when {
+        pose < 8 -> pose % 4
+        else -> 2
     }
 
     // Calculate the mood of the head when facing forwards
@@ -448,7 +436,7 @@ private fun getHeadPoseOldVariant(variant: CaosVariant, facing: Int, pose: Int):
         } else {
             floor(pose / 20.0).toInt()
         }
-    return PoseCalculator.HeadPoseData(headPose, tilt = null, mood = moodIndex)
+    return PoseCalculator.HeadPoseData(headDirection, tilt = headTilt, mood = moodIndex)
 }
 
 /**

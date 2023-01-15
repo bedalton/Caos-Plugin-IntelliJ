@@ -59,9 +59,8 @@ class AttFileEditorProvider : FileEditorProvider {
     override fun disposeEditor(editor: FileEditor) {
         Disposer.dispose(editor)
         if (editor is AttEditorImpl) {
-            editor.dispose()
+//            editor.dispose()
         }
-
     }
 
     override fun getEditorTypeId(): String {

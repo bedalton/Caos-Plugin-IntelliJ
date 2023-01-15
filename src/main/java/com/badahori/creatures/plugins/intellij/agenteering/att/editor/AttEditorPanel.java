@@ -11,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
+import com.bedalton.log.Log;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
@@ -506,10 +507,22 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     }
 
     private void setScale(final int index) {
-        final String value = Objects.requireNonNull(scale.getItemAt(index));
-        final float newScale = Float.parseFloat(value.substring(0, value.length() - 1));
+        final float newScale = getScale(index);
         CaosProjectSettingsService.getInstance(project).setAttScale(scale.getSelectedIndex());
         spriteCellList.setScale(newScale);
+    }
+
+
+    private float getScale() {
+        return getScale(scale.getSelectedIndex());
+    }
+
+    private float getScale(final int index) {
+        if (index < 0 || scale.getItemCount() < 1) {
+            return 1.0f;
+        }
+        final String value = Objects.requireNonNull(scale.getItemAt(index));
+        return Float.parseFloat(value.substring(0, value.length() - 1));
     }
 
     /**
@@ -538,6 +551,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         poseEditor.freeze(part, true);
         poseEditor.setVisibilityFocus(part);
         poseEditor.freezeBreedForPart(part, true);
+        this.poseEditor.redraw();
         updateUI();
     }
 
@@ -652,7 +666,6 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
      */
     void updateCells() {
         final String error;
-
         final List<AttFileLine> lines = controller.getAttLines();
         if (lines.size() < 8) {
             error = "There should be at least 8 lines in each att file template";
@@ -672,24 +685,26 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         final List<AttSpriteCellData> out = new ArrayList<>();
         int maxWidth = 0;
         int maxHeight = 0;
+        final float scale = getScale();
         final int linesCount = controller.getLinesCount();
         // Adds point to list as well as sets size of all cells
         for (int i = 0; i < Math.min(images.size(), linesCount); i++) {
             final BufferedImage image = images.get(i);
+            final int width = (int)(image.getWidth() * scale);
+            final int height = (int) (image.getHeight() * scale);
 
             // Find the largest cell size width
-            if (maxWidth < image.getWidth()) {
-                maxWidth = image.getWidth();
+            if (maxWidth < width) {
+                maxWidth = width;
             }
             // Find the largest cell size height
-            if (maxHeight < image.getHeight()) {
-                maxHeight = image.getHeight();
+            if (maxHeight < height) {
+                maxHeight = height;
             }
             // Adds this point and image to the list
             out.add(new AttSpriteCellData(i, image, lines.get(i).getPoints(), pointNames, controller.getFolded(), controller, this));
         }
-        spriteCellList.setMaxWidth(maxWidth);
-        spriteCellList.setMaxHeight(maxHeight);
+        spriteCellList.setMaxWidthHeight(maxWidth, maxHeight);
         spriteCellList.setItems(out);
         redrawPose();
     }
@@ -755,7 +770,6 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         );
         poseEditor.init();
         posePanel = poseEditor.getMainPanel();
-        poseEditor.showFacing(false);
     }
 
 
@@ -781,13 +795,14 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     }
 
     public void dispose() {
-        poseEditor.dispose();
+        Log.i(() -> "Disposing ATTEditorPanel.java");
+//        poseEditor.dispose();
     }
 
     public void refresh() {
 
         if (project.isDisposed()) {
-            dispose();
+//            dispose();
             return;
         }
         if (controller.getPart() != 'z' && !poseEditor.isValid()) {

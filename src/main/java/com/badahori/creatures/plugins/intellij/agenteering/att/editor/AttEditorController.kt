@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileDat
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -223,8 +224,9 @@ internal class AttEditorController(
     }
 
     override fun dispose() {
-        model.dispose()
-        view.dispose()
+        LOGGER.info("Disposing ATT Editor Controller")
+//        model.dispose()
+//        view.dispose()
     }
 
     override fun reloadFiles() {
@@ -235,11 +237,10 @@ internal class AttEditorController(
     /**
      * Interface for the view
      */
-    internal interface View: AttChangeListener {
+    internal interface View: AttChangeListener, Disposable {
         val component: Any
         val toolbar: Any
         fun init()
-        fun dispose()
         fun refresh()
         fun clearPose()
         fun scrollCellIntoView()
