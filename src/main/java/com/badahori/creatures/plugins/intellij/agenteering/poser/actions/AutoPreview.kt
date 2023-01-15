@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.poser.actions
 
 import bedalton.creatures.sprite.util.SpriteType
-import bedalton.creatures.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
@@ -14,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
+import com.bedalton.common.util.className
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -113,7 +113,12 @@ class AutoPreview : AnAction() {
         val renderedFiles: List<File> = headFiles
             .map { headFile ->
                 GlobalScope.async {
-                    renderFromHeadSprite(project, projectFile, headFile, zoom)
+                    try {
+                        renderFromHeadSprite(project, projectFile, headFile, zoom)
+                    } catch (e: Exception) {
+                        LOGGER.severe("Failed to render breed file for head image: ${headFile.name}")
+                        null
+                    }
                 }
             }
             .map { it.await() }
@@ -191,8 +196,9 @@ class AutoPreview : AnAction() {
                 try {
                     val errorFile =
                         File(projectFile ?: VfsUtil.virtualToIoFile(headFile.parent), "BreedPreviewError.txt")
-                    if (!errorFile.exists())
+                    if (!errorFile.exists()) {
                         errorFile.createNewFile()
+                    }
                     errorFile.appendText("\nRender failed with error [${key.code}]: ${e.message} in ${headFile.parent.path}")
                 } catch (e2: Exception) {
                     CaosNotifications.showError(
@@ -211,23 +217,24 @@ class AutoPreview : AnAction() {
     private fun getPose(variant: CaosVariant, key: BreedPartKey): Pose {
 //        return Pose.fromString(variant, 1, null, "141111111111111").second
 //        return Pose.fromString(variant, 3, null, "140000000000000").second
-        val straight = if (variant.isOld)
+        val straight = if (variant.isOld) {
             "140000000000000"
-        else
+        } else {
             "113122122111111111"
+        }
         val seed = Random.nextInt(0, 300)
         val youth = if (variant.isOld) 2 else 3
         return when (key.gender) {
             0 -> {
                 if (key.ageGroup?.let { it < youth } == true) {
                     if (seed < 100) {
-                        Pose.fromString(variant, 2, null, "223322111013311").second
+                        Pose.fromString(variant, 2, null, "323322111013311").second
                     } else if (seed < 200) {
-                        Pose.fromString(variant, 2, null, "213322100111211").second
+                        Pose.fromString(variant, 2, null, "313322100111211").second
 //                    } else if (seed < 300) {
 //                        Pose.fromString(variant, 2, null, "142233022022333000").second
                     } else {
-                        return Pose.fromString(variant, 1, null, "242010222032211").second
+                        return Pose.fromString(variant, 1, null, "342010222032211").second
                     }
                 } else {
                     if (seed > 300) {
@@ -239,13 +246,13 @@ class AutoPreview : AnAction() {
             1 -> {
                 if (key.ageGroup?.let { it < youth } == true) {
                     if (seed < 100) {
-                        Pose.fromString(variant, 3, null, "343322100210311").second
+                        Pose.fromString(variant, 3, null, "243322100210311").second
                     } else if (seed < 200) {
-                        Pose.fromString(variant, 3, null, "312010222220011").second
+                        Pose.fromString(variant, 3, null, "212010222220011").second
 //                    } else if (seed < 300) {
 //                        Pose.fromString(variant, 3, null, "141222022102211000").second
                     } else {
-                        return Pose.fromString(variant, 1, null, "333020332330011").second
+                        return Pose.fromString(variant, 1, null, "233020332330011").second
                     }
                 } else {
 //                    if (seed > 300) {
