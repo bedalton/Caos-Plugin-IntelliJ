@@ -2,8 +2,6 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import com.bedalton.io.bytes.decodeToCreaturesEncoding
-import bedalton.creatures.common.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.messageOrNoneText
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
@@ -12,6 +10,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CLIInjectFla
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.bedalton.common.util.psuedoRandomUUID
+import com.bedalton.common.util.stripSurroundingQuotes
+import com.bedalton.io.bytes.decodeToCreaturesEncoding
+import com.bedalton.io.bytes.decodeToWindowsCP1252
 import com.bedalton.log.Log
 import com.bedalton.log.eIf
 import com.bedalton.log.iIf
@@ -353,7 +355,7 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
     private fun getResponseFromProcess(fileName: String, descriptor: String?, proc: Process): InjectionStatus {
         val responseString = proc.inputStream
             ?.readAllBytes()
-            ?.decodeToCreaturesEncoding()
+            ?.decodeToWindowsCP1252()
             .nullIfEmpty()
             ?: return InjectionStatus.Bad(fileName, descriptor, CaosBundle.message("caos.injector.errors.no-response"))
         return formatResponse(fileName, descriptor, responseString)

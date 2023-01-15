@@ -22,7 +22,7 @@ plugins {
 
 
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2022.03.02"
+version = "2022.03.03"
 
 
 val ideaVersionStart: String by project
@@ -79,10 +79,6 @@ dependencies {
     }
 
     implementation("bedalton.creatures:creatures-common:$creaturesCommonVersion") {
-        excludeKotlin()
-    }
-
-    implementation("bedalton.creatures:creatures-common-cli:$creaturesCommonCliVersion") {
         excludeKotlin()
     }
 
