@@ -1,16 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
-import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.bedalton.common.util.className
 import com.bedalton.io.bytes.AbstractByteStreamReader
-import com.bedalton.io.bytes.ByteStreamReaderBase
 import com.bedalton.io.bytes.ByteStreamReaderEx
-import com.bedalton.io.bytes.IOException
 import com.bedalton.io.bytes.internal.InputStreamByteReaderEx
 import com.bedalton.io.bytes.internal.MemoryByteStreamReaderEx
-import com.bedalton.log.Log
 import com.intellij.openapi.vfs.VirtualFile
-import kotlinx.coroutines.sync.Mutex
 
 class VirtualFileStreamReader(
     private val virtualFile: VirtualFile,
@@ -35,7 +31,7 @@ class VirtualFileStreamReaderEx(
     private var mClosed = false
 
     private val mReader: ByteStreamReaderEx by lazy {
-        if (virtualFile !is CaosVirtualFile) {
+        if (virtualFile !is CaosVirtualFile && virtualFile.length > MAX_IN_MEMORY_STREAM_LENGTH) {
             try {
                     return@lazy InputStreamByteReaderEx(start, end) {
                         try {
@@ -112,5 +108,9 @@ class VirtualFileStreamReaderEx(
         } else {
             null
         }
+    }
+
+    companion object {
+        internal const val MAX_IN_MEMORY_STREAM_LENGTH = 30 * 1000 * 1000 // 30 megabytes
     }
 }

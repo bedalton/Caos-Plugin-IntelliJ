@@ -10,14 +10,19 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessag
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
+import com.bedalton.io.bytes.MemoryByteStreamReader
+import com.bedalton.io.bytes.internal.MemoryByteStreamReaderEx
 import com.bedalton.vfs.LocalFileSystem
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileTooBigException
@@ -26,6 +31,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import icons.CaosScriptIcons
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicInteger
@@ -62,10 +68,11 @@ class DumpAgentAction : AnAction(
         AgentDumpDialog.create(project, initialPath, files.size > 1) run@{ parentPath, useChildDirectories ->
             if (parentPath == null)
                 return@run
-            val commandName = if (files.size == 1)
+            val commandName = if (files.size == 1) {
                 "Dump ${files[0].name} Agent's Scripts and Files"
-            else
+            } else {
                 "Dump Agent Scripts and Files"
+            }
             val createdFiles = mutableListOf<Pair<VirtualFile, VirtualFile>>()
             WriteCommandAction
                 .writeCommandAction(project)
@@ -74,9 +81,7 @@ class DumpAgentAction : AnAction(
                 .withUndoConfirmationPolicy(UndoConfirmationPolicy.REQUEST_CONFIRMATION)
                 .withGlobalUndo()
                 .run<Exception> {
-                    CommandProcessor.getInstance().runUndoTransparentAction {
-                        dump(project, files, parentPath, useChildDirectories, createdFiles)
-                    }
+                    dump(project, files, parentPath, useChildDirectories, createdFiles)
                     val parent = VfsUtil.findFile(Paths.get(parentPath), true)
                     parent?.parent?.refresh(true, true)
                 }
@@ -125,22 +130,28 @@ class DumpAgentAction : AnAction(
         }
         var done = 0
         val count = files.size
-        for (file in files) {
+        for (i in files.indices) {
+            val file = files[i]
+            val tail = if (count == 1) "" else " (${i + 1} of $count)"
             CommandProcessor.getInstance().runUndoTransparentAction {
-                GlobalScope.launch {
-                    dumpFile(
-                        project,
-                        files,
-                        file,
-                        path,
-                        useChildDirectories,
-                        dumped,
-                        failed,
-                        createdFiles
-                    )
-                    if (++done >= count) {
-                        invokeLater {
-                            onDone()
+                runBackgroundableTask("Dumping agent: ${file.name}") {
+                    it.isIndeterminate = true
+                    runBlocking {
+                        dumpFile(
+                            project,
+                            it,
+                            files,
+                            file,
+                            path,
+                            useChildDirectories,
+                            dumped,
+                            failed,
+                            createdFiles
+                        )
+                        if (++done >= count) {
+                            invokeLater {
+                                onDone()
+                            }
                         }
                     }
                 }
@@ -151,6 +162,7 @@ class DumpAgentAction : AnAction(
 
     private suspend fun dumpFile(
         project: Project,
+        progressIndicator: ProgressIndicator,
         files: List<VirtualFile>,
         file: VirtualFile,
         parentPath: String,
@@ -168,7 +180,7 @@ class DumpAgentAction : AnAction(
         // Dump may throw exception on agent parse failure
         val success = try {
             // Returns true if all images were written, false if some were not written
-            dump(parentFile, file, useChildDirectories, createdFiles)
+            dump(progressIndicator, parentFile, file, useChildDirectories, createdFiles)
         } catch (e: FileTooBigException) {
             CaosNotifications.showError(
                 project,
@@ -194,18 +206,36 @@ class DumpAgentAction : AnAction(
      * Dumps an agent file to a given parent directory
      */
     private suspend fun dump(
+        progressIndicator: ProgressIndicator,
         parentVirtualFile: VirtualFile,
         file: VirtualFile,
         useChildDirectories: Boolean,
         createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>
     ): Boolean {
         // Parse Agent and write files
-        val stream = VirtualFileStreamReaderEx(file)
+        val stream = if (file.length < VirtualFileStreamReaderEx.MAX_IN_MEMORY_STREAM_LENGTH) {
+            MemoryByteStreamReaderEx(file.contentsToByteArray())
+        } else {
+            VirtualFileStreamReaderEx(file)
+        }
         val prefix = if (useChildDirectories) "" else file.nameWithoutExtension
         val relativeWriter = RelativeFileSystem(LocalFileSystem!!, parentVirtualFile.path)
 
 //        val result = try {
-             val result = parsePrayAgentToFiles(file.name, prefix = prefix, stream, relativeWriter, "*")
+        val result = parsePrayAgentToFiles(file.name, prefix = prefix, stream, relativeWriter, "*") { i, total, tag, name ->
+            if (progressIndicator.isIndeterminate) {
+                progressIndicator.isIndeterminate = false
+            }
+            if (total > 0) {
+                progressIndicator.fraction = i.toDouble() / total.toDouble()
+            }
+            if (i < total) {
+                progressIndicator.text2 = "Finished $i of $total; ${total - i} remaining"
+            } else {
+                progressIndicator.isIndeterminate = true
+                progressIndicator.text2 = "Writing files"
+            }
+        }
 //        } catch (e: Exception) {
 //            LOGGER.severe("Failed to dump agent: ${file.name} with error: ${e.message}")
 //            return false
