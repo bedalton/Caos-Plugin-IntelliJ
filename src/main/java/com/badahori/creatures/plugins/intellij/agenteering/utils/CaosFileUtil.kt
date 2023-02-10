@@ -35,6 +35,9 @@ val VirtualFile.contents: String
     }
 
 fun VirtualFile.getModule(project: Project): Module? {
+    if (project.isDisposed) {
+        return null
+    }
     return ModuleUtil.findModuleForFile(this, project)
 }
 
