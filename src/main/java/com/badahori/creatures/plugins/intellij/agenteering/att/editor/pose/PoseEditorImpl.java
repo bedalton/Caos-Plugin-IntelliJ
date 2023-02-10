@@ -338,15 +338,25 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             setLabelVisibility('q', false);
         }
 
+        updateTails();
         // If variant is old, it does not have multiple tilts for front facing and back facing head sprites
         if (false && variant.isOld()) {
+            // Todo ensure that C1e works using the unified system
             freeze(headDirection2, true, true);
             tiltLabel.setVisible(false);
         } else {
             freeze(headDirection2, !headDirection2.isEnabled(), false);
             tiltLabel.setVisible(true);
         }
+    }
 
+    private void updateTails() {
+
+        final boolean hadTail = hasTail;
+        hasTail = variant != CaosVariant.C1.INSTANCE || model.hasTail(files);
+        if (hasTail == hadTail && didInitComboBoxes) {
+            return;
+        }
         // If is C1, hide controls for tails as they are not used in C1
         if (hasTail) {
             // Allow tail controls in all variants other than C1
@@ -2374,11 +2384,10 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         if (variantChanged) {
             setVariantControls(variant);
         }
-        final boolean hadTail = hasTail;
-        hasTail = variant != CaosVariant.C1.INSTANCE || model.hasTail(files);
-        if (!didInitOnce || hadTail != hasTail || variantChanged) {
+        if (!didInitOnce || variantChanged) {
             PoseEditorImpl.this.initUI();
         }
+        updateTails();
         updateBreedsList();
         initOpenRelatedComboBox();
         dirty = true;
