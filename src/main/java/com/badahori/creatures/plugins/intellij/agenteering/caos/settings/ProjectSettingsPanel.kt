@@ -455,7 +455,6 @@ private class GameInterfaceCell(
             val projectVariant = state.defaultVariant
                 ?: state.lastVariant
                 ?: project.inferVariantHard()
-                ?: CaosVariant.DS
             CreateInjectorDialog(project, projectVariant)
         } else {
             CreateInjectorDialog(project, interfaceName.variant).apply {
