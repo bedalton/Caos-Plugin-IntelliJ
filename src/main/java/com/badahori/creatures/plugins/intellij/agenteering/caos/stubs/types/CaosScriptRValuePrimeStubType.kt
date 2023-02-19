@@ -9,7 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosSc
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptRValuePrimeStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 
-class CaosScriptRValuePrimeStubType(debugName:String) : com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubElementType<CaosScriptRValuePrimeStub, CaosScriptRvaluePrimeImpl>(debugName) {
+class CaosScriptRValuePrimeStubType(debugName:String) : CaosScriptStubElementType<CaosScriptRValuePrimeStub, CaosScriptRvaluePrimeImpl>(debugName) {
     override fun createPsi(parent: CaosScriptRValuePrimeStub): CaosScriptRvaluePrimeImpl {
         return CaosScriptRvaluePrimeImpl(parent, this)
     }
