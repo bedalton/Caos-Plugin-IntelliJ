@@ -19,7 +19,7 @@ abstract class CaosScriptStubElementType<StubT : StubElement<PsiT>?, PsiT : Caos
         return "caos." + super.toString()
     }
 
-    override fun indexStub(stub: StubT, indexSink: IndexSink) {
+    override fun indexStub(stub: StubT & Any, indexSink: IndexSink) {
         // ignore
     }
 
