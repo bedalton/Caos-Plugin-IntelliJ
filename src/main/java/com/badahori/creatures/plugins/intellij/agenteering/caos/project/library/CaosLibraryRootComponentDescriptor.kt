@@ -20,20 +20,13 @@
  */
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.library
 
-import com.intellij.openapi.module.Module
-import com.intellij.openapi.project.ProjectBundle
-import com.intellij.openapi.projectRoots.ui.Util
-import com.intellij.openapi.roots.JavadocOrderRootType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.ui.AttachRootButtonDescriptor
 import com.intellij.openapi.roots.libraries.ui.LibraryRootsComponentDescriptor
 import com.intellij.openapi.roots.libraries.ui.OrderRootTypePresentation
 import com.intellij.openapi.roots.libraries.ui.RootDetector
-import com.intellij.openapi.roots.ui.configuration.libraryEditor.LibraryEditor
-import com.intellij.openapi.vfs.VirtualFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import icons.CaosScriptIcons
-import javax.swing.JComponent
 
 class CaosLibraryRootComponentDescriptor : LibraryRootsComponentDescriptor() {
     override fun getRootTypePresentation(type: OrderRootType): OrderRootTypePresentation? {
@@ -44,22 +37,27 @@ class CaosLibraryRootComponentDescriptor : LibraryRootsComponentDescriptor() {
 
     override fun getRootDetectors(): List<RootDetector> {
         return listOf(
-                CaosLibRootDetector(OrderRootType.SOURCES, CaosBundle.message("caos.sources.library.root-detector.sources.name"))
+            CaosLibRootDetector(
+                OrderRootType.SOURCES,
+                CaosBundle.message("caos.sources.library.root-detector.sources.name")
+            )
         )
     }
 
     override fun createAttachButtons(): List<AttachRootButtonDescriptor> {
-        return listOf(AttachUrlJavadocDescriptor())
+        return emptyList()
     }
 
-    private class AttachUrlJavadocDescriptor : AttachRootButtonDescriptor(JavadocOrderRootType.getInstance(), ProjectBundle.message("module.libraries.javadoc.url.button")) {
-
-        override fun selectFiles(parent: JComponent,
-                                 initialSelection: VirtualFile?,
-                                 contextModule: Module?,
-                                 libraryEditor: LibraryEditor): Array<VirtualFile> {
-            val vFile = Util.showSpecifyJavadocUrlDialog(parent)
-            return vFile?.let { arrayOf(it) } ?: VirtualFile.EMPTY_ARRAY
-        }
-    }
+//    private class AttachUrlJavadocDescriptor :
+//        AttachRootButtonDescriptor(OrderRootType.SOURCES, CaosBundle.message("caos.sources.library.specify-sources")) {
+//        override fun selectFiles(
+//            parent: JComponent,
+//            initialSelection: VirtualFile?,
+//            contextModule: Module?,
+//            libraryEditor: LibraryEditor
+//        ): Array<VirtualFile> {
+//            val vFile = Util.showSpecifyJavadocUrlDialog(parent)
+//            return vFile?.let { arrayOf(it) } ?: VirtualFile.EMPTY_ARRAY
+//        }
+//    }
 }
