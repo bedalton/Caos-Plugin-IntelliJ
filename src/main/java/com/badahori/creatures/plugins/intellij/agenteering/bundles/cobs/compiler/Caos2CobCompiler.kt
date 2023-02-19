@@ -12,12 +12,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.Sprite
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.command.undo.DocumentReferenceManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.util.DocumentUtil
 import com.intellij.util.io.write
 import java.nio.file.Paths
 
@@ -571,6 +574,7 @@ object Caos2CobCompiler {
     private fun getFileScripts(fileIn: CaosScriptFile) : List<CaosScriptScriptElement> {
         val scripts = mutableListOf<CaosScriptScriptElement>()
         val pointer = SmartPointerManager.createPointer(fileIn)
+        val text = fileIn.text
         WriteCommandAction.writeCommandAction(fileIn.project)
             .shouldRecordActionForActiveDocument(false)
             .withGroupId("CAOS2Cob")
@@ -583,6 +587,11 @@ object Caos2CobCompiler {
                     ?: throw Exception("Failed to collapse script")
                 val scriptsInFile = PsiTreeUtil.collectElementsOfType(collapsed, CaosScriptScriptElement::class.java)
                 scripts.addAll(scriptsInFile)
+                if (file.text != text) {
+                    PsiDocumentManager.getInstance(fileIn.project).getCachedDocument(fileIn)?.let {
+                        EditorUtil.replaceText(it, fileIn.textRange, text)
+                    }
+                }
             }
         return scripts
     }
