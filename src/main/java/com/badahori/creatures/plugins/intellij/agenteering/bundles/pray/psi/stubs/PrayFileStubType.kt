@@ -5,11 +5,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.Pra
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.readList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.writeList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
+import com.bedalton.common.exceptions.IOException
 import com.intellij.psi.PsiFile
 import com.intellij.psi.StubBuilder
 import com.intellij.psi.stubs.*
 import com.intellij.psi.tree.IStubFileElementType
-import java.io.IOException
 
 
 private const val NAME = "pray.FILE"
