@@ -23,6 +23,7 @@ import com.intellij.openapi.components.Storage
     name = "CaosApplicationSettingsComponent",
     storages = [Storage(value = "CAOS.xml")]
 )
+@Storage("CAOS.xml")
 class CaosApplicationSettingsComponent : CaosApplicationSettingsService,
     PersistentStateComponent<CaosApplicationSettingsComponent.State>, Disposable {
 
