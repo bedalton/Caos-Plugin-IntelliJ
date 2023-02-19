@@ -15,19 +15,21 @@ internal fun StubInputStream.readExpressionValueType() : CaosExpressionValueType
 
 
 internal fun StubInputStream.readCaosVarSafe() : CaosExpressionValueType? {
-    if (!readBoolean())
+    if (!readBoolean()) {
         return null
+    }
     return readExpressionValueType()
 }
 
 internal fun StubOutputStream.writeCaosVarSafe(caosVar:CaosExpressionValueType?) {
     writeBoolean(caosVar != null)
-    if (caosVar != null)
+    if (caosVar != null) {
         writeExpressionValueType(caosVar)
+    }
 }
 
 internal fun StubOutputStream.writeExpressionValueType(caosVar:CaosExpressionValueType) {
-        writeInt(caosVar.value)
+    writeInt(caosVar.value)
 }
 
 
