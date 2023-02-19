@@ -21,8 +21,10 @@ object CaosScriptPsiElementFactory {
 
     internal val C1E_SUBROUTINE_NAME_REGEX = "[a-zA-Z0-9_:$#!*]{4}".toRegex()
     internal val C2E_SUBROUTINE_NAME_REGEX = "[a-zA-Z][a-zA-Z0-9_:\$#!*]+".toRegex()
-    fun createFileFromText(project: Project, text: String, fileName: String = "dummy.cos"): CaosScriptFile {
-        return (PsiFileFactory.getInstance(project).createFileFromText(fileName, CaosScriptLanguage, text) as CaosScriptFile)
+    fun createFileFromText(project: Project, text: String, variant: CaosVariant = CaosVariant.DS, fileName: String = "dummy.cos"): CaosScriptFile {
+        return (PsiFileFactory.getInstance(project).createFileFromText(fileName, CaosScriptLanguage, text) as CaosScriptFile).apply {
+            setVariant(variant, true)
+        }
     }
 
     fun createCommandTokenElement(project: Project, newNameString: String): CaosScriptIsCommandToken? {
@@ -49,13 +51,18 @@ object CaosScriptPsiElementFactory {
         if (!TOKEN_NAME_REGEX.matches(newNameString))
             return null
         @Suppress("SpellCheckingInspection") val script = "sndf $newNameString"
-        val file = createFileFromText(project, script)
+        val file = createFileFromText(project, script,  CaosVariant.C1, "dummy.cos")
         return PsiTreeUtil.collectElementsOfType(file, CaosScriptToken::class.java).firstOrNull()
     }
 
     fun createStringRValue(project: Project, newNameString: String, start: Char, end: Char = start): CaosScriptRvalue {
         val script = "$start$newNameString$end"
-        return createRValue(project, script)
+        val variant = if (start == '"') {
+            CaosVariant.DS
+        } else {
+            CaosVariant.C1
+        }
+        return createRValue(project, script, variant)
     }
 
     fun createNumber(project: Project, number: Int) : CaosScriptRvalue {
@@ -74,9 +81,9 @@ object CaosScriptPsiElementFactory {
         return createAndGet(project, script, CaosScriptCommandCall::class.java, variant)
     }
 
-    private fun createRValue(project: Project, expr: String) : CaosScriptRvalue {
+    private fun createRValue(project: Project, expr: String, variant: CaosVariant = CaosVariant.DS) : CaosScriptRvalue {
         val script = "____X____EXPR__ $expr"
-        return createAndGet(project, script, CaosScriptRvalue::class.java)!!
+        return createAndGet(project, script, CaosScriptRvalue::class.java, variant)!!
     }
 
     fun newLine(project: Project): PsiElement {

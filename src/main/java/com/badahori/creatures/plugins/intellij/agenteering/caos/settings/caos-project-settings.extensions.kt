@@ -145,14 +145,12 @@ private fun VirtualFile.inferVariantSimple(): CaosVariant? {
     val matchC1 = C1_ITEMS.containsMatchIn(text)
     val matchC2 = C2_ITEMS.containsMatchIn(text)
     val matchDS = DS_ITEMS.containsMatchIn(text)
-    return if (matchDS) {
+    return if (matchDS && !matchC2 && !matchC1) {
         CaosVariant.DS
-    } else if (matchC1 && !matchC2) {
+    } else if (matchC1 && !matchC2 && !matchDS) {
         CaosVariant.C1
-    } else if (matchC2 && !matchC1) {
+    } else if (matchC2 && !matchC1 && !matchDS) {
         CaosVariant.C2
-    } else if (matchC1) {
-        CaosVariant.C1
     } else {
         null
     }

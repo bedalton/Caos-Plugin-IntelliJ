@@ -26,6 +26,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfac
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.bedalton.log.Log
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.Disposable
@@ -61,29 +62,22 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                     explicitVariant = this
                 }
                 ?: implicitVariant.nullIfUnknown()
-                ?: (getUserData(ImplicitVariantUserDataKey).nullIfUnknown()
-                    ?: ImplicitVariantFilePropertyPusher.readFromStorage(myFile).nullIfUnknown())?.apply {
+                ?: (getUserData(ImplicitVariantUserDataKey).nullIfUnknown() ?: ImplicitVariantFilePropertyPusher
+                    .readFromStorage(myFile)
+                    .nullIfUnknown())?.apply {
                     implicitVariant = this
                 }
-                ?: (myFile.cachedVariantExplicitOrImplicit.nullIfUnknown() ?: myFile.inferVariantHard(project, true)?.apply {
-                    putUserData(ImplicitVariantUserDataKey, this)
-                })
+                ?: myFile.cachedVariantExplicitOrImplicit.nullIfUnknown()
                 ?: (this.originalFile as? CaosScriptFile)
                     ?.myFile
-                    ?.let {
-                        it.cachedVariantExplicitOrImplicit
-                            .nullIfUnknown()
-                            ?: it.inferVariantHard(project, true)?.apply {
-                                putUserData(ImplicitVariantUserDataKey, this)
-                            }
-                                ?.nullIfUnknown()
-                    }
-                ?: (module ?: originalFile.module)?.let {
-                    it.variant.nullIfUnknown()
-                        ?: it.inferVariantHard()?.apply {
-                            putUserData(ImplicitVariantUserDataKey, this)
-                        }
-                            ?.nullIfUnknown()
+                    ?.cachedVariantExplicitOrImplicit
+                    .nullIfUnknown()
+                ?: (module ?: originalFile.module)?.variant.nullIfUnknown()
+                ?: myFile.inferVariantHard(project, true)?.apply {
+                    putUserData(ImplicitVariantUserDataKey, this)
+                }
+                ?: (module ?: this.originalFile.module)?.inferVariantHard()?.apply {
+                    putUserData(ImplicitVariantUserDataKey, this)
                 }
                 ?: project.let {
                     it.settings.defaultVariant.nullIfUnknown()
@@ -93,6 +87,7 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                             ?.nullIfUnknown()
                 }
                 ?: this.directory?.cachedVariantExplicitOrImplicit
+                ?: null
         }
 
     override fun setVariant(variant: CaosVariant?, explicit: Boolean) {

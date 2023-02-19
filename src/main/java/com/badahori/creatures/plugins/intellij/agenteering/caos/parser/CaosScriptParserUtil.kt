@@ -272,7 +272,6 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             ?: psiFile.module?.variant
             ?: psiFile.project.settings.defaultVariant)
             .nullIfUnknown()
-            ?: CaosVariant.DS
     }
 
     @JvmStatic

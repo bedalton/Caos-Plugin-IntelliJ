@@ -2,21 +2,21 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFile
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfNotConcrete
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
+import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
+import com.bedalton.log.Log
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogBuilder
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import icons.CaosScriptIcons
 import javax.swing.JLabel
@@ -84,12 +84,21 @@ private fun setVariant(project: Project, files: Array<VirtualFile>): Boolean {
             if (file is CaosVirtualFile) {
                 file.setVariant(variant, true)
             }
+            if (file.cachedVariantExplicitOrImplicit != variant) {
+                Log.e { "Failed to set variant to $variant; Found: ${file.cachedVariantExplicitOrImplicit}" }
+            }
             if (file.fileType == CaosScriptFileType.INSTANCE) {
                 val psiFile = file.getPsiFile(project)
                 (psiFile as? CaosScriptFile)?.setVariant(variant, true)
             } else if (file.fileType == AttFileType) {
                 val psiFile = file.getPsiFile(project)
                 (psiFile as? AttFile)?.setVariant(variant, true)
+            } else if (file.isDirectory) {
+                file.collectChildren() { child ->
+                    child.extension like "cos" || child.extension like "att"
+                }.forEach { child ->
+                    child.setCachedVariant(variant, false)
+                }
             }
         }
         builder.dialogWrapper.close(0)
