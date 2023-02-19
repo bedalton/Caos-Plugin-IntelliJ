@@ -268,12 +268,16 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
 
             val didReplaceAll = PsiTreeUtil.collectElementsOfType(newElement, PsiWhiteSpace::class.java)
                 .filter { whiteSpace ->
-                    whiteSpace.next?.let { next ->
+                    whiteSpace.isValid && whiteSpace.next?.let { next ->
                         next is CaosScriptAtDirectiveComment || next is CaosScriptCodeBlockLine || next is CaosScriptCommandCallLike || next is CaosScriptCodeBlock || next is CaosScriptHasCodeBlock || next is CaosScriptScriptBodyElement
                     } ?: false
                 }
-                .map {
-                    SmartPointerManager.createPointer(it)
+                .mapNotNull {
+                    if (it.isValid) {
+                        SmartPointerManager.createPointer(it)
+                    } else {
+                        null
+                    }
                 }
                 .all { pointer ->
                     val whiteSpaceElement = pointer.element
