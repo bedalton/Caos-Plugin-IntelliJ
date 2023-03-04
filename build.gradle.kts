@@ -19,10 +19,9 @@ plugins {
     kotlin("plugin.serialization") version "1.7.20"
 }
 
-
-
+val projectVersion: String by project
 group = "com.badahori.creatures.plugins.intellij.agenteering"
-version = "2022.03.04"
+version = projectVersion
 
 
 val ideaVersionStart: String by project
