@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.general
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.POS_NEG_NUMBER_REGEX
@@ -35,7 +35,7 @@ internal fun isSingleImage(value: String): Boolean {
     val fileName = getFileName(value.stripSurroundingQuotes())
         ?: return false
 
-    val extension = FileNameUtil
+    val extension = PathUtil
         .getExtension(fileName)
         ?.lowercase()
 

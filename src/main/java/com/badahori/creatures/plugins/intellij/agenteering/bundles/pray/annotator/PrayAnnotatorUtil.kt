@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.annotator
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.stripSurroundingQuotes
 import com.bedalton.common.util.toArrayOf
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
@@ -141,9 +141,9 @@ private fun annotateStringValue(tag: String, tagValueElement: PrayTagValue, stri
         }
         "Agent Animation Gallery",
         "Egg Gallery male",
-        "Egg Gallery female" -> if (FileNameUtil.getExtension(string).nullIfEmpty() != null) {
+        "Egg Gallery female" -> if (PathUtil.getExtension(string).nullIfEmpty() != null) {
             val error = AgentMessages.message("pray.annotator.tag-values.gallery-should-not-have-extension", tag)
-            val fixes = FileNameUtil.getFileNameWithoutExtension(string)?.let { fileNameWithoutExtension ->
+            val fixes = PathUtil.getFileNameWithoutExtension(string)?.let { fileNameWithoutExtension ->
                 CaosScriptReplaceElementFix(
                     tagValueElement,
                     "\"${fileNameWithoutExtension}\"",

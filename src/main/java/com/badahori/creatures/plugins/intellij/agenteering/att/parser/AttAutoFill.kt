@@ -5,7 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnkno
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.intellij.openapi.vfs.VirtualFile
 
 object AttAutoFill {
@@ -57,7 +57,7 @@ object AttAutoFill {
 
     @JvmStatic
     fun blankAttData(fileName: String, variant: CaosVariant): AttFileData? {
-        val nameWithoutExtension = FileNameUtil.getFileNameWithoutExtension(fileName)
+        val nameWithoutExtension = PathUtil.getFileNameWithoutExtension(fileName)
             ?: return null
         if (!BreedPartKey.isPartName(nameWithoutExtension)) {
             return null
@@ -77,7 +77,7 @@ object AttAutoFill {
     }
     @JvmStatic
     fun blankAttText(fileName: String, variant: CaosVariant): String? {
-        val nameWithoutExtension = FileNameUtil.getFileNameWithoutExtension(fileName)
+        val nameWithoutExtension = PathUtil.getFileNameWithoutExtension(fileName)
             ?: return null
         if (!BreedPartKey.isPartName(nameWithoutExtension)) {
             return null

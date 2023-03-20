@@ -528,8 +528,8 @@ internal object Caos2CompletionProvider {
             val childPath = VfsUtil.findRelativePath(directory, file, pathSeparatorChar)
                 ?: continue
             val relativePath = if (dropExtension) {
-                val parentPath = FileNameUtil.getWithoutLastPathComponent(childPath)
-                val baseName = FileNameUtil.getFileNameWithoutExtension(childPath)
+                val parentPath = PathUtil.getWithoutLastPathComponent(childPath)
+                val baseName = PathUtil.getFileNameWithoutExtension(childPath)
                     ?: continue
                 (parentPath ?: "") + baseName
             } else {

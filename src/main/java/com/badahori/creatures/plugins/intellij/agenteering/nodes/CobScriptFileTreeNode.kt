@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.bedalton.log.*
 import com.bedalton.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock
@@ -345,7 +345,7 @@ internal class CobSpriteFileTreeNode(
         if (!isValid()) {
             return@lazy emptyList()
         }
-        val fileNameBase = FileNameUtil.getFileNameWithoutExtension(block.fileName).orEmpty() + "_"
+        val fileNameBase = PathUtil.getFileNameWithoutExtension(block.fileName).orEmpty() + "_"
         val images = block.sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{ index, image ->

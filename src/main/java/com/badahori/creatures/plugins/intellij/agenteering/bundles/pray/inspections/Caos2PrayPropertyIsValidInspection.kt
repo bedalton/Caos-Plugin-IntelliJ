@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Path
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support.PrayTags
@@ -108,7 +108,7 @@ class Caos2PrayPropertyIsValidInspection : LocalInspectionTool(), DumbAware {
                     ?.commands
                     .orEmpty()
 
-            val geneticFilePath = FileNameUtil.getLastPathComponent(filePath)
+            val geneticFilePath = PathUtil.getLastPathComponent(filePath)
                 .nullIfEmpty()
 
             if (geneticFilePath == null) {

@@ -9,7 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
@@ -79,7 +79,7 @@ private fun validateThumbnail(
         ?.let { getFileNameWithArrayAccess(it) }
         ?: return
 
-    val extension = FileNameUtil
+    val extension = PathUtil
         .getExtension(fileName)
         ?.lowercase()
 

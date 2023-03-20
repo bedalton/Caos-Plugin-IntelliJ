@@ -15,7 +15,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.contain
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.collectElementsOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
@@ -213,7 +213,7 @@ private fun annotateTag(tagElement: CaosScriptCaos2Tag, holder: ProblemsHolder) 
     // Directory.findChild may resolve incorrect case file as correct
     val trueChild = VirtualFileUtil.findChildIgnoreCase(directory, ignoreExtension = false, directory = false, trueFileName)
     // If name matches exactly or is on Windows case-insensitive file system
-    if (trueChild != null && (trueChild.name == FileNameUtil.getLastPathComponent(trueFileName)) || OsUtil.isWindows)
+    if (trueChild != null && (trueChild.name == PathUtil.getLastPathComponent(trueFileName)) || OsUtil.isWindows)
         return
 
     val error = AgentMessages.message(
@@ -236,7 +236,7 @@ private fun annotateTag(tagElement: CaosScriptCaos2Tag, holder: ProblemsHolder) 
     )
 
     val similar: Array<LocalQuickFix> = similarFileNames?.map {
-        val thisExtension = FileNameUtil.getExtension(it).nullIfEmpty()
+        val thisExtension = PathUtil.getExtension(it).nullIfEmpty()
         val path = if (thumbnailIndex != null) {
             if (thisExtension == null)
                 it + thumbnailIndex

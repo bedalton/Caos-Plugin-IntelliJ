@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.toListOf
 import bedalton.creatures.sprite.parsers.*
 import bedalton.creatures.sprite.util.SpriteType
@@ -85,11 +85,7 @@ object SpriteParser {
             SPR ->
                 try {
                     SprSpriteFile(stream, false, progressEvery, callback)
-                        .toListOf().apply {
-                            Log.iIf(SPR_SHORT_DEBUG_LOGGING) {
-                                "Is default sprite format"
-                            }
-                        }
+                        .toListOf()
                 } catch (e: Exception) {
                     Log.iIf(SPR_SHORT_DEBUG_LOGGING) { "Parsing SPR short: $fileName" }
                     try {
@@ -193,7 +189,7 @@ class SpriteFileHolder(sprites: List<SpriteFile>, val fileName: String, private 
 
 
     val fileType by lazy {
-        (FileNameUtil.getExtension(fileName) ?: fileName).uppercase().let {
+        (PathUtil.getExtension(fileName) ?: fileName).uppercase().let {
             when (it) {
                 "SPR" -> if (sprites.size > 0) SpriteType.SPR_SET else SpriteType.SPR
                 "S16" -> S16
