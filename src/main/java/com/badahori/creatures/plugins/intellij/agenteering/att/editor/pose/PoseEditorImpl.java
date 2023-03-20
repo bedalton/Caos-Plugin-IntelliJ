@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose;
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorPanel;
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility;
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService;
@@ -12,7 +13,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.DocumentChangeL
 import com.badahori.creatures.plugins.intellij.agenteering.utils.MouseListenerBase;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProcessCanceledException;
@@ -40,6 +40,7 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -108,6 +109,8 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     private JComboBox<String> eyesStatus;
     private JScrollPane partsPanel;
     private JFormattedTextField poseStringField;
+    private JButton hidden;
+    private JButton ghost;
     private List<BodyPartFiles> files;
     private CaosVariant variant;
     private Pose pose;
@@ -125,7 +128,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     private boolean hasTail;
     private Function<Boolean, Void> onRedrawCallback;
     private final PoseEditorModel model;
-    private boolean variantChanged = false;
+    private boolean variantChanged;
     private boolean didInitComboBoxes = false;
     private final CaosProjectSettingsService settings;
 
@@ -138,7 +141,13 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
 
     private boolean dirty = true;
 
+    private boolean mirrorPose = false;
+
+    private final Map<Character, PartVisibility> visibilityMap = new HashMap<>();
+
     private final Map<Character, BodyPartFiles> last = new HashMap<>();
+
+    private final Map<Character, Integer> partIncrementDirection = new HashMap<>();
 
     public PoseEditorImpl(
             @NotNull final Project project,
@@ -169,22 +178,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     }
 
 
-    /**
-     * Reverses the items in an array
-     *
-     * @param items array to reverse
-     * @param <T>   the type of items in array
-     */
-    private static <T> void reverse(T[] items) {
-        final int n = items.length;
-        T t;
-        for (int i = 0; i < n / 2; i++) {
-            t = items[i];
-            items[i] = items[n - i - 1];
-            items[n - i - 1] = t;
-        }
-    }
-
     public synchronized void init() {
         if (project.isDisposed()) {
             return;
@@ -212,6 +205,70 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     public Integer getPartPose(char part) {
         final int facing = this.getFacing();
         return getPartPose(part, facing, model.getFacingOffset(variant, facing));
+    }
+
+    @Override
+    public void incrementPart(final char part) {
+        final JComboBox<String> box = getComboBoxForPart(part);
+        if (box == null) {
+            return;
+        }
+        final int currentPose = box.getSelectedIndex();
+        int directionMod = partIncrementDirection.getOrDefault(part, 1);
+        if (Math.abs(directionMod) != 1) {
+            directionMod = 1;
+        }
+        int newPose = currentPose + directionMod;
+        if (newPose < 0) {
+            newPose = 1;
+            partIncrementDirection.put(part, 1);
+        } else if (newPose > 3) {
+            newPose = 2;
+            partIncrementDirection.put(part, -1);
+        }
+        setTilt(part, newPose);
+    }
+
+
+    @Override
+    public void incrementPart(final char part, final boolean forward) {
+        final Integer currentPose = getPartPose(part);
+        if (currentPose == null) {
+            return;
+        }
+        // Get increment step value
+        final int modifier = forward ? 1 : -1;
+
+        // Calculate next pose
+        int newPose = currentPose + modifier;
+
+        // Check that pose is in view
+        if (newPose < 0 || newPose > 3) {
+            return;
+        }
+
+        // Actually set the pose
+        setPose(part, newPose);
+    }
+
+    public Integer getPartPose(final char part, final int facingDirection) {
+        final int offset;
+        switch (facingDirection) {
+            case 0:
+                offset = 0;
+                break;
+            case 1:
+                offset = 4;
+                break;
+            case 2:
+                offset = 8;
+                break;
+            case 3:
+                offset = variant.isOld() ? 9 : 12;
+            default:
+                return null;
+        }
+        return getPartPose(part, facingDirection, offset);
     }
 
     /**
@@ -264,6 +321,21 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     @NotNull
     public CaosVariant getVariant() {
         return variant;
+    }
+
+    @Override
+    public void setMirrorPose(final boolean mirror) {
+        this.mirrorPose = mirror;
+
+        // Snap other side to mirror
+        final char[] parts = new char[]{'c', 'd', 'e', 'i', 'j'};
+        for (final char part : parts) {
+            final Integer pose = getPartPose(part);
+            if (pose == null) {
+                continue;
+            }
+            mirrorPartPose(part, pose);
+        }
     }
 
     /**
@@ -340,14 +412,14 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
 
         updateTails();
         // If variant is old, it does not have multiple tilts for front facing and back facing head sprites
-        if (false && variant.isOld()) {
-            // Todo ensure that C1e works using the unified system
-            freeze(headDirection2, true, true);
-            tiltLabel.setVisible(false);
-        } else {
-            freeze(headDirection2, !headDirection2.isEnabled(), false);
-            tiltLabel.setVisible(true);
-        }
+//        if (false && variant.isOld()) {
+//            // Todo ensure that C1e works using the unified system
+//            freeze(headDirection2, true, true);
+//            tiltLabel.setVisible(false);
+//        } else {
+        freeze(headDirection2, !headDirection2.isEnabled(), false);
+        tiltLabel.setVisible(true);
+//        }
     }
 
     private void updateTails() {
@@ -405,13 +477,14 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         if (!didInitComboBoxes) {
             setFacing(0);
         }
-        if (false && variant == CaosVariant.C1.INSTANCE && baseBreed.getGenus() != null && baseBreed.getGenus() == 1) {
-            reverse(directions);
-            assign(bodyTilt, directions, didInitComboBoxes ? bodyTilt.getSelectedIndex() : 2);
-            reverse(directions);
-        } else {
-            assign(bodyTilt, directions, didInitComboBoxes ? bodyTilt.getSelectedIndex() : 2);
-        }
+//        if (false && variant == CaosVariant.C1.INSTANCE && baseBreed.getGenus() != null && baseBreed.getGenus() == 1) {
+//            reverse(directions);
+//            assign(bodyTilt, directions, didInitComboBoxes ? bodyTilt.getSelectedIndex() : 2);
+//            reverse(directions);
+//        } else {
+        assign(bodyTilt, directions, didInitComboBoxes ? bodyTilt.getSelectedIndex() : 2);
+//        }
+        assign(focusMode, FocusMode.toStringArray(), didInitComboBoxes ? focusMode.getSelectedIndex() : 0);
         assign(focusMode, FocusMode.toStringArray(), didInitComboBoxes ? focusMode.getSelectedIndex() : 0);
         assign(leftThighPose, directions, didInitComboBoxes ? leftThighPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'c', 2));
         assign(leftShinPose, directions, didInitComboBoxes ? leftShinPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'd', 2));
@@ -460,6 +533,42 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         poseStringField.setText(initialPose.poseString(variant, this.getFacing()));
         justSetString = false;
         initOpenRelatedComboBox();
+        initHiddenPartsComboBox();
+        initGhostPartsComboBox();
+    }
+
+    private void initHiddenPartsComboBox() {
+        final VisibilityPopup menu = new VisibilityPopup(PartVisibility.HIDDEN);
+        hidden.addMouseListener(new MouseListenerBase() {
+            @Override
+            public void mouseClicked(@NotNull MouseEvent e) {
+                menu.updateItems();
+                menu.show(e.getComponent(), e.getX(), e.getY());
+            }
+
+            @Override
+            public void mousePressed(@NotNull MouseEvent e) {
+                menu.updateItems();
+                menu.show(e.getComponent(), e.getX(), e.getY());
+            }
+        });
+    }
+
+    private void initGhostPartsComboBox() {
+        final VisibilityPopup menu = new VisibilityPopup(PartVisibility.GHOST);
+        ghost.addMouseListener(new MouseListenerBase() {
+            @Override
+            public void mouseClicked(@NotNull MouseEvent e) {
+                menu.updateItems();
+                menu.show(e.getComponent(), e.getX(), e.getY());
+            }
+
+            @Override
+            public void mousePressed(@NotNull MouseEvent e) {
+                menu.updateItems();
+                menu.show(e.getComponent(), e.getX(), e.getY());
+            }
+        });
     }
 
     private void updateBreedsList() {
@@ -665,24 +774,49 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         });
     }
 
+    public boolean openRelated(final char part) {
+        final int itemCount = openRelated.getItemCount();
+        for (int i = 0; i < itemCount; i++) {
+            final BodyPartFiles item = openRelated.getItemAt(i);
+            if (item == null) {
+                continue;
+            }
+            final BreedPartKey key = item.getKey();
+            if (key == null) {
+                continue;
+            }
+            final Character itemPart = key.getPart();
+            if (itemPart == null) {
+                continue;
+            }
+            if (itemPart == part) {
+                openRelated.setSelectedIndex(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void addPartListener(final JComboBox<?> box, final char partChar) {
         box.addItemListener((e) -> {
             if (e.getStateChange() != ItemEvent.SELECTED || box.getSelectedIndex() < 0) {
                 return;
             }
             dirty = true;
-            final boolean justSetOriginal = justSetString;
+//            final boolean justSetOriginal = justSetString;
             if (!justSetString) {
                 justSetString = true;
                 updatePoseStringField(partChar);
-                ApplicationManager.getApplication().invokeLater(() -> {
-                    justSetString = false;
-                });
+                ApplicationManager.getApplication().invokeLater(() -> justSetString = false);
             }
             ApplicationManager.getApplication().invokeLater(() -> {
 
                 if (didInitOnce && box.getItemCount() > 0) {
                     if (drawImmediately) {
+                        final int pose = box.getSelectedIndex();
+                        if (mirrorPose && pose >= 0) {
+                            mirrorPartPose(partChar, pose);
+                        }
                         updatePose(partChar);
                         redraw(partChar);
                     }
@@ -691,6 +825,46 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         });
     }
 
+
+    private void mirrorPartPose(final char part, final int pose) {
+        Character otherPart = getMirrorPart(part);
+        if (otherPart == null) {
+            return;
+        }
+        final Integer otherPose = getPartPose(otherPart);
+        if (otherPose != null && otherPose == pose) {
+            return;
+        }
+        setPose(otherPart, pose);
+    }
+
+    @Nullable
+    private Character getMirrorPart(final char part) {
+        switch (Character.toLowerCase(part)) {
+            case 'c':
+                return 'f';
+            case 'd':
+                return 'g';
+            case 'e':
+                return 'h';
+            case 'f':
+                return 'c';
+            case 'g':
+                return 'd';
+            case 'h':
+                return 'e';
+            case 'i':
+                return 'k';
+            case 'j':
+                return 'l';
+            case 'k':
+                return 'i';
+            case 'l':
+                return 'j';
+            default:
+                return null;
+        }
+    }
 
     private void addBreedListener(final JComboBox<Triple<String, BreedPartKey, List<BodyPartFiles>>> box, final char... parts) {
         box.addItemListener((e) -> {
@@ -971,8 +1145,24 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     }
 
     @Override
-    public Map<Character, PoseRenderer.PartVisibility> getVisibilityMask() {
-        return FocusModeHelper.getVisibilityMask(focusMode.getSelectedIndex(), visibilityFocus);
+    public Map<Character, PartVisibility> getVisibilityMask() {
+        final Map<Character, PartVisibility> mask = new HashMap<>();
+        applyVisibilityMask(FocusModeHelper.getVisibilityMask(focusMode.getSelectedIndex(), visibilityFocus), mask);
+        applyVisibilityMask(visibilityMap, mask);
+        return mask;
+    }
+
+    public void applyVisibilityMask(@Nullable final Map<Character, PartVisibility> from, @NotNull final Map<Character, PartVisibility> into) {
+        if (from == null) {
+            return;
+        }
+        Set<Map.Entry<Character, PartVisibility>> entries = from.entrySet();
+        if (entries.isEmpty()) {
+            return;
+        }
+        for (final Map.Entry<Character, PartVisibility> entry : entries) {
+            into.put(entry.getKey(), entry.getValue());
+        }
     }
 
     /**
@@ -1056,7 +1246,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     private JComboBox<String> getComboBoxForPart(char part) {
         switch (part) {
             case 'a':
-                return headPose;
+                return headDirection2;
             case 'b':
                 return bodyTilt;
             case 'c':
@@ -1354,7 +1544,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
      * Resets pose if needed
      * Pose gets weird if file is resumed from front facing sprite, but another direction is then clicked on
      */
-    @SuppressWarnings("DataFlowIssue")
     public void resetIfNeeded() {
         int resetCount = 0;
         for (char part : ALL_PARTS) {
@@ -1506,7 +1695,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         }
         final HeadPoseData headPoseData = PoseCalculator.getHeadPose(variant, facing, pose);
 
-        final boolean isForwardBackwardOnC1e = headPoseData.getDirection() >= 2 && variant.isOld();
+//        final boolean isForwardBackwardOnC1e = headPoseData.getDirection() >= 2 && variant.isOld();
 
         if (headPose.getSelectedIndex() != headPoseData.getDirection()) {
             if (headPose.getModel().getSize() > headPoseData.getDirection()) {
@@ -1550,6 +1739,53 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         model.setLocked(locked);
     }
 
+    public void togglePartVisibility(final char part, final PartVisibility visibility) {
+        final PartVisibility currentVisibility = this.visibilityMap.get(part);
+        if (currentVisibility == null || currentVisibility != visibility) {
+            this.visibilityMap.put(part, visibility);
+        } else {
+            this.visibilityMap.remove(part);
+        }
+        redraw(part);
+    }
+
+    /**
+     * Sets the pose for a body part directly
+     * Alters the items in the corresponding dropdown accordingly
+     *
+     * @param partChar part to set the pose for
+     * @param tilt     the pose to apply
+     */
+    public void setTilt(final char partChar, int tilt) {
+        final JComboBox<String> box = getComboBoxForPart(partChar);
+        final Integer itemCount = box.getItemCount();
+        if (itemCount != null && itemCount > tilt) {
+            box.setSelectedIndex(tilt);
+        }
+        redraw(partChar);
+//        if (!didInitOnce) {
+//            return;
+//        }
+//
+//        final int bodyFacing = getFacing();
+//        Integer pose;
+//        if (partChar == 'a') {
+//            pose = model.getHeadPoseActual(
+//                    getFacing(),
+//                    (String) headPose.getSelectedItem(),
+//                    tilt,
+//                    headDirection2.getSelectedIndex(),
+//                    mood.getSelectedIndex(),
+//                    eyesStatus.getSelectedIndex() > 0
+//            );
+//        } else {
+//            pose = getPartPose(partChar, tilt, bodyFacing);
+//        }
+//        if (pose == null) {
+//            return;
+//        }
+//        setPose(partChar, pose);
+    }
 
     /**
      * Sets the pose for a body part directly
@@ -1637,22 +1873,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             updatePose(partChar);
             redraw(partChar);
         }
-//        ApplicationManager.getApplication().invokeLater(() -> {
-//            try {
-//                final Pose updatedPose = getPose(null);
-//                if (dirty && updatePoseString) {
-//                    final String newPoseString = updatedPose.poseString(variant, facing.getSelectedIndex());
-//                    if (newPoseString != null) {
-//                        lastPoseString = newPoseString;
-//                        if (!newPoseString.equals(poseStringField.getText().trim())) {
-//                            poseStringField.setText(newPoseString);
-//                        }
-//                    }
-//                }
-//            } catch (final Exception ignored) {
-//
-//            }
-//        });
     }
 
     private void createUIComponents() {
@@ -2400,6 +2620,223 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         void onPoseChange(Pose pose);
     }
 
+    private class VisibilityPopup extends JPopupMenu {
+
+        final JCheckBoxMenuItem all = new JCheckBoxMenuItem("All Parts");
+        final Map<Character, JCheckBoxMenuItem> partItems = new HashMap<>();
+
+        final Map<char[], JCheckBoxMenuItem> multiPartItems = new HashMap<>();
+        private final PartVisibility visibility;
+
+        private boolean canClose = true;
+
+        VisibilityPopup(final PartVisibility visibility) {
+            this.visibility = visibility;
+            init();
+            initDragHandlers();
+        }
+
+        void updateItems() {
+            for (final Map.Entry<Character, JCheckBoxMenuItem> entry : partItems.entrySet()) {
+                final boolean checked = visibilityMap.get(entry.getKey()) == visibility;
+                entry.getValue().setSelected(checked);
+            }
+            updateMultiPartUI();
+            updateAllCheckbox();
+        }
+
+        private void updateMultiPartUI() {
+            for (final Map.Entry<char[], JCheckBoxMenuItem> entry : multiPartItems.entrySet()) {
+                boolean allChecked = true;
+                for (final char part : entry.getKey()) {
+                    if (allChecked && visibilityMap.get(part) != visibility) {
+                        allChecked = false;
+                    }
+                }
+                entry.getValue().setSelected(allChecked);
+            }
+        }
+
+        private void init() {
+            all.addActionListener((e) -> toggleAll());
+            add(all);
+            final char[] parts = new char[]{'a', 'o', 'p', 'q', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n'};
+            for (final char part : parts) {
+
+                // Add Multipart checkbox before corresponding part
+                switch (Character.toLowerCase(part)) {
+                    case 'a':
+                        initMultiCheckbox("Head", 'a', 'o', 'p', 'q');
+                        break;
+                    case 'c':
+                        initMultiCheckbox("Legs", 'c', 'd', 'e', 'f', 'g', 'h');
+                        initMultiCheckbox("  L. Leg", 'c', 'd', 'e');
+                        break;
+                    case 'f':
+                        initMultiCheckbox("  R. Leg", 'f', 'g', 'h');
+                        break;
+                    case 'i':
+                        initMultiCheckbox("Arms", 'i', 'j', 'k', 'l');
+                        initMultiCheckbox("  L. Arm", 'i', 'j');
+                        break;
+                    case 'k':
+                        initMultiCheckbox("  R. Arm", 'k', 'l');
+                        break;
+                    case 'm':
+                        initMultiCheckbox("Tail", 'm', 'n');
+                        break;
+                }
+                // Add single part checkbox
+                initCheckboxForPart(part);
+            }
+        }
+
+        private void updateAllCheckbox() {
+            boolean checked = false;
+            for (final Map.Entry<Character, JCheckBoxMenuItem> entry : partItems.entrySet()) {
+                if (!checked && visibilityMap.get(entry.getKey()) == visibility) {
+                    checked = true;
+                }
+            }
+            all.setSelected(checked);
+        }
+
+        private void initMultiCheckbox(final String label, char... parts) {
+            final JCheckBoxMenuItem item = new JCheckBoxMenuItem(label);
+            boolean allChecked = true;
+            for (final char part : parts) {
+                if (allChecked && visibilityMap.get(part) != visibility) {
+                    allChecked = false;
+                }
+            }
+            item.setSelected(allChecked);
+            item.addActionListener(onMultiToggleClicked(item, parts));
+            add(item);
+            multiPartItems.put(parts, item);
+        }
+
+        private void initCheckboxForPart(final char part) {
+            String prefix = getPrefix(part);
+            final JCheckBoxMenuItem item = new JCheckBoxMenuItem(prefix + part + " - " + PoseEditorSupport.getPartName(part));
+            final PartVisibility currentVisibility = visibilityMap.get(part);
+            item.setSelected(currentVisibility == visibility);
+            item.addActionListener(onPartClick(part, item));
+            add(item);
+            partItems.put(part, item);
+        }
+
+        private void initDragHandlers() {
+            addMouseListener(new MouseListenerBase() {
+                @Override
+                public void mouseEntered(@NotNull MouseEvent e) {
+                    canClose = false;
+                }
+
+                @Override
+                public void mouseExited(@NotNull MouseEvent e) {
+                    canClose = true;
+                }
+            });
+        }
+
+
+        @Override
+        public void setVisible(boolean visible) {
+            if (!visible && !canClose) {
+                return;
+            }
+            super.setVisible(visible);
+        }
+
+        private ActionListener onPartClick(final char part, final JCheckBoxMenuItem item) {
+            return e -> {
+                if (item.isSelected()) {
+                    visibilityMap.put(part, visibility);
+                } else if (visibilityMap.get(part) == visibility) {
+                    visibilityMap.remove(part);
+                }
+                model.requestRender(new char[]{part}, false);
+                setVisible(true);
+            };
+        }
+
+
+        private void toggleAll() {
+            final boolean checked = all.isSelected();
+            for (final Map.Entry<Character, JCheckBoxMenuItem> entry : partItems.entrySet()) {
+                if (checked) {
+                    visibilityMap.put(entry.getKey(), visibility);
+                    entry.getValue().setSelected(true);
+                } else if (visibilityMap.get(entry.getKey()) == visibility) {
+                    visibilityMap.remove(entry.getKey());
+                    entry.getValue().setSelected(false);
+                }
+            }
+            redraw(ALL_PARTS);
+        }
+
+        /**
+         * Get actions listener that toggles multiple parts together
+         *
+         * @param item  menu item
+         * @param parts parts to hide/show together
+         * @return the action listener
+         */
+        private ActionListener onMultiToggleClicked(final JCheckBoxMenuItem item, char... parts) {
+            return e -> {
+                if (item.isSelected()) {
+                    for (final char part : parts) {
+                        visibilityMap.put(part, visibility);
+                        final JCheckBoxMenuItem checkbox = partItems.get(part);
+                        if (checkbox != null) {
+                            checkbox.setSelected(true);
+                        }
+                    }
+                } else {
+                    for (final char part : parts) {
+                        if (visibilityMap.get(part) == visibility) {
+                            visibilityMap.remove(part);
+                            final JCheckBoxMenuItem checkbox = partItems.get(part);
+                            if (checkbox != null) {
+                                checkbox.setSelected(false);
+                            }
+                        }
+                    }
+                }
+                model.requestRender(parts, false);
+                setVisible(true);
+            };
+        }
+
+        private String getPrefix(final char part) {
+            switch (Character.toLowerCase(part)) {
+                case 'b': // Body
+                    return "";
+                case 'c': // LEGS
+                case 'd':
+                case 'e':
+                case 'f':
+                case 'g':
+                case 'h':
+                case 'i': // ARMS
+                case 'j':
+                case 'k':
+                case 'l':
+                    return "    ";
+                case 'a': // HEAD
+                case 'o':
+                case 'p':
+                case 'q':
+                case 'm': // TAIL
+                case 'n':
+                    return "  ";
+                default:
+                    return "";
+            }
+        }
+
+    }
+
     private class PopUp extends JPopupMenu {
         final JMenuItem setDefaultPoseItem;
         final JMenuItem copyPoseItem;
@@ -2426,6 +2863,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             final boolean isNotFrontOrBack = facing != null && facing != 2 && facing != 3;
             setDefaultPoseItem.setVisible(show && isNotFrontOrBack);
         }
+
     }
 
 }

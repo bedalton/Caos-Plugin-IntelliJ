@@ -486,8 +486,9 @@ class PoseEditorModel(
     fun hardReload() {
         val progressIndicator = EmptyProgressIndicator()
         try {
+            spriteSet = null
             getUpdatedSpriteSet(progressIndicator, *allParts)
-            requestRender(*allParts, breedChanged = false)
+            requestRender(*allParts, breedChanged = true)
         } catch (_: Exception) {
         }
     }

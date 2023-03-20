@@ -2,6 +2,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor;
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorImpl;
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport;
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility;
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
@@ -12,10 +14,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
 import com.bedalton.log.Log;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -25,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
@@ -64,6 +69,10 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
 
     protected JButton refreshButton;
     private final CaosProjectSettingsService settings;
+
+    private JCheckBoxMenuItem lockXMenuItem;
+    private JCheckBoxMenuItem lockYMenuItem;
+
 
     AttEditorPanel(
             @NotNull final Project project,
@@ -185,6 +194,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         });
 
         poseViewCheckbox.addItemListener((e) -> showPoseView(poseViewCheckbox.isSelected()));
+        refreshButton.setIcon(AllIcons.Actions.Refresh);
         refreshButton.addActionListener((e) -> {
             controller.reloadFiles();
             poseEditor.hardReload();
@@ -195,27 +205,45 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
 
     private void initPopupMenu() {
         final JPopupMenu menu = new JPopupMenu();
-        final JMenuItem lockY = new JCheckBoxMenuItem("Lock Y-axis");
-        lockY.setSelected(this.controller.getLockY());
-        lockY.addActionListener(new AbstractAction() {
+        lockYMenuItem = new JCheckBoxMenuItem("Lock Y-axis");
+        lockYMenuItem.setSelected(this.controller.getLockY());
+        lockYMenuItem.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 controller.setLockY(!controller.getLockY());
-                lockY.setSelected(controller.getLockY());
+                lockYMenuItem.setSelected(controller.getLockY());
             }
         });
 
-        final JMenuItem lockX = new JCheckBoxMenuItem("Lock X-axis");
-        lockX.setSelected(this.controller.getLockX());
-        lockX.addActionListener(new AbstractAction() {
+        lockXMenuItem = new JCheckBoxMenuItem("Lock X-axis");
+        lockXMenuItem.setSelected(this.controller.getLockX());
+        lockXMenuItem.addActionListener(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 controller.setLockX(!controller.getLockX());
-                lockX.setSelected(controller.getLockX());
+                lockXMenuItem.setSelected(controller.getLockX());
             }
         });
-        menu.add(lockX);
-        menu.add(lockY);
+        menu.add(lockXMenuItem);
+        menu.add(lockYMenuItem);
+        menu.addSeparator();
+
+        final JMenuItem shiftRelativeAtt = new JCheckBoxMenuItem("Shift Relative ATT points");
+        shiftRelativeAtt.setSelected(this.controller.getShiftRelativeAtt());
+        shiftRelativeAtt.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controller.setShiftRelativeAtt(!controller.getShiftRelativeAtt());
+            }
+        });
+
+        menu.add(shiftRelativeAtt);
+        menu.addSeparator();
+
+        final JMenuItem mirrorPose = new JCheckBoxMenuItem("Mirror part poses");
+        mirrorPose.addActionListener((e) -> poseEditor.setMirrorPose(mirrorPose.isSelected()));
+        menu.add(mirrorPose);
+
         menu.addSeparator();
 
         for (int i = 0; i < 6; i++) {
@@ -298,6 +326,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
             @Override
             public void actionPerformed(ActionEvent e) {
                 controller.setLockY(!controller.getLockY());
+                lockYMenuItem.setSelected(controller.getLockY());
             }
         });
         // Sets a key to lock the y-axis
@@ -307,8 +336,10 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
             @Override
             public void actionPerformed(ActionEvent e) {
                 controller.setLockX(!controller.getLockX());
+                lockXMenuItem.setSelected(controller.getLockX());
             }
         });
+
 
         // Sets a shortcut key to hide the labels
         final String labels = "Labels";
@@ -323,7 +354,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         });
 
         final String previousFrame = "Previous Frame";
-        inputMap.put(KeyStroke.getKeyStroke("shift tab"), previousFrame);
+        inputMap.put(KeyStroke.getKeyStroke("shift pressed TAB"), previousFrame);
         actionMap.put(previousFrame, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -332,7 +363,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         });
 
         final String nextFrame = "Next Frame";
-        inputMap.put(KeyStroke.getKeyStroke("shift tab"), nextFrame);
+        inputMap.put(KeyStroke.getKeyStroke("pressed TAB"), nextFrame);
         actionMap.put(nextFrame, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -340,9 +371,91 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
             }
         });
 
-        scrollPane.setInputMap(JComponent.WHEN_FOCUSED, inputMap);
-        scrollPane.setInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, inputMap);
-        scrollPane.setActionMap(actionMap);
+        // Init key combinations to work with body parts
+        initPartKeyListeners(inputMap, actionMap);
+
+        // Allow focusing on the panel
+        mainPanel.setInputMap(JComponent.WHEN_FOCUSED, inputMap);
+        mainPanel.setInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, inputMap);
+        mainPanel.setActionMap(actionMap);
+
+    }
+
+    private void initPartKeyListeners(final InputMap inputMap, final ActionMap actionMap) {
+        for (final char part : PoseEditorSupport.getAllParts()) {
+            String partName = PoseEditorSupport.getPartName(part);
+            if (partName == null) {
+                partName = "Part " + Character.toUpperCase(part);
+            }
+            initPartIncrementKeyListener(inputMap, actionMap, partName, part);
+            initPartVisibilityKeyListener(inputMap, actionMap, partName, part, PartVisibility.HIDDEN, "alt");
+            initPartVisibilityKeyListener(inputMap, actionMap, partName, part, PartVisibility.GHOST, "alt shift");
+            initOpenRelatedPartKeyListener(inputMap, actionMap, partName, part);
+        }
+    }
+
+    private void initOpenRelatedPartKeyListener(InputMap inputMap, ActionMap actionMap, String partName, char part) {
+        @SuppressWarnings("deprecation")
+        final int shortcut = Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask();
+        final String label = "Open Related - " + partName;
+        inputMap.put(KeyStroke.getKeyStroke(part, shortcut | InputEvent.SHIFT_DOWN_MASK), label);
+        actionMap.put(label, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (part == controller.getPart()) {
+                    return;
+                }
+                poseEditor.openRelated(part);
+            }
+        });
+    }
+
+    private void initPartIncrementKeyListener(final InputMap inputMap, final ActionMap actionMap, final String partName, final char part) {
+        final String label = "Cycle " + partName + " pose";
+        final String keyboardCombo = "shift pressed " + Character.toUpperCase(part);
+        inputMap.put(KeyStroke.getKeyStroke(keyboardCombo), label);
+        actionMap.put(label, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (Character.toLowerCase(controller.getPart()) == Character.toLowerCase(part)) {
+                    controller.getShowFooterNotification().invoke("Cannot increment editor part. Use shift + up/down to cycle", MessageType.INFO);
+                } else {
+                    poseEditor.incrementPart(part);
+                }
+            }
+        });
+    }
+
+    private void initPartVisibilityKeyListener(
+            final InputMap inputMap,
+            final ActionMap actionMap,
+            final String partName,
+            final char part,
+            final PartVisibility visibility,
+            final String modifierKey
+    ) {
+        String label;
+        switch (visibility) {
+            case VISIBLE:
+                label = "Show " + partName;
+                break;
+            case HIDDEN:
+                label = "Hide " + partName;
+                break;
+            case GHOST:
+                label = "Make " + partName + " semi-transparent";
+                break;
+            default:
+                throw new IndexOutOfBoundsException("Visibility " + visibility.name().toLowerCase() + " not handled in keyboard shortcuts");
+        }
+        final String keyCombo = modifierKey + " pressed " + Character.toUpperCase(part);
+        inputMap.put(KeyStroke.getKeyStroke(keyCombo), label);
+        actionMap.put(label, new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                poseEditor.togglePartVisibility(part, visibility);
+            }
+        });
     }
 
     /**
@@ -690,7 +803,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         // Adds point to list as well as sets size of all cells
         for (int i = 0; i < Math.min(images.size(), linesCount); i++) {
             final BufferedImage image = images.get(i);
-            final int width = (int)(image.getWidth() * scale);
+            final int width = (int) (image.getWidth() * scale);
             final int height = (int) (image.getHeight() * scale);
 
             // Find the largest cell size width
