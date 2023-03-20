@@ -2,11 +2,9 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.injector.forKey
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariantExplicitOrImplicit
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedIfNotCached
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
@@ -16,9 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getFilesWithExtension
 import com.intellij.ide.scratch.ScratchUtil
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolder
 import com.intellij.openapi.vfs.VirtualFile
@@ -310,7 +306,14 @@ private fun variantInScopeFinal(
             'B'.code.toByte(),
             '2'.code.toByte()
         )
-        val cob2 = cobs.any { it.inputStream?.readNBytes(4)?.contentEquals(cobHeader) == true }
+        val buffer = ByteArray(4)
+        val cob2 = cobs.any {
+            try {
+                it.inputStream?.read(buffer) == 4 && buffer.contentEquals(cobHeader)
+            } catch (_: Exception) {
+                false
+            }
+        }
         if (cob2) {
             return CaosVariant.C2
         }
@@ -381,11 +384,11 @@ fun CaosProjectSettingsService.removeIgnoredFile(fileName: String) {
 fun CaosApplicationSettingsService.addGameInterfaceName(interfaceName: GameInterfaceName) {
     val state = state
     loadState(
-        state.copy(
+        state.copy {
             gameInterfaceNames = (state.gameInterfaceNames + interfaceName)
                 .distinct()
                 .filter { it !is NativeInjectorInterface || !it.isDefault }
-        )
+        }
     )
 }
 
@@ -395,10 +398,10 @@ fun CaosApplicationSettingsService.addGameInterfaceName(interfaceName: GameInter
  */
 fun CaosApplicationSettingsService.removeGameInterfaceName(interfaceName: GameInterfaceName) {
     val state = state
-    loadState(state.copy(
+    loadState(state.copy {
         gameInterfaceNames = state.gameInterfaceNames
             .filter { it != interfaceName }
-    ))
+    })
 }
 
 /**
@@ -499,14 +502,14 @@ var CaosProjectSettingsService.injectionCheckDisabled: Boolean
  * Used for things like the front facing ATTs with C1e -> C2e conversions
  */
 var CaosApplicationSettingsService.replicateAttToDuplicateSprites: Boolean?
-    get() = state.replicateAttToDuplicateSprite
+    get() = state.replicateAttsToDuplicateSprites
     set(value) {
-        if (value == state.replicateAttToDuplicateSprite)
+        if (value == state.replicateAttsToDuplicateSprites)
             return
         loadState(
-            state.copy(
-                replicateAttToDuplicateSprite = value != false
-            )
+            state.copy {
+                replicateAttsToDuplicateSprites = value != false
+            }
         )
     }
 
