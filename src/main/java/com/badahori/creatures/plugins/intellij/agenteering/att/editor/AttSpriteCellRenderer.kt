@@ -452,7 +452,7 @@ private class AttCellCanvas(
 
 
     init {
-        val imageDimension = Dimension(image.width + 50, image.height + 40)
+        val imageDimension = Dimension(image.width + 60, image.height + 60)
         size = imageDimension
         preferredSize = imageDimension
         minimumSize = imageDimension

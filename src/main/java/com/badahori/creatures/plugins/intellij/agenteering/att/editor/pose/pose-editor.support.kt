@@ -124,6 +124,10 @@ interface BreedPoseHolder {
     fun getBodyPoseActual(): Int
     val baseBreed: BreedPartKey
     val variant: CaosVariant
+    fun incrementPart(part: Char)
+
+    fun incrementPart(part: Char, forward: Boolean)
+    fun setMirrorPose(mirror: Boolean)
 }
 
 /**

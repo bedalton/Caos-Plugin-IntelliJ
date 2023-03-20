@@ -349,6 +349,7 @@ object PoseCalculator {
         vararg parts: Char,
     ): Pose {
 
+
         // Get facing direction to calculate the sprite offset in the sprite file
         val offset: Int = when (facingDirection) {
             0 -> 0
@@ -390,6 +391,7 @@ object PoseCalculator {
                     }
                 }
                 else -> {
+
                     poseTemp[part] = poseHolder.getPartPose(part, facingDirection, offset)?.apply {
                         if (this < 0)
                             throw Exception("Invalid pose calculated for part '$part'. FacingDirection:$facingDirection; Offset: $offset; Output: $this")
