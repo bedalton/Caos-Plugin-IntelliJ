@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey.Companion.isPartName
@@ -74,7 +74,7 @@ class BreedTreeProvider : TreeStructureProvider {
 
         // Create the breed nodes using the map of breed keys to files
         val breedNodes: List<AbstractTreeNode<*>> = groups.mapNotNull map@{ (key, children) ->
-            val extensions = children.mapNotNull { FileNameUtil.getExtension(it.nameExtended ?: "")?.uppercase() }
+            val extensions = children.mapNotNull { PathUtil.getExtension(it.nameExtended ?: "")?.uppercase() }
             if (extensions.filter { it == "ATT" }.size < 6 && extensions.filterNot { it == "ATT" }.size < 6 ) {
                 out.addAll(children)
                 return@map null

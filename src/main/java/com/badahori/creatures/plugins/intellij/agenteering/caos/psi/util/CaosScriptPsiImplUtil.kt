@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCodeBlock

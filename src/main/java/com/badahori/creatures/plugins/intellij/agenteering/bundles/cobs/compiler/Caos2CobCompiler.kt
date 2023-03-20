@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
@@ -114,7 +114,7 @@ object Caos2CobCompiler {
                 error
             )
         }*/
-        if (FileNameUtil.getFileNameWithoutExtension(removerCob.targetFile).let { it.isNotNullOrBlank() && it notLike "false" }) {
+        if (PathUtil.getFileNameWithoutExtension(removerCob.targetFile).let { it.isNotNullOrBlank() && it notLike "false" }) {
             val removerData = compile(project, file, removerCob)
             if (removerData == null) {
                 ++compilationResult.failures
@@ -336,7 +336,7 @@ object Caos2CobCompiler {
         return links.map map@{ relativePath ->
             val file = directory.findChild(relativePath)
                 ?: throw Caos2CobException("Failed to locate linked file: at '${directory.path + "/" + relativePath}'")
-            val extension = FileNameUtil.getExtension(relativePath)?.lowercase()
+            val extension = PathUtil.getExtension(relativePath)?.lowercase()
             if (extension == "wav" || extension in SpriteParser.VALID_SPRITE_EXTENSIONS) {
                 throw Caos2CobException("Linked file was not a CAOS file. Did you mean Attach or Inline?")
             }
@@ -419,7 +419,7 @@ object Caos2CobCompiler {
     private fun writeCob(project: Project, directory: VirtualFile, cob: Caos2Cob, data: ByteArray): Boolean {
         var targetFile = cob.targetFile.nullIfEmpty()
             ?: throw Caos2CobException("Cannot write COB for agent: '${cob.agentName}' without target file.")
-        if (FileNameUtil.getExtension(targetFile).isNullOrBlank()) {
+        if (PathUtil.getExtension(targetFile).isNullOrBlank()) {
             targetFile += ".cob"
         }
         if (!directory.isDirectory)

@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.getFileNameWithArrayAccess
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections.tagRequiresFileOfType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.textWithoutCompletionIdString
@@ -251,7 +251,7 @@ private fun getCaos2CommandStubKind(
         ?: return null
 
     // Get actual file extension
-    val extension = FileNameUtil.getExtension(fileName)
+    val extension = PathUtil.getExtension(fileName)
         ?: return null
 
     // Get stub kind for extension
@@ -291,12 +291,12 @@ private fun getC1eCaos2TagStubKind(
     if (tagKind != CobTag.THUMBNAIL) {
         return null
     }
-    val fileNameRaw = FileNameUtil.getLastPathComponent(file)
+    val fileNameRaw = PathUtil.getLastPathComponent(file)
         ?: file
     val fileName = getFileNameWithArrayAccess(fileNameRaw)
         ?: fileNameRaw
 
-    val fileExtension = FileNameUtil.getExtension(fileName)
+    val fileExtension = PathUtil.getExtension(fileName)
         ?: return null
 
     return getStringStubKindForExtension(fileExtension)
@@ -311,7 +311,7 @@ private fun getC2eCaos2TagStubKind(
         ?: return null
 
     // If this requires file, just try with whatever extension it has
-    (FileNameUtil.getExtension(file))?.let { extension ->
+    (PathUtil.getExtension(file))?.let { extension ->
         return getStringStubKindForExtension(extension)
     }
 

@@ -458,7 +458,7 @@ private fun addStringCompletions(
         ?: element.parent?.parent as? CaosScriptQuoteStringLiteral
     val quoter = if (variant.isOld) {
         { text: String ->
-            FileNameUtil.getFileNameWithoutExtension(text)
+            PathUtil.getFileNameWithoutExtension(text)
                 ?: text
         }
     } else if (quoteStringElement != null) {

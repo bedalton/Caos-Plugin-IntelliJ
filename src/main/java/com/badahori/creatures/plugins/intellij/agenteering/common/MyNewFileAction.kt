@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.common
 
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.className
 import com.bedalton.common.util.ensureEndsWith
 import com.bedalton.common.util.nullIfEmpty
@@ -67,13 +67,13 @@ abstract class MyNewFileAction(
      */
     override fun createFileFromTemplate(fileName: String, template: FileTemplate, dir: PsiDirectory): PsiFile? {
         return  try {
-            val actualFileName = FileNameUtil.getLastPathComponent(fileName) ?: fileName
+            val actualFileName = PathUtil.getLastPathComponent(fileName) ?: fileName
             val type = when (template.name) {
                 else -> "File"
             }
             val project = dir.project
             var theDir = dir
-            val relativePath = FileNameUtil.getWithoutLastPathComponent(fileName)
+            val relativePath = PathUtil.getWithoutLastPathComponent(fileName)
                 ?.nullIfEmpty()
                 ?.ensureEndsWith('/')
             if (relativePath != null) {

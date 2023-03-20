@@ -101,7 +101,7 @@ object VirtualFileUtil {
         }
 
         return if (ignoreExtension) {
-            val last = FileNameUtil.getFileNameWithoutExtension(components.last())
+            val last = PathUtil.getFileNameWithoutExtension(components.last())
             file.children?.firstOrNull {
                 (scope == null || scope.accept(it)) &&
                         it.nameWithoutExtension.equals(last, true) &&
@@ -129,7 +129,7 @@ object VirtualFileUtil {
         }
         if (components.size == 1) {
             val onlyComponent = components[0]
-            if (FileNameUtil.getExtension(onlyComponent)?.nullIfEmpty() == null) {
+            if (PathUtil.getExtension(onlyComponent)?.nullIfEmpty() == null) {
                 virtualFile.children.firstOrNull { it.name.equals(onlyComponent, ignoreCase = true) }
                     ?.let {
                         if (it.isDirectory)
@@ -159,7 +159,7 @@ object VirtualFileUtil {
         val lastComponent = components.last()
         var last = file.children?.firstOrNull { it.name.equals(lastComponent, true) }
         if (last == null) {
-            if (FileNameUtil.getExtension(lastComponent).nullIfEmpty() == null)
+            if (PathUtil.getExtension(lastComponent).nullIfEmpty() == null)
                 return null
             else
                 last = file
@@ -529,7 +529,7 @@ internal inline fun VirtualFile.applyWritable(work: VirtualFile.() -> Unit) {
  * Get the swing icon for a given file name
  */
 internal fun getFileIcon(fileName: String, nonNullDefault: Boolean = true): Icon? {
-    val extension = (FileNameUtil.getExtension(fileName) ?: fileName)
+    val extension = (PathUtil.getExtension(fileName) ?: fileName)
     return when (extension.uppercase()) {
         "COS" -> CaosScriptIcons.CAOS_FILE_ICON
         "SPR" -> CaosScriptIcons.SPR_FILE_ICON

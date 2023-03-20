@@ -8,7 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptL
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.runInspections
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.bedalton.io.bytes.MemoryByteStreamReader
 import com.bedalton.io.bytes.internal.MemoryByteStreamReaderEx
 import com.bedalton.io.bytes.string
@@ -40,14 +40,14 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
                     return@readAtCurrentPositionReturning byteArray.contentToString()
                 }
                 val cobData =
-                    CobToDataObjectDecompiler.decompile(this, FileNameUtil.getFileNameWithoutExtension(fileName))
+                    CobToDataObjectDecompiler.decompile(this, PathUtil.getFileNameWithoutExtension(fileName))
                 presentCobData(fileName, cobData)
             }
         }
 
         fun decompileToPsiFile(project: Project, fileName: String, byteArray: ByteArray): PsiFile {
             val cobData = runBlocking {
-                CobToDataObjectDecompiler.decompile(MemoryByteStreamReaderEx(byteArray), FileNameUtil.getFileNameWithoutExtension(fileName))
+                CobToDataObjectDecompiler.decompile(MemoryByteStreamReaderEx(byteArray), PathUtil.getFileNameWithoutExtension(fileName))
             }
             val text = presentCobData(fileName, cobData)
             val psiFile = PsiFileFactory.getInstance(project)

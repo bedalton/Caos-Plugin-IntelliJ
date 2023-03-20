@@ -3,7 +3,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
 import com.bedalton.common.structs.Pointer
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesByVariantIndex
 import com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesIndex
@@ -255,7 +255,7 @@ object BodyPartsIndex {
                 val key = BreedPartKey.fromFileName(fileName)
                     ?: return@filter false
                 BreedPartKey.isGenericMatch(key, searchKey) &&
-                        FileNameUtil.getExtension(fileName)?.lowercase() in extensionsLowercase
+                        PathUtil.getExtension(fileName)?.lowercase() in extensionsLowercase
             }
             .flatMap { fileName ->
                 FilenameIndex.getVirtualFilesByName(project, fileName, searchScope)
@@ -275,7 +275,7 @@ object BodyPartsIndex {
             .getAllFilenames(project)
             .filter { fileName ->
                 progressIndicator?.checkCanceled()
-                BreedPartKey.isPartName(fileName) && FileNameUtil.getExtension(fileName)
+                BreedPartKey.isPartName(fileName) && PathUtil.getExtension(fileName)
                     ?.lowercase() in extensionsLowercase
             }
             .flatMap { fileName ->

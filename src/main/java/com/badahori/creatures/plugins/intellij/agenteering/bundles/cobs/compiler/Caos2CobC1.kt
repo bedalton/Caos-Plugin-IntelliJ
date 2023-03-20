@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compile
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.ensureEndsWith
 import com.bedalton.common.util.nullIfEmpty
 import com.bedalton.common.util.pathSeparatorChar
@@ -102,19 +102,19 @@ data class Caos2CobC1(
             ?: return@lazy null
         var removerName = removerName
         if (removerName == null) {
-            val directory = FileNameUtil
+            val directory = PathUtil
                 .getWithoutLastPathComponent(targetFile)
                 ?.nullIfEmpty()
                 ?.ensureEndsWith(pathSeparatorChar)
                 ?: ""
-            removerName = FileNameUtil.getFileNameWithoutExtension(targetFile).nullIfEmpty()
+            removerName = PathUtil.getFileNameWithoutExtension(targetFile).nullIfEmpty()
             removerName = if (removerName == null) {
                 targetFile
             } else {
                 directory + removerName
             }
         }
-        val extension = FileNameUtil.getExtension(removerName)
+        val extension = PathUtil.getExtension(removerName)
         if (extension.isNullOrBlank()) {
             removerName += ".rcb"
         }

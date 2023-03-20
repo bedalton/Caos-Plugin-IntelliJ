@@ -242,7 +242,7 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
             }
     }
 
-//    val includedFiles = (includedFilesRaw.map { FileNameUtil.getLastPathComponent(it) ?: it } + includedFilesRaw)
+//    val includedFiles = (includedFilesRaw.map { PathUtil.getLastPathComponent(it) ?: it } + includedFilesRaw)
 //        .distinct()
     // If replacement files is null, then the file matches, so return
     val fixes: MutableList<LocalQuickFix> = (getFilenameSuggestions(

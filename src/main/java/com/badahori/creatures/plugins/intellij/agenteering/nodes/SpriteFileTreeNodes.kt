@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.myModulePath
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orElse
@@ -49,7 +49,7 @@ internal class SpriteFileTreeNode(
         if (!isValid()) {
             return@lazy emptyList()
         }
-        val fileNameBase = FileNameUtil.getFileNameWithoutExtension(value.name).orElse("_") + "."
+        val fileNameBase = PathUtil.getFileNameWithoutExtension(value.name).orElse("_") + "."
         val images = sprite.images
         val padLength = "${images.size}".length
         images.mapIndexed map@{ index, image ->

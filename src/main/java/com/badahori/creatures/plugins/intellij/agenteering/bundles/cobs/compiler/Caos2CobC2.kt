@@ -7,7 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeNullTerminatedString
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt16
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt8
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.bedalton.io.bytes.ByteStreamWriter
 import com.bedalton.io.bytes.ByteStreamWriterEx
 import com.bedalton.io.bytes.CREATURES_CHARACTER_ENCODING
@@ -115,7 +115,7 @@ data class Caos2CobC2(
             objectScripts.forEach { script -> buffer.writeNullTerminatedString(script) }
             buffer.writeUInt16(dependencies.size)
             dependencies.forEach { fileName ->
-                val tag = when (FileNameUtil.getExtension(fileName)?.lowercase()) {
+                val tag = when (PathUtil.getExtension(fileName)?.lowercase()) {
                     "s16" -> 0
                     "wav" -> 1
                     else -> throw Caos2CobException("Invalid dependency declared. Valid filetypes are S16 and WAV")

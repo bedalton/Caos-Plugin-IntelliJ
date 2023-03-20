@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.indices
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
@@ -17,12 +17,12 @@ object SpriteLocator {
             else -> arrayOf("s16", "c16")
         }
         var parent: VirtualFile? = directory
-        val rawExtension = FileNameUtil.getExtension(fileName)?.nullIfEmpty()?.lowercase()
+        val rawExtension = PathUtil.getExtension(fileName)?.nullIfEmpty()?.lowercase()
         val extensions = if (rawExtension == null || rawExtension !in listOf("spr", "s16", "c16", "blk"))
             defaultExtensions
         else
             arrayOf(rawExtension)
-        val filenameWithoutExtension = FileNameUtil
+        val filenameWithoutExtension = PathUtil
             .getFileNameWithoutExtension(fileName)
             ?.lowercase()
             ?: return null

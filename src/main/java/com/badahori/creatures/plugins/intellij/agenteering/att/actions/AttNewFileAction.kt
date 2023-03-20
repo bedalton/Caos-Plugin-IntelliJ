@@ -14,7 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.Sprit
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.intellij.ide.actions.CreateFileFromTemplateDialog
 import com.intellij.ide.fileTemplates.FileTemplate
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -80,12 +80,12 @@ class AttNewFileAction :  MyNewFileAction(
                     if (inputString == null) {
                         return false
                     }
-                    val fileName = FileNameUtil.getFileNameWithoutExtension(inputString)
+                    val fileName = PathUtil.getFileNameWithoutExtension(inputString)
                         ?: return false
                     if (!BreedPartKey.isPartName(fileName)) {
                         return false
                     }
-                    val extension = FileNameUtil.getExtension(inputString)
+                    val extension = PathUtil.getExtension(inputString)
                         ?.lowercase()
                         ?: return true
                     return extension == "att"
@@ -158,7 +158,7 @@ class AttNewFileAction :  MyNewFileAction(
         }
 
         private fun getAutoFill(variant: CaosVariant, fileName: String, directory: VirtualFile): String? {
-            val fileNameWithoutExtension = FileNameUtil
+            val fileNameWithoutExtension = PathUtil
                 .getFileNameWithoutExtension(fileName)
                 ?: fileName
             val spriteFile = SpriteLocator.findClosest(variant, fileNameWithoutExtension, directory)

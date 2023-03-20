@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
@@ -190,7 +190,7 @@ data class BreedPartKey(
             if (!isPartName(fileName, variant))
                 return null
 
-            val chars = FileNameUtil.getFileNameWithoutExtension(fileName)?.lowercase()?.toCharArray()
+            val chars = PathUtil.getFileNameWithoutExtension(fileName)?.lowercase()?.toCharArray()
                 ?: return null
 
             return BreedPartKey(
@@ -205,7 +205,7 @@ data class BreedPartKey(
 
         @JvmStatic
         fun isPartName(fileName: String, variant: CaosVariant? = null): Boolean {
-            val chars = FileNameUtil.getFileNameWithoutExtension(fileName)?.lowercase()?.toCharArray()
+            val chars = PathUtil.getFileNameWithoutExtension(fileName)?.lowercase()?.toCharArray()
                 ?: return false
             if (chars.size != 4) {
                 return false

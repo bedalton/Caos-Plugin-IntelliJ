@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import bedalton.creatures.sprite.parsers.BlkParser
 import com.bedalton.common.structs.Pointer
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.common.saveImageWithDialog
@@ -325,7 +325,7 @@ private class ImagePanel(
         if (targetDirectory?.exists() != true) {
             targetDirectory = null
         }
-        val defaultName = FileNameUtil.getFileNameWithoutExtension(fileName)?.let {
+        val defaultName = PathUtil.getFileNameWithoutExtension(fileName)?.let {
             "$it.png"
         }
         saveImageWithDialog(

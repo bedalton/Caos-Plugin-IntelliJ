@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
@@ -31,11 +31,11 @@ internal class BreedNode(
     }
 
     private val hasAtts by lazy {
-        files.any { FileNameUtil.getExtension(it.nameExtended ?: "")?.lowercase() == "att" }
+        files.any { PathUtil.getExtension(it.nameExtended ?: "")?.lowercase() == "att" }
     }
 
     private val spriteExtensions by lazy {
-        files.mapNotNull { FileNameUtil.getExtension(it.nameExtended ?: "")?.uppercase() }
+        files.mapNotNull { PathUtil.getExtension(it.nameExtended ?: "")?.uppercase() }
             .filter { it likeAny SpriteParser.VALID_SPRITE_EXTENSIONS }
             .toSet()
     }
@@ -105,7 +105,7 @@ internal class BreedNode(
             throw Exception("Cannot create body data bundle without files")
         }
         val invalidFiles = files.filterNot { file ->
-            FileNameUtil.getExtension(file.nameExtended ?: "")?.uppercase()?.let { it likeAny spriteExtensions || it == "ATT" }
+            PathUtil.getExtension(file.nameExtended ?: "")?.uppercase()?.let { it likeAny spriteExtensions || it == "ATT" }
                 .orFalse()
         }
         if (invalidFiles.isNotEmpty()) {

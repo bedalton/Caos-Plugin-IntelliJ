@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
-import com.bedalton.common.util.FileNameUtil
+import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.pathSeparatorChar
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex
@@ -55,10 +55,10 @@ internal fun CaosScriptStringLike.resolveToFile(ignoreExtension: Boolean, relati
             )
     } else {
         (if (ignoreExtension) {
-            val fileName = FileNameUtil.getFileNameWithoutExtension(relativePath) ?: relativePath
+            val fileName = PathUtil.getFileNameWithoutExtension(relativePath) ?: relativePath
             CaseInsensitiveFileIndex.findWithoutExtension(project, fileName, scope)
         } else {
-            CaseInsensitiveFileIndex.findWithFileName(project, FileNameUtil.getLastPathComponent(relativePath) ?: relativePath, scope)
+            CaseInsensitiveFileIndex.findWithFileName(project, PathUtil.getLastPathComponent(relativePath) ?: relativePath, scope)
         }).minByOrNull {
             maxOf(directory.path.length, it.path.length) - (VfsUtil.findRelativePath(directory, it, pathSeparatorChar)?.length ?: 0)
         }
