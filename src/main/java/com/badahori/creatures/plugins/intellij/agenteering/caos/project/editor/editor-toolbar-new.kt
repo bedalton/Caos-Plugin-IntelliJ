@@ -33,7 +33,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootEvent
 import com.intellij.openapi.roots.ModuleRootListener
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
@@ -407,7 +406,7 @@ private fun populate(
         variantPanel.isVisible = false
     }
 
-    CaosApplicationSettingsComponent.addSettingsChangedListener(fileEditor) { _, settings ->
+    CaosApplicationSettingsState.addSettingsChangedListener(fileEditor) { _, settings ->
         if ((settings.gameInterfaceNames + injectorList).distinct().isEmpty())
             return@addSettingsChangedListener
         injectorList = settings.gameInterfaceNames

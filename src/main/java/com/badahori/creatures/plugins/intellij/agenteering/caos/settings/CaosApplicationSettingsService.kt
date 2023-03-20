@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
+import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
@@ -8,7 +9,7 @@ import com.intellij.openapi.components.PersistentStateComponent
  * Service for fetching CAOS project settings
  */
 interface CaosApplicationSettingsService:
-    PersistentStateComponent<CaosApplicationSettingsComponent.State>,
+    PersistentStateComponent<CaosApplicationSettingsState>,
     HasIgnoredCatalogueTags,
         Disposable
 {
@@ -17,9 +18,10 @@ interface CaosApplicationSettingsService:
     var combineAttNodes: Boolean
     var replicateAttsToDuplicateSprites: Boolean?
     override var ignoredCatalogueTags: List<String>
+    var gameInterfaceNames: List<GameInterfaceName>
 
-    override fun getState(): CaosApplicationSettingsComponent.State
-    override fun loadState(state: CaosApplicationSettingsComponent.State)
+    override fun getState(): CaosApplicationSettingsState
+    override fun loadState(state: CaosApplicationSettingsState)
 
 
     companion object {

@@ -45,7 +45,7 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
         return panel.getPreferredFocusComponent()
     }
 
-    private val applicationSettings: CaosApplicationSettingsComponent.State? by lazy {
+    private val applicationSettings: CaosApplicationSettingsState? by lazy {
         applicationSettingsService?.state
     }
 
@@ -93,12 +93,12 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
 
 private class ProjectSettingsPanel(
     private val project: Project,
-    private var applicationSettings: CaosApplicationSettingsComponent.State,
+    private var applicationSettings: CaosApplicationSettingsState,
     private var projectSettings: CaosProjectSettingsComponent.State
     ) {
 
     private val originalCombineAttNodes = applicationSettings.combineAttNodes
-    private val originalReplicateAttToDuplicateSprite = applicationSettings.replicateAttToDuplicateSprite != false
+    private val originalReplicateAttToDuplicateSprite = applicationSettings.replicateAttsToDuplicateSprites != false
     private val originalIgnoredFilesText = projectSettings.ignoredFilenames.joinToString("\n")
     private val originalGameInterfaceNames: List<GameInterfaceName> = applicationSettings.gameInterfaceNames
     private val originalGameInterfaceNamesSerialized = originalGameInterfaceNames.serialized()
@@ -226,7 +226,7 @@ private class ProjectSettingsPanel(
         if (autoPoseCheckbox.isSelected != applicationSettings.isAutoPoseEnabled) {
             return true
         }
-        if (replicateAttToDuplicateSprites.isSelected != applicationSettings.replicateAttToDuplicateSprite) {
+        if (replicateAttToDuplicateSprites.isSelected != applicationSettings.replicateAttsToDuplicateSprites) {
             return true
         }
         if (trimBlkCheckbox.isSelected != projectSettings.trimBLKs) {
@@ -252,14 +252,14 @@ private class ProjectSettingsPanel(
     /**
      * Apply the current panel's settings to the settings object
      */
-    fun applyApplicationSettings(): CaosApplicationSettingsComponent.State {
+    fun applyApplicationSettings(): CaosApplicationSettingsState {
         val gameInterfaceNames = getGameInterfaceNames()
-        val newSettings = applicationSettings.copy(
-            combineAttNodes = combineAttNodes.isSelected,
-            gameInterfaceNames = gameInterfaceNames,
-            isAutoPoseEnabled = autoPoseCheckbox.isSelected,
-            replicateAttToDuplicateSprite = replicateAttToDuplicateSprites.isSelected
-        )
+        val newSettings = applicationSettings.copy {
+            this.combineAttNodes = this@ProjectSettingsPanel.combineAttNodes.isSelected
+            this.gameInterfaceNames = gameInterfaceNames
+            this.isAutoPoseEnabled = autoPoseCheckbox.isSelected
+            this.replicateAttsToDuplicateSprites = this@ProjectSettingsPanel.replicateAttToDuplicateSprites.isSelected
+        }
         applicationSettings = newSettings
         return newSettings
     }
