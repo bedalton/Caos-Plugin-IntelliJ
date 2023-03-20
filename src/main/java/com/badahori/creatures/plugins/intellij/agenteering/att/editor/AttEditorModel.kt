@@ -32,10 +32,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileEvent
 import com.intellij.openapi.vfs.VirtualFileListener
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
-import com.intellij.psi.SmartPointerManager
+import com.intellij.psi.*
 import kotlinx.coroutines.runBlocking
 import java.awt.image.BufferedImage
 import java.util.*
@@ -46,7 +43,7 @@ import kotlin.math.abs
 
 internal class AttEditorModel(
     project: Project,
-    disposable: Disposable,
+    val disposable: Disposable,
     val attFile: VirtualFile,
     val spriteFile: VirtualFile,
     variant: CaosVariant,
@@ -88,6 +85,16 @@ internal class AttEditorModel(
     private var mAttData: AttFileData? = null
 
     val fileName: String get() = attFile.name
+
+    var mShiftRelativePoint: Boolean = false
+
+    val shiftRelativePoint: Boolean get() = mShiftRelativePoint
+
+    private var relativeAtt: RelativeAtt? = null
+
+    var relativeFileFailed = false
+
+    var relativePoint: Int? = null
 
     val attData: AttFileData
         get() {
@@ -136,6 +143,9 @@ internal class AttEditorModel(
 
     private var mFoldedLines: List<Int>? = null
 
+    protected var lockRelative = false
+
+
     init {
         if (!project.isDisposed) {
             // Register disposer to prevent memory leaks
@@ -147,8 +157,8 @@ internal class AttEditorModel(
         initDocumentListeners(project, psiFile)
 
         // Add application level settings listener
-        CaosApplicationSettingsComponent.addSettingsChangedListener(this) { _, it ->
-            replicateAttsToDuplicateSprites = it.replicateAttToDuplicateSprite
+        CaosApplicationSettingsState.addSettingsChangedListener(this) { _, it ->
+            replicateAttsToDuplicateSprites = it.replicateAttsToDuplicateSprites
             mFoldedLines = null
             ApplicationManager.getApplication().invokeLater {
                 attChangeListener?.onAttUpdate()
@@ -376,6 +386,10 @@ internal class AttEditorModel(
     }
 
     fun setCurrentPoint(newPoint: Int) {
+        disposeRelativeAtt()
+        if (shiftRelativePoint) {
+            setupRelativeAttFile()
+        }
         // Ensure point is within valid range
 
         // Ensure point is within valid range
@@ -406,6 +420,7 @@ internal class AttEditorModel(
         val oldPoints = data.lines[lineNumber]
         val oldPoint = oldPoints[currentPoint]
         val point = Pair(oldPoint.first + offset.first, oldPoint.second + offset.second)
+        relativeAtt?.moveRelative(offset.first, offset.second)
         onChangePoint(lineNumber, point)
     }
 
@@ -422,7 +437,7 @@ internal class AttEditorModel(
         }
         val data = getEnsuringLines(lineNumber)
         val oldPoints = data.lines[lineNumber].points
-        val newPoints: MutableList<Pair<Int, Int>> = ArrayList()
+        var delta: Pair<Int, Int> = Pair(0,0)
         val changedPoint = oldPoints.getOrNull(currentPoint)?.let { oldPoint ->
             if (lockX && lockY) {
                 oldPoint
@@ -436,8 +451,14 @@ internal class AttEditorModel(
         } ?: newPoint
 
         val currentReplication = currentReplication
-        for (i in oldPoints.indices) {
-            newPoints.add(if (i == currentPoint) changedPoint else oldPoints[i])
+        val currentPointIndex = currentPoint
+        val newPoints = oldPoints.mapIndexed { i, oldPoint ->
+            if (i == currentPointIndex) {
+                delta = Pair (changedPoint.first - oldPoint.first, changedPoint.second - oldPoint.second)
+                changedPoint
+            } else {
+                oldPoint
+            }
         }
         val newLine = AttFileLine(newPoints.subList(0, pointsCount))
         val oldLines: List<AttFileLine> = data.lines
@@ -446,6 +467,7 @@ internal class AttEditorModel(
             newLines.add(if (i == lineNumber || i in currentReplication) newLine else oldLines[i])
         }
         setAttData(AttFileData(newLines, attFile.name))
+        relativeAtt?.moveRelative(delta.first, delta.second)
     }
 
     private fun getEnsuringLines(lineNumber: Int): AttFileData {
@@ -793,9 +815,9 @@ internal class AttEditorModel(
         }
 
         val indices = if (newIndex > mSelectedCell) {
-            (newIndex + 1) .. lastIndex
+            (newIndex + 1)..lastIndex
         } else {
-            (newIndex- 1) downTo 0
+            (newIndex - 1) downTo 0
         }
         var outIndex = newIndex
         val shouldChange = isNew || indices.any { !replications.containsKey(it) || newIndex !in replications[it]!! }
@@ -831,6 +853,83 @@ internal class AttEditorModel(
     }
 
 
+    private fun setupRelativeAttFile() {
+        val project = project
+        if (!shiftRelativePoint || project == null || project.isDisposed) {
+            disposeRelativeAtt()
+            return
+        }
+        val selected = currentPoint
+        if (currentPoint > 5) {
+            return
+        }
+        val relativePartData = RelativeAttUtil.getRelative(part, selected)
+        if (relativePartData == null) {
+            disposeRelativeAtt()
+            showNotification("No relative ATT for part", MessageType.INFO)
+            return
+        }
+        val (relativePart, relativePoint) = relativePartData
+
+        // Dispose current relative att object
+        if (relativeAtt?.part != relativePart) {
+            disposeRelativeAtt()
+        }
+
+        // Construct relative att file name
+        val breedKey = getBreedPartKey()
+            ?.copyWithPart(relativePart)
+            ?.code
+        val fileName = "$breedKey.att"
+
+        // Get relative att in parent folder
+        val file = attFile.parent.findChild(fileName)
+            ?: throw Exception("Failed to find relative file; Relative ATT file must be in the same folder as this base ATT")
+
+        val relAtt = RelativeAtt(
+            variant,
+            project,
+            file,
+            part,
+            relativePoint,
+            this,
+        )
+
+        relativeAtt = relAtt
+    }
+
+
+    internal fun setShiftRelativeAtt(shift: Boolean) {
+        if (!shiftRelativePoint) {
+            disposeRelativeAtt()
+            relativeAtt = null
+        }
+
+        this.mShiftRelativePoint = shift
+
+        if (shift) {
+            setupRelativeAttFile()
+        }
+    }
+
+    fun shiftRelative(thisDeltaX: Int, thisDeltaY: Int) {
+        if (!shiftRelativePoint) {
+            return
+        }
+        val relativeAtt = this.relativeAtt
+            ?: return
+        if (!relativeAtt.moveRelative(thisDeltaX, thisDeltaY) && !relativeFileFailed) {
+            this.relativeFileFailed = true
+            showNotification("Failed to move relative att", MessageType.ERROR)
+        }
+    }
+
+    private fun disposeRelativeAtt() {
+        relativeAtt?.dispose()
+        relativeAtt = null
+    }
+
+
 }
 
 
@@ -849,4 +948,108 @@ private val BufferedImage.isCompletelyTransparent: Boolean
 fun BufferedImage.isTransparent(x: Int, y: Int): Boolean {
     val pixel = this.getRGB(x, y)
     return pixel shr 24 == 0x00
+}
+
+
+private data class RelativeAtt(
+    val variant: CaosVariant,
+    val project: Project,
+    val file: VirtualFile,
+    val part: Char,
+    val point: Int,
+    var disposable: Disposable,
+) : Disposable {
+
+    private var watcher: PsiTreeChangeListener? = null
+    private var mAttModel: AttFileData? = null
+    private val attModel: AttFileData?
+        get() = mAttModel ?: try {
+            parse(project, file).also {
+                mAttModel = it
+            }
+        } catch (_: Exception) {
+            null
+        }
+
+    init {
+        if (!project.isDisposed) {
+            // Register disposer to prevent memory leaks
+            Disposer.register(disposable, this)
+        }
+    }
+
+    fun moveRelative(otherDeltaX: Int, otherDeltaY: Int): Boolean {
+        val oldModel = attModel
+            ?: return false
+        val lines = oldModel.lines
+        val updatedLines = lines.map {
+            val points = it.points.mapIndexed { i, point ->
+                if (i == this.point) {
+                    Pair(point.first - otherDeltaX, point.second - otherDeltaY)
+                } else {
+                    point
+                }
+            }
+            AttFileLine(points)
+        }
+        val updated = oldModel.copy(
+            lines = updatedLines
+        )
+        mAttModel = updated
+        val psi = file.getPsiFile(project)
+            ?: return false
+        val document = psi.document
+            ?: return false
+        try {
+            EditorUtil.replaceText(document, psi.textRange, updated.toFileText(variant))
+        } catch (_: Exception) {
+            return false
+        }
+        return try {
+            PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
+            PsiDocumentManager.getInstance(project).commitDocument(document)
+            true
+        } catch (_: Exception) {
+            false
+        }
+
+    }
+
+    private fun initWatcher() {
+        val onChange = change@{ event: PsiTreeChangeEvent ->
+            if (event.file?.virtualFile?.path?.lowercase() != file.path.lowercase()) {
+                return@change
+            }
+            mAttModel = parse(project, file)
+        }
+
+        val theWatcher = object : PsiTreeChangeAdapter() {
+            override fun childrenChanged(event: PsiTreeChangeEvent) {
+                onChange(event)
+            }
+
+            override fun childAdded(event: PsiTreeChangeEvent) {
+                onChange(event)
+            }
+
+            override fun childRemoved(event: PsiTreeChangeEvent) {
+                onChange(event)
+            }
+
+            override fun childMoved(event: PsiTreeChangeEvent) {
+                onChange(event)
+            }
+
+            override fun childReplaced(event: PsiTreeChangeEvent) {
+                onChange(event)
+            }
+        }
+
+        watcher = theWatcher
+        PsiManager.getInstance(project).addPsiTreeChangeListener(theWatcher, this)
+    }
+
+    override fun dispose() {
+        watcher?.let { PsiManager.getInstance(project).removePsiTreeChangeListener(it) }
+    }
 }

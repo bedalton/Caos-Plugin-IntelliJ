@@ -35,6 +35,9 @@ internal class AttEditorController(
     )
 
     private lateinit var mView: View
+
+    override val shiftRelativeAtt: Boolean
+        get() = model.shiftRelativePoint
     internal val view:  View get() {
         if (this::mView.isInitialized)
             return mView
@@ -58,6 +61,10 @@ internal class AttEditorController(
         get() = model.getReplications()
     override val notReplicatedLines: List<Int>
         get() = model.notReplicatedAtts
+
+    override fun setShiftRelativeAtt(shift: Boolean) {
+        model.setShiftRelativeAtt(shift)
+    }
 
     val isInitialized: Boolean
         get() = this::mView.isInitialized
@@ -270,6 +277,8 @@ internal interface AttEditorHandler: OnChangePoint, HasSelectedCell {
     var lockY: Boolean
     val replications: Map<Int, List<Int>>
     val notReplicatedLines: List<Int>
+    val shiftRelativeAtt: Boolean
+    fun setShiftRelativeAtt(shift: Boolean)
     fun getCurrentPoint(): Int
     fun getFolded(): List<Int>
     fun setCurrentPoint(point: Int)
