@@ -43,6 +43,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
@@ -265,6 +266,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
                 break;
             case 3:
                 offset = variant.isOld() ? 9 : 12;
+                break;
             default:
                 return null;
         }
@@ -538,7 +540,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     }
 
     private void initHiddenPartsComboBox() {
-        final VisibilityPopup menu = new VisibilityPopup(PartVisibility.HIDDEN);
+        final VisibilityPopup menu = new VisibilityPopup(this, PartVisibility.HIDDEN);
         hidden.addMouseListener(new MouseListenerBase() {
             @Override
             public void mouseClicked(@NotNull MouseEvent e) {
@@ -555,7 +557,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     }
 
     private void initGhostPartsComboBox() {
-        final VisibilityPopup menu = new VisibilityPopup(PartVisibility.GHOST);
+        final VisibilityPopup menu = new VisibilityPopup(this, PartVisibility.GHOST);
         ghost.addMouseListener(new MouseListenerBase() {
             @Override
             public void mouseClicked(@NotNull MouseEvent e) {
@@ -1758,8 +1760,11 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
      */
     public void setTilt(final char partChar, int tilt) {
         final JComboBox<String> box = getComboBoxForPart(partChar);
-        final Integer itemCount = box.getItemCount();
-        if (itemCount != null && itemCount > tilt) {
+        if (box == null) {
+            return;
+        }
+        final int itemCount = box.getItemCount();
+        if (itemCount > tilt) {
             box.setSelectedIndex(tilt);
         }
         redraw(partChar);
@@ -2620,7 +2625,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         void onPoseChange(Pose pose);
     }
 
-    private class VisibilityPopup extends JPopupMenu {
+    private class VisibilityPopup extends JPopupMenu implements Disposable {
 
         final JCheckBoxMenuItem all = new JCheckBoxMenuItem("All Parts");
         final Map<Character, JCheckBoxMenuItem> partItems = new HashMap<>();
@@ -2630,10 +2635,13 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
 
         private boolean canClose = true;
 
-        VisibilityPopup(final PartVisibility visibility) {
+        VisibilityPopup(final Disposable parent, final PartVisibility visibility) {
             this.visibility = visibility;
             init();
-            initDragHandlers();
+            addMouseListeners();
+            if (!project.isDisposed()) {
+                Disposer.register(parent, this);
+            }
         }
 
         void updateItems() {
@@ -2725,18 +2733,49 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             partItems.put(part, item);
         }
 
-        private void initDragHandlers() {
-            addMouseListener(new MouseListenerBase() {
-                @Override
-                public void mouseEntered(@NotNull MouseEvent e) {
-                    canClose = false;
-                }
+        private final MouseListenerBase mouseListener = new MouseListenerBase() {
+            @Override
+            public void mouseEntered(@NotNull MouseEvent e) {
+                canClose = false;
+            }
 
-                @Override
-                public void mouseExited(@NotNull MouseEvent e) {
+            @Override
+            public void mouseExited(@NotNull MouseEvent e) {
+                canClose = true;
+            }
+        };
+
+        private final MouseMotionListener mouseMotionListener = new MouseMotionListener() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (!canClose && !VisibilityPopup.this.contains(e.getX(), e.getY())) {
                     canClose = true;
                 }
-            });
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if (!canClose && !VisibilityPopup.this.contains(e.getX(), e.getY())) {
+                    canClose = true;
+                }
+            }
+        };
+
+        private void addMouseListeners() {
+            addMouseListener(mouseListener);
+            addMouseMotionListener(mouseMotionListener);
+        }
+
+        private void removeMouseListeners() {
+            removeMouseListener(mouseListener);
+            removeMouseMotionListener(mouseMotionListener);
+        }
+
+        @Override
+        public void dispose() {
+            removeMouseListeners();
+            canClose = true;
+            super.setVisible(false);
         }
 
 
@@ -2744,6 +2783,13 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         public void setVisible(boolean visible) {
             if (!visible && !canClose) {
                 return;
+            }
+            if (visible) {
+                if (!super.isVisible()) {
+                    addMouseListeners();
+                }
+            } else {
+                removeMouseListeners();
             }
             super.setVisible(visible);
         }
@@ -2772,6 +2818,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
                     entry.getValue().setSelected(false);
                 }
             }
+            setVisible(true);
             redraw(ALL_PARTS);
         }
 

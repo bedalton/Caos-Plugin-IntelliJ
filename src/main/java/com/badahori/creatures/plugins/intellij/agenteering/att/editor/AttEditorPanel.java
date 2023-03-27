@@ -398,7 +398,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         @SuppressWarnings("deprecation")
         final int shortcut = Toolkit.getDefaultToolkit ().getMenuShortcutKeyMask();
         final String label = "Open Related - " + partName;
-        inputMap.put(KeyStroke.getKeyStroke(part, shortcut | InputEvent.SHIFT_DOWN_MASK), label);
+        inputMap.put(KeyStroke.getKeyStroke(part, shortcut | InputEvent.SHIFT_DOWN_MASK | InputEvent.ALT_DOWN_MASK), label);
         actionMap.put(label, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
