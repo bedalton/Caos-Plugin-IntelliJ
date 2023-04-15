@@ -10,7 +10,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
+import bedalton.creatures.agents.pray.data.PrayDataBlockDecompressionException
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotification
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.bedalton.common.util.className
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
@@ -68,7 +70,16 @@ internal class PrayFileTreeNode(
                 val name = block.blockName.text
                 val file = directory[name] ?: (
                         try {
-                            directory.createChildWithContent(name, block::data, false).apply {
+                            val data: suspend () -> ByteArray? = {
+                                try {
+                                    block.data()
+                                } catch (e: PrayDataBlockDecompressionException) {
+                                    CaosNotifications.createErrorNotification(project, "Unpack Error", "Failed to extract data for ${block.blockName}; ${e.message}")
+                                        .show()
+                                    e.originalBytes
+                                }
+                            }
+                            directory.createChildWithContent(name, data, false).apply {
                                 this.isWritable = false
                             }
                         } catch (e: Exception) {
