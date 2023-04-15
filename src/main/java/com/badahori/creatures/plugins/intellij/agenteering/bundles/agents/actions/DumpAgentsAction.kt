@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
 import com.bedalton.io.bytes.MemoryByteStreamReader
 import com.bedalton.io.bytes.internal.MemoryByteStreamReaderEx
@@ -214,9 +215,9 @@ class DumpAgentAction : AnAction(
     ): Boolean {
         // Parse Agent and write files
         val stream = if (file.length < VirtualFileStreamReaderEx.MAX_IN_MEMORY_STREAM_LENGTH) {
-            MemoryByteStreamReaderEx(file.contentsToByteArray())
+            MemoryByteStreamReader(file.contentsToByteArray())
         } else {
-            VirtualFileStreamReaderEx(file)
+            VirtualFileStreamReader(file)
         }
         val prefix = if (useChildDirectories) "" else file.nameWithoutExtension
         val relativeWriter = RelativeFileSystem(LocalFileSystem!!, parentVirtualFile.path)

@@ -18,6 +18,7 @@ import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
@@ -189,6 +190,9 @@ class AttNewFileFromSpritesAction : AnAction(
                 PsiFileFactory.getInstance(project)
                     .createFileFromText(fileName, AttFileType, text)
             } catch (e: Exception) {
+                if (e is ProcessCanceledException) {
+                    throw e
+                }
                 LOGGER.severe("Failed to create ATT file for ${file.name}")
                 e.printStackTrace()
                 return false
@@ -202,6 +206,9 @@ class AttNewFileFromSpritesAction : AnAction(
                 }
                 true
             } catch (e: Exception) {
+                if (e is ProcessCanceledException) {
+                    throw e
+                }
                 LOGGER.severe("Failed to add new ATT to parent directory")
                 e.printStackTrace()
                 false
