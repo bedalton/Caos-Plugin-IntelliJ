@@ -38,3 +38,37 @@ val <T> JList<T>.items: List<T> get() {
         model.getElementAt(i)
     }
 }
+
+
+object ComboBoxHelper {
+
+
+    @JvmStatic
+    fun <T> items(list: JComboBox<T>): List<T>{
+        val model = list.model
+        val size = model.size
+        return (0 until size).map { i ->
+            model.getElementAt(i)
+        }
+    }
+
+    @JvmStatic
+    fun <T> items(model: ComboBoxModel<T>): List<T> {
+        val size = model.size
+        return (0 until size).map { i ->
+            model.getElementAt(i)
+        }
+    }
+
+
+    @JvmStatic
+    inline fun <T> selectItem(box: JComboBox<T>, evenIfNull: Boolean = true, check: (item:T) -> Boolean): T? {
+        val items = box.items
+            ?: return null
+        val item =  items.firstOrNull(check)
+        if (item == null && !evenIfNull)
+            return null
+        box.selectedItem = item
+        return item
+    }
+}

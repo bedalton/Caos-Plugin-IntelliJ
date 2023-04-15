@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
+import bedalton.creatures.common.structs.BreedKey
+import bedalton.creatures.common.structs.GameVariant
 import com.bedalton.common.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
@@ -119,6 +121,23 @@ data class BreedPartKey(
         )
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
+    val gameVariant: GameVariant? by lazy {
+        val caosVariant = variant
+            ?: return@lazy null
+        GameVariant.fromString(caosVariant.code)
+    }
+
+    val breedKey by lazy {
+        BreedKey(
+            gameVariant,
+            genus,
+            gender,
+            breed,
+            ageGroup
+        )
+    }
+
     val unreliableHash: Int
         get() {
             var result = genus ?: 0
@@ -187,8 +206,9 @@ data class BreedPartKey(
 
         @JvmStatic
         fun fromFileName(fileName: String, variant: CaosVariant? = null): BreedPartKey? {
-            if (!isPartName(fileName, variant))
+            if (!isPartName(fileName, variant)) {
                 return null
+            }
 
             val chars = PathUtil.getFileNameWithoutExtension(fileName)?.lowercase()?.toCharArray()
                 ?: return null

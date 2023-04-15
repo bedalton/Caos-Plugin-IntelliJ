@@ -29,6 +29,15 @@ data class BodyPartFiles(
             spriteFile.nameWithoutExtension
         )
     }
+
+    val part: Char? get() = key?.part
+
+    val genus: Int? get() = key?.genus
+
+    val age: Int? get() = key?.ageGroup
+
+    val gender: Int? get() = key?.gender
+
     fun data(project:Project): SpriteBodyPart {
         val sprite = runBlocking { SpriteParser.parse(spriteFile, bodyPart = true) }
         return SpriteBodyPart(

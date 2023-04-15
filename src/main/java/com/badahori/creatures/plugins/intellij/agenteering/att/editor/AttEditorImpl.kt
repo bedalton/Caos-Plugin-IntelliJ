@@ -4,10 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
-import com.intellij.openapi.fileEditor.FileEditor
-import com.intellij.openapi.fileEditor.FileEditorLocation
-import com.intellij.openapi.fileEditor.FileEditorState
-import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.fileEditor.*
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
@@ -51,7 +48,7 @@ internal class AttEditorImpl(
     }
 
     override fun getPreferredFocusedComponent(): JComponent {
-        return component
+        return controller.getPreferredFocusComponent()
     }
 
     override fun getName(): String {
@@ -110,12 +107,12 @@ internal class AttEditorImpl(
         if (controller.isInitialized) {
             if (DumbService.isDumb(myProject)) {
                 DumbService.getInstance(myProject).runWhenSmart(::selectNotify)
+                return
             }
             controller.view.refresh()
             controller.view.scrollCellIntoView()
         }
     }
-
 
     private fun showFooterNotification(message: String, messageType: MessageType) {
         PopupUtil.showBalloonForComponent(controller.getPopupMessageTarget(), message, messageType, true, null)
