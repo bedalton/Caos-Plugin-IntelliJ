@@ -270,10 +270,10 @@ class PoseEditorModel(
                 }
                 true
             }
-        } catch (e: ProcessCanceledException) {
-            e.printStackTrace()
-            return false
         } catch (e: java.lang.Exception) {
+            if (e is ProcessCanceledException) {
+                throw e
+            }
             LOGGER.severe("Failed to render pose. Error:(" + e.javaClass.simpleName + ") " + e.localizedMessage)
             e.printStackTrace()
             progressIndicator.checkCanceled()
@@ -539,6 +539,15 @@ class PoseEditorModel(
             part == 'm' || part == 'n'
         }
     }
+
+    companion object {
+
+        @JvmStatic
+        @Suppress("SpellCheckingInspection")
+        val allPartsChars: List<Char> by lazy {
+            "abcdefghijklmnopq".map { it }
+        }
+    }
 }
 
 enum class PartGroups {
@@ -550,6 +559,7 @@ enum class PartGroups {
     EARS,
     HAIR
 }
+
 
 @Suppress("unused")
 enum class Part(partChar: Char) {

@@ -20,6 +20,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptCommandTokenReference
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.navigation.ItemPresentation
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.LiteralTextEscaper
 import com.intellij.psi.PsiElement
@@ -420,6 +421,9 @@ object CaosDefPsiImplUtil {
                 ValuesListEq.GREATER_THAN -> try {
                     key.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt()
                 } catch (e: Exception) {
+                    if (e is ProcessCanceledException) {
+                        throw e
+                    }
                     false
                 }
             }

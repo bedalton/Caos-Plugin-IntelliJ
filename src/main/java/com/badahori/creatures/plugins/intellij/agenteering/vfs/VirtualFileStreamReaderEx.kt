@@ -6,6 +6,7 @@ import com.bedalton.io.bytes.AbstractByteStreamReader
 import com.bedalton.io.bytes.ByteStreamReaderEx
 import com.bedalton.io.bytes.internal.InputStreamByteReaderEx
 import com.bedalton.io.bytes.internal.MemoryByteStreamReaderEx
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.vfs.VirtualFile
 
 class VirtualFileStreamReader(
@@ -37,11 +38,17 @@ class VirtualFileStreamReaderEx(
                         try {
                             virtualFile.inputStream
                         } catch (e: Exception) {
+                            if (e is ProcessCanceledException) {
+                                throw e
+                            }
                             LOGGER.severe("VirtualByteStreamReader getInputStream failed; ${e.className}: ${e.message}\n${e.stackTraceToString()}")
                             null
                         }
                     }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                if (e is ProcessCanceledException) {
+                    throw e
+                }
             }
         }
         var rawBytes = virtualFile.contentsToByteArray()
@@ -83,10 +90,11 @@ class VirtualFileStreamReaderEx(
 
     override fun position(): Long {
         return mReader.position().let {
-            if (it > 0L)
+            if (it > 0L) {
                 it
-            else
+            } else {
                 0L
+            }
         }
     }
 
