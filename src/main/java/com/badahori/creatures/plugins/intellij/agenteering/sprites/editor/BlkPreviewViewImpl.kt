@@ -24,7 +24,7 @@ import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBScrollPane
-import com.soywiz.korim.awt.toAwt
+import korlibs.image.awt.toAwt
 import kotlinx.coroutines.runBlocking
 import java.awt.Dimension
 import java.awt.FileDialog

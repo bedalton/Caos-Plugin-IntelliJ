@@ -7,7 +7,7 @@ import bedalton.creatures.sprite.util.ColorPalette
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteCompiler
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.soywiz.korim.awt.toAwt
+import korlibs.image.awt.toAwt
 import org.apache.commons.imaging.palette.SimplePalette
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
