@@ -9,7 +9,7 @@ import com.bedalton.common.util.pathSeparatorChar
 import com.bedalton.io.bytes.ByteStreamWriter
 import com.bedalton.io.bytes.writeNullByte
 import com.bedalton.io.bytes.writeSfcString
-import com.soywiz.korim.bitmap.Bitmap32
+import korlibs.image.bitmap.Bitmap32
 import kotlinx.serialization.Serializable
 import kotlin.ByteArray
 import kotlin.Exception

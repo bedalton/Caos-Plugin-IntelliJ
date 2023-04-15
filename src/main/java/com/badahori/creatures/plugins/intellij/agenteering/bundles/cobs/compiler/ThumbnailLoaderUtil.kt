@@ -7,10 +7,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.getAllBytes
 import com.badahori.creatures.plugins.intellij.agenteering.utils.likeAny
 import com.bedalton.io.bytes.MemoryByteStreamReader
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.format.BMP
-import com.soywiz.korim.format.GIF
-import com.soywiz.korim.format.PNG
+import korlibs.image.bitmap.Bitmap32
+import korlibs.image.format.BMP
+import korlibs.image.format.GIF
+import korlibs.image.format.PNG
 import kotlinx.coroutines.runBlocking
 
 internal val loadThumbnail: (pictureUrl: String) -> Bitmap32? = { pictureUrl: String ->

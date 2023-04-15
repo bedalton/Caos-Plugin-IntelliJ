@@ -4,7 +4,7 @@ import com.bedalton.io.bytes.*
 import bedalton.creatures.sprite.util.ColorPalette
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
-import com.soywiz.korim.awt.toAwt
+import korlibs.image.awt.toAwt
 import java.util.*
 
 const val COB_LOG_KEY = "COB_LOG_VERBOSE"

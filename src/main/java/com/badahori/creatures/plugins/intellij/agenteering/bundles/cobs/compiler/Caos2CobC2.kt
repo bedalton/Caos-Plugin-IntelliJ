@@ -13,7 +13,7 @@ import com.bedalton.io.bytes.ByteStreamWriterEx
 import com.bedalton.io.bytes.CREATURES_CHARACTER_ENCODING
 import com.bedalton.io.bytes.writeNullTerminatedString
 import com.intellij.openapi.vfs.VirtualFile
-import com.soywiz.korim.bitmap.Bitmap32
+import korlibs.image.bitmap.Bitmap32
 import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.*

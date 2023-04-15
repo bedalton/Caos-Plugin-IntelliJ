@@ -18,8 +18,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolderBase
 import com.intellij.openapi.vfs.VirtualFile
-import com.soywiz.korim.awt.toAwt
-import com.soywiz.korim.bitmap.Bitmap32
+import korlibs.image.awt.toAwt
+import korlibs.image.bitmap.Bitmap32
 import java.awt.image.BufferedImage
 import java.beans.PropertyChangeListener
 import javax.swing.JComponent

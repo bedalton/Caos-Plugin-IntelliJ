@@ -7,7 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.Agent
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.soywiz.korim.awt.toAwt
+import korlibs.image.awt.toAwt
 import java.util.*
 
 

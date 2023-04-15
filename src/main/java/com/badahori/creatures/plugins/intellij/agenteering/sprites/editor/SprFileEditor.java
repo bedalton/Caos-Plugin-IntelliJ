@@ -12,7 +12,7 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.JBColor;
-import com.soywiz.korim.bitmap.Bitmap32;
+import korlibs.image.bitmap.Bitmap32;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.Nullable;
 

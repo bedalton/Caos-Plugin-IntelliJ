@@ -16,9 +16,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStream
 import com.bedalton.io.bytes.*
 import com.bedalton.log.*
 import com.intellij.openapi.vfs.VirtualFile
-import com.soywiz.korim.awt.toAwt
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.color.RGBA
+import korlibs.image.awt.toAwt
+import korlibs.image.bitmap.Bitmap32
+import korlibs.image.color.RGBA
 import kotlinx.coroutines.runBlocking
 import java.awt.image.BufferedImage
 
