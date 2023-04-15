@@ -2,7 +2,9 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
+import bedalton.creatures.common.structs.BreedKey
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorImpl.BreedSelectionChangeListener
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttAutoFill.paddedData
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
@@ -10,7 +12,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFilePar
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedIfNotCached
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsState
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey.Companion.fromFileName
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
@@ -25,6 +30,7 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.util.Disposer
@@ -35,7 +41,6 @@ import com.intellij.openapi.vfs.VirtualFileListener
 import com.intellij.psi.*
 import kotlinx.coroutines.runBlocking
 import java.awt.image.BufferedImage
-import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Logger
@@ -48,8 +53,10 @@ internal class AttEditorModel(
     val spriteFile: VirtualFile,
     variant: CaosVariant,
     val showNotification: (message: String, messageType: MessageType) -> Unit,
+    private var partBreedsProvider: PartBreedsProvider?,
     private var attChangeListener: AttChangeListener?,
-) : OnChangePoint, HasSelectedCell, Disposable, VirtualFileListener, DocumentListener {
+    private var selectedCellHolder: HasSelectedCell?,
+) : OnChangePoint, HasSelectedCell, Disposable, VirtualFileListener, DocumentListener, BreedSelectionChangeListener {
 
     private var mImages: List<BufferedImage>? = null
     private var mReplications: Map<Int, List<Int>>? = null
@@ -86,15 +93,21 @@ internal class AttEditorModel(
 
     val fileName: String get() = attFile.name
 
-    var mShiftRelativePoint: Boolean = false
+    var mShiftAttachmentPointInRelatedAtt: Boolean = false
 
-    val shiftRelativePoint: Boolean get() = mShiftRelativePoint
+    val shiftAttachmentPointInRelatedAtt: Boolean get() = mShiftAttachmentPointInRelatedAtt
 
-    private var relativeAtt: RelativeAtt? = null
+    private var relatedAtt: RelativeAtt? = null
 
     var relativeFileFailed = false
 
     var relativePoint: Int? = null
+
+    var mRelativePart: Char? = null
+
+    val relativePart: Char? get() = mRelativePart
+
+    private var shiftPointInRelatedAttAllowed: Boolean = false
 
     val attData: AttFileData
         get() {
@@ -223,6 +236,7 @@ internal class AttEditorModel(
 
     fun getBreedPartKey(): BreedPartKey? {
         return fromFileName(attFile.nameWithoutExtension, variant)
+            ?: BreedPartKey(variant, part = attFile.nameWithoutExtension.getOrNull(0)?.lowercaseChar())
     }
 
     fun getImages(): List<BufferedImage?> {
@@ -245,7 +259,10 @@ internal class AttEditorModel(
                         if (out.width != sourceImage.width || out.height != sourceImage.height) {
                             LOGGER.severe("Failed to properly maintain scale in image.")
                         }
-                    } catch (_: Exception) {
+                    } catch (e: Exception) {
+                        if (e is ProcessCanceledException) {
+                            throw e
+                        }
                     }
                 }
             }
@@ -377,7 +394,7 @@ internal class AttEditorModel(
 
         if (changedLineNumber != null && mSelectedCell != changedLineNumber) {
             val changedLine = changed[0]
-            setSelected(changedLine)
+            setSelected(changedLine, true)
         }
 
         ApplicationManager.getApplication().invokeLater {
@@ -387,8 +404,8 @@ internal class AttEditorModel(
 
     fun setCurrentPoint(newPoint: Int) {
         disposeRelativeAtt()
-        if (shiftRelativePoint) {
-            setupRelativeAttFile()
+        if (shiftAttachmentPointInRelatedAtt) {
+            setupAttachmentPointRelatedAttFile()
         }
         // Ensure point is within valid range
 
@@ -420,7 +437,7 @@ internal class AttEditorModel(
         val oldPoints = data.lines[lineNumber]
         val oldPoint = oldPoints[currentPoint]
         val point = Pair(oldPoint.first + offset.first, oldPoint.second + offset.second)
-        relativeAtt?.moveRelative(offset.first, offset.second)
+        shiftRelative(offset.first, offset.second)
         onChangePoint(lineNumber, point)
     }
 
@@ -437,7 +454,7 @@ internal class AttEditorModel(
         }
         val data = getEnsuringLines(lineNumber)
         val oldPoints = data.lines[lineNumber].points
-        var delta: Pair<Int, Int> = Pair(0,0)
+        var delta: Pair<Int, Int> = Pair(0, 0)
         val changedPoint = oldPoints.getOrNull(currentPoint)?.let { oldPoint ->
             if (lockX && lockY) {
                 oldPoint
@@ -454,7 +471,7 @@ internal class AttEditorModel(
         val currentPointIndex = currentPoint
         val newPoints = oldPoints.mapIndexed { i, oldPoint ->
             if (i == currentPointIndex) {
-                delta = Pair (changedPoint.first - oldPoint.first, changedPoint.second - oldPoint.second)
+                delta = Pair(changedPoint.first - oldPoint.first, changedPoint.second - oldPoint.second)
                 changedPoint
             } else {
                 oldPoint
@@ -467,7 +484,7 @@ internal class AttEditorModel(
             newLines.add(if (i == lineNumber || i in currentReplication) newLine else oldLines[i])
         }
         setAttData(AttFileData(newLines, attFile.name))
-        relativeAtt?.moveRelative(delta.first, delta.second)
+        shiftRelative(delta.first, delta.second)
     }
 
     private fun getEnsuringLines(lineNumber: Int): AttFileData {
@@ -499,6 +516,9 @@ internal class AttEditorModel(
             }
 //            attChangeListener.onAttUpdate()
         } catch (e: java.lang.Exception) {
+            if (e is ProcessCanceledException) {
+                throw e
+            }
             e.printStackTrace()
         }
     }
@@ -757,7 +777,7 @@ internal class AttEditorModel(
 
     }
 
-    override fun setSelected(index: Int): Int {
+    override fun setSelected(index: Int, sender: Any?): Int {
         var targetIndex: Int
         val lastIndex = (if (variant.isOld) 10 else 16) - 1 // Last possible line in file
         targetIndex = if (index < 0) {
@@ -775,6 +795,9 @@ internal class AttEditorModel(
         }
         mCurrentReplication = null
         mSelectedCell = targetIndex
+        if (sender != selectedCellHolder) {
+            selectedCellHolder?.setSelected(targetIndex, false)
+        }
         return targetIndex
     }
 
@@ -849,13 +872,15 @@ internal class AttEditorModel(
         if (project.isDisposed) {
             return
         }
+        selectedCellHolder = null
+        partBreedsProvider = null
         removeDocumentListeners(project)
     }
 
 
-    private fun setupRelativeAttFile() {
+    private fun setupAttachmentPointRelatedAttFile() {
         val project = project
-        if (!shiftRelativePoint || project == null || project.isDisposed) {
+        if (!shiftAttachmentPointInRelatedAtt || project == null || project.isDisposed) {
             disposeRelativeAtt()
             return
         }
@@ -871,8 +896,10 @@ internal class AttEditorModel(
         }
         val (relativePart, relativePoint) = relativePartData
 
+        this.mRelativePart = relativePart
+
         // Dispose current relative att object
-        if (relativeAtt?.part != relativePart) {
+        if (relatedAtt?.part != relativePart) {
             disposeRelativeAtt()
         }
 
@@ -890,33 +917,36 @@ internal class AttEditorModel(
             variant,
             project,
             file,
-            part,
+            relativePart,
             relativePoint,
             this,
         )
 
-        relativeAtt = relAtt
+        relatedAtt = relAtt
+        // Setup whether this is actually possible
+        val otherPartBreed = partBreedsProvider?.getPartBreed(relativePart)
+        onBreedSelected(otherPartBreed, relativePart)
     }
 
 
-    internal fun setShiftRelativeAtt(shift: Boolean) {
-        if (!shiftRelativePoint) {
+    internal fun setShiftAttachmentPointInRelatedAtt(shift: Boolean) {
+        if (!shiftAttachmentPointInRelatedAtt) {
             disposeRelativeAtt()
-            relativeAtt = null
+            relatedAtt = null
         }
 
-        this.mShiftRelativePoint = shift
+        this.mShiftAttachmentPointInRelatedAtt = shift
 
         if (shift) {
-            setupRelativeAttFile()
+            setupAttachmentPointRelatedAttFile()
         }
     }
 
     fun shiftRelative(thisDeltaX: Int, thisDeltaY: Int) {
-        if (!shiftRelativePoint) {
+        if (!shiftAttachmentPointInRelatedAtt || !shiftPointInRelatedAttAllowed) {
             return
         }
-        val relativeAtt = this.relativeAtt
+        val relativeAtt = this.relatedAtt
             ?: return
         if (!relativeAtt.moveRelative(thisDeltaX, thisDeltaY) && !relativeFileFailed) {
             this.relativeFileFailed = true
@@ -925,8 +955,29 @@ internal class AttEditorModel(
     }
 
     private fun disposeRelativeAtt() {
-        relativeAtt?.dispose()
-        relativeAtt = null
+        mRelativePart = null
+        relatedAtt?.dispose()
+        relatedAtt = null
+    }
+
+    override fun onBreedSelected(key: BreedKey?, vararg parts: Char) {
+        if (!shiftAttachmentPointInRelatedAtt) {
+            return
+        }
+        val relativePart = relativePart
+            ?: return
+
+        // If neither part of interest has changed, do nothing
+        if (part !in parts && relativePart !in parts) {
+            return
+        }
+
+        // Get this ATTs breed
+        val thisBreed = this.getBreedPartKey()?.breedKey
+            ?: return
+
+        // Get other ATT
+        this.shiftPointInRelatedAttAllowed = !thisBreed.isGenericMatchFor(key)
     }
 
 
@@ -967,7 +1018,10 @@ private data class RelativeAtt(
             parse(project, file).also {
                 mAttModel = it
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            if (e is ProcessCanceledException) {
+                throw e
+            }
             null
         }
 
@@ -985,13 +1039,14 @@ private data class RelativeAtt(
         val updatedLines = lines.map {
             val points = it.points.mapIndexed { i, point ->
                 if (i == this.point) {
-                    Pair(point.first - otherDeltaX, point.second - otherDeltaY)
+                    Pair(point.first + otherDeltaX, point.second + otherDeltaY)
                 } else {
                     point
                 }
             }
             AttFileLine(points)
         }
+
         val updated = oldModel.copy(
             lines = updatedLines
         )
@@ -1002,7 +1057,10 @@ private data class RelativeAtt(
             ?: return false
         try {
             EditorUtil.replaceText(document, psi.textRange, updated.toFileText(variant))
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            if (e is ProcessCanceledException) {
+                throw e
+            }
             return false
         }
         return try {
