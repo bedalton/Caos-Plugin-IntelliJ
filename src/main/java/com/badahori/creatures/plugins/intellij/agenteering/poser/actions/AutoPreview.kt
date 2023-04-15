@@ -215,14 +215,12 @@ class AutoPreview : AnAction() {
     }
 
     private fun getPose(variant: CaosVariant, key: BreedPartKey): Pose {
-//        return Pose.fromString(variant, 1, null, "141111111111111").second
-//        return Pose.fromString(variant, 3, null, "140000000000000").second
         val straight = if (variant.isOld) {
             "140000000000000"
         } else {
             "113122122111111111"
         }
-        val seed = Random.nextInt(0, 300)
+        val seed = Random.nextInt(0, 300) // Random.nextInt(0, 320)
         val youth = if (variant.isOld) 2 else 3
         return when (key.gender) {
             0 -> {
@@ -237,9 +235,9 @@ class AutoPreview : AnAction() {
                         return Pose.fromString(variant, 1, null, "342010222032211").second
                     }
                 } else {
-                    if (seed > 300) {
-                        return Pose.fromString(variant, 1, null, "142230322333333").second
-                    }
+//                    if (seed > 300) {
+//                        return Pose.fromString(variant, 1, null, "142230322333333").second
+//                    }
                     return Pose.fromString(variant, 1, null, straight).second
                 }
             }
@@ -249,8 +247,6 @@ class AutoPreview : AnAction() {
                         Pose.fromString(variant, 3, null, "243322100210311").second
                     } else if (seed < 200) {
                         Pose.fromString(variant, 3, null, "212010222220011").second
-//                    } else if (seed < 300) {
-//                        Pose.fromString(variant, 3, null, "141222022102211000").second
                     } else {
                         return Pose.fromString(variant, 1, null, "233020332330011").second
                     }
