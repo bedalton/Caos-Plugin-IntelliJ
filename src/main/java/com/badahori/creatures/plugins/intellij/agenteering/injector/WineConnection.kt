@@ -19,7 +19,7 @@ import com.bedalton.log.eIf
 import com.bedalton.log.iIf
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
-import com.soywiz.korio.util.escape
+import korlibs.io.util.escape
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File

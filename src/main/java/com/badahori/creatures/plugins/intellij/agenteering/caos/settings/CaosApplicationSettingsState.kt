@@ -67,7 +67,7 @@ class CaosApplicationSettingsState : CaosApplicationSettingsService,
 
         // Ensure we do not serialize default game interface names
         mGameInterfaceNames = state.gameInterfaceNames
-            .filter { it !is NativeInjectorInterface || !it.isDefault }
+            .filter { it != null && (it !is NativeInjectorInterface || !it.isDefault) }
 
         // Only load state if changed
         if (state == oldState) {
@@ -142,9 +142,9 @@ class CaosApplicationSettingsState : CaosApplicationSettingsService,
         }
 
     override var gameInterfaceNames: List<GameInterfaceName>
-        get() = mGameInterfaceNames
+        get() = mGameInterfaceNames.filterNotNull()
         set(value) {
-            mGameInterfaceNames = value
+            mGameInterfaceNames = value.filterNotNull()
             loadState(this)
         }
 

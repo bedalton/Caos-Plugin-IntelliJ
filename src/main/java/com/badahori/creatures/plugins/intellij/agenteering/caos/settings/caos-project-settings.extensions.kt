@@ -387,7 +387,7 @@ fun CaosApplicationSettingsService.addGameInterfaceName(interfaceName: GameInter
         state.copy {
             gameInterfaceNames = (state.gameInterfaceNames + interfaceName)
                 .distinct()
-                .filter { it !is NativeInjectorInterface || !it.isDefault }
+                .filter { it != null && (it !is NativeInjectorInterface || !it.isDefault) }
         }
     )
 }
@@ -400,7 +400,7 @@ fun CaosApplicationSettingsService.removeGameInterfaceName(interfaceName: GameIn
     val state = state
     loadState(state.copy {
         gameInterfaceNames = state.gameInterfaceNames
-            .filter { it != interfaceName }
+            .filter { it != null && it != interfaceName }
     })
 }
 
@@ -410,6 +410,7 @@ fun CaosApplicationSettingsService.removeGameInterfaceName(interfaceName: GameIn
 val CaosApplicationSettingsService.gameInterfaceNames: List<GameInterfaceName>
     get() {
         return state.gameInterfaceNames
+            .filterNotNull()
             .flatMap { gameInterfaceName ->
                 if (gameInterfaceName.variant != CaosVariant.ANY) {
                     listOf(gameInterfaceName)
@@ -429,7 +430,7 @@ val CaosApplicationSettingsService.gameInterfaceNames: List<GameInterfaceName>
  * Gets game interface names for a variant after expanding asterisks(*)
  */
 fun CaosApplicationSettingsService.gameInterfaceNames(variant: CaosVariant?): List<GameInterfaceName> {
-    val interfaces = gameInterfaceNames
+    val interfaces = gameInterfaceNames.filterNotNull()
     if (variant.nullIfUnknown() == null) {
         return interfaces
     }
