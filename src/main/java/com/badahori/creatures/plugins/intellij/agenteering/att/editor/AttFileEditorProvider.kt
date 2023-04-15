@@ -24,8 +24,9 @@ class AttFileEditorProvider : FileEditorProvider {
         }
 
 //        val lines = file.contents.split("\r?\n".toRegex()).filter { it.isNotBlank() }.size;
-        if (file.extension?.lowercase() != "att")
+        if (file.extension?.lowercase() != "att") {
             return false
+        }
         if (file.name.getOrNull(0)?.lowercase() == 'z' && !BreedPartKey.allowZ) {
             return false
         }
@@ -72,7 +73,7 @@ class AttFileEditorProvider : FileEditorProvider {
     }
 
     companion object {
-        private const val EDITOR_TYPE_ID = "creature.ATT"
+        const val EDITOR_TYPE_ID = "creature.ATT"
     }
 }
 

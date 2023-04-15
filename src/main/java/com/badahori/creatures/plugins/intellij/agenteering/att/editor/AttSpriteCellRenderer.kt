@@ -1,17 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.height
-import com.badahori.creatures.plugins.intellij.agenteering.utils.scaleNearestNeighbor
-import com.badahori.creatures.plugins.intellij.agenteering.utils.width
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.ui.JBColor
-import com.soywiz.korim.bitmap.Bitmap32
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
-import java.awt.image.ImageObserver
 import javax.swing.*
+import javax.swing.KeyStroke.getKeyStroke
 import kotlin.math.floor
 
 
@@ -48,19 +44,19 @@ data class AttSpriteCellData(
 
     fun onFocus() {
         if (!isFocused) {
-            changeCellListener.setSelected(index)
+            changeCellListener.setSelected(index, true)
         }
     }
 
     fun focusPreviousCell() {
         if (index > 0) {
-            changeCellListener.setSelected(index - 1)
+            changeCellListener.setSelected(index - 1, true)
         }
     }
 
     fun focusNextCell() {
         if (index < 16) {
-            changeCellListener.setSelected(index + 1)
+            changeCellListener.setSelected(index + 1, true)
         }
     }
 
@@ -146,8 +142,9 @@ internal class AttSpriteCellComponent : JPanel() {
 
         // Set sizing information
         val padWidth = if (folded) 0 else 10
-        val padHeight = if (folded) 0 else 0
-        val dimension = if (width > 0 && height > 0) Dimension(width + padWidth, height + padHeight) else Dimension(1, 1)
+        val padHeight = if (folded) 0 else 10
+        val dimension =
+            if (width > 0 && height > 0) Dimension(width + padWidth, height + padHeight) else Dimension(1, 1)
         this.size = dimension
         this.preferredSize = dimension
 //        this.canvas?.preferredSize = Dimension(width, height)
@@ -157,7 +154,7 @@ internal class AttSpriteCellComponent : JPanel() {
         revalidate()
         repaint()
         if (selected) {
-            requestFocus()
+            requestFocusInWindow()
         }
     }
 
@@ -230,54 +227,70 @@ internal class AttSpriteCellComponent : JPanel() {
 
     private fun bindKeyboardShortcuts() {
 
-        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.up", KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0)) {
+        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.up", getKeyStroke(KeyEvent.VK_UP, 0)) {
             data?.shiftPoint(0, -1)
         }
-        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.up", KeyStroke.getKeyStroke(KeyEvent.VK_KP_UP, 0)) {
-            data?.shiftPoint(0, -1)
-        }
-
-        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.up", KeyStroke.getKeyStroke(KeyEvent.VK_KP_UP, 0)) {
+        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.up", getKeyStroke(KeyEvent.VK_KP_UP, 0)) {
             data?.shiftPoint(0, -1)
         }
 
-        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.down", KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0)) {
+        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.up", getKeyStroke(KeyEvent.VK_KP_UP, 0)) {
+            data?.shiftPoint(0, -1)
+        }
+
+        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.down", getKeyStroke(KeyEvent.VK_DOWN, 0)) {
             data?.shiftPoint(0, 1)
         }
-        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.down", KeyStroke.getKeyStroke(KeyEvent.VK_KP_DOWN, 0)) {
+        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.down", getKeyStroke(KeyEvent.VK_KP_DOWN, 0)) {
             data?.shiftPoint(0, 1)
         }
-        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.right", KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0)) {
+        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.right", getKeyStroke(KeyEvent.VK_RIGHT, 0)) {
             data?.shiftPoint(1, 0)
         }
         bindKeyStroke(
             WHEN_ANCESTOR_OF_FOCUSED_COMPONENT,
             "move.right",
-            KeyStroke.getKeyStroke(KeyEvent.VK_KP_RIGHT, 0)
+            getKeyStroke(KeyEvent.VK_KP_RIGHT, 0)
         ) {
             data?.shiftPoint(1, 0)
         }
-        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.left", KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0)) {
+        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.left", getKeyStroke(KeyEvent.VK_LEFT, 0)) {
             data?.shiftPoint(-1, 0)
         }
-        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.left", KeyStroke.getKeyStroke(KeyEvent.VK_KP_LEFT, 0)) {
+        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "move.left", getKeyStroke(KeyEvent.VK_KP_LEFT, 0)) {
             data?.shiftPoint(-1, 0)
         }
 
 
         // Shift Focus up or down
-        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "focus.previous", KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK)) {
+        bindKeyStroke(
+            WHEN_ANCESTOR_OF_FOCUSED_COMPONENT,
+            "focus.previous",
+            getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK)
+        ) {
             data?.focusPreviousCell()
         }
         // Shift Focus up or down
-        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "focus.previous", KeyStroke.getKeyStroke(KeyEvent.VK_KP_UP, InputEvent.SHIFT_DOWN_MASK)) {
+        bindKeyStroke(
+            WHEN_ANCESTOR_OF_FOCUSED_COMPONENT,
+            "focus.previous",
+            getKeyStroke(KeyEvent.VK_KP_UP, InputEvent.SHIFT_DOWN_MASK)
+        ) {
             data?.focusPreviousCell()
         }
 
-        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "focus.next", KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_DOWN_MASK)) {
+        bindKeyStroke(
+            WHEN_ANCESTOR_OF_FOCUSED_COMPONENT,
+            "focus.next",
+            getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_DOWN_MASK)
+        ) {
             data?.focusNextCell()
         }
-        bindKeyStroke(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, "focus.next", KeyStroke.getKeyStroke(KeyEvent.VK_KP_DOWN, InputEvent.SHIFT_DOWN_MASK)) {
+        bindKeyStroke(
+            WHEN_ANCESTOR_OF_FOCUSED_COMPONENT,
+            "focus.next",
+            getKeyStroke(KeyEvent.VK_KP_DOWN, InputEvent.SHIFT_DOWN_MASK)
+        ) {
             data?.focusNextCell()
         }
     }
@@ -300,7 +313,8 @@ internal class AttSpriteCellComponent : JPanel() {
             Color(30, 30, 30, 120),
             Color(220, 220, 220, 127)
         )
-        fun scalePoints(points: List<Pair<Int,Int>>, scale: Double): List<Pair<Int,Int>> {
+
+        fun scalePoints(points: List<Pair<Int, Int>>, scale: Double): List<Pair<Int, Int>> {
             return points.subList(0, minOf(6, points.size)).map {
                 Pair(floor(it.first * scale).toInt(), floor(it.second * scale).toInt())
             }
@@ -328,6 +342,8 @@ internal class AttSpriteCellList(
             this.background = color
             this.isOpaque = true
         }
+        this.isFocusable = true
+        initKeyListeners()
     }
 
     fun get(index: Int): AttSpriteCellComponent {
@@ -354,14 +370,33 @@ internal class AttSpriteCellList(
         this.listItems = newItems
         val size = newItems.size
         if (pool.size > size) {
-            pool.forEachIndexed { i, component ->
-                if (i < size) {
-                    return
-                }
+            pool.slice(size..pool.size).forEach { component ->
                 component.isVisible = false
             }
         }
         reload()
+    }
+
+    fun focusCell(index: Int) {
+        if (this.listItems.size > index) {
+            invokeLater {
+                LOGGER.info("Focusing on cell by index")
+                val item = get(index)
+                item.requestFocus()
+                item.requestFocusInWindow()
+            }
+        }
+    }
+
+    private fun focusCell() {
+        invokeLater {
+            val focused = getCellForSelectedItem()
+                ?: return@invokeLater
+
+            LOGGER.info("Focusing on selected cell")
+            focused.requestFocus()
+            focused.requestFocusInWindow()
+        }
     }
 
     init {
@@ -369,12 +404,51 @@ internal class AttSpriteCellList(
         reload()
     }
 
+    private fun nextCell() {
+        LOGGER.info("ListView: next cell")
+        getSelectedItem()?.focusNextCell()
+    }
+
+    private fun previousCell() {
+        LOGGER.info("ListView: Previous cell")
+        getSelectedItem()?.focusPreviousCell()
+    }
+
+    private fun initKeyListeners() {
+        initBasicKeyListeners(WHEN_IN_FOCUSED_WINDOW, this)
+    }
+
     fun reload() {
+        var focused = -1
         listItems.forEachIndexed { i, item ->
             setCell(item, i)
+            if (item.isFocused) {
+                focused = i
+            }
         }
         revalidate()
         repaint()
+
+        invokeLater {
+            if (focused >= 0) {
+                focusCell(focused)
+            }
+        }
+    }
+
+    private fun getSelectedItem(): AttSpriteCellData? {
+        return listItems.firstOrNull { it.isFocused }
+    }
+
+    private fun getCellForSelectedItem(): AttSpriteCellComponent? {
+        val selectedItem = listItems.firstOrNull { it.isFocused }
+            ?: return null
+        val cell = get(selectedItem.index)
+        return if (cell.isVisible) {
+            cell
+        } else {
+            null
+        }
     }
 
     private fun setCell(value: AttSpriteCellData, index: Int) {
@@ -397,6 +471,125 @@ internal class AttSpriteCellList(
 //
 //        }
     }
+
+    private fun shiftPoint(xDelta: Int, yDelta: Int) {
+        getSelectedItem()?.shiftPoint(xDelta, yDelta)
+    }
+
+    fun initBasicKeyListeners(condition: Int, component: JComponent) {
+        val actionMap = component.actionMap
+        val inputMap = component.getInputMap(condition)
+
+        ActionHelper.addKeyAction(
+            actionMap,
+            inputMap,
+            "Select previous cell",
+            getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK),
+            this::previousCell
+        )
+        ActionHelper.addKeyAction(
+            actionMap,
+            inputMap,
+            "Select previous cell (Keypad)",
+            getKeyStroke(KeyEvent.VK_KP_UP, InputEvent.SHIFT_DOWN_MASK),
+            this::previousCell
+        )
+
+        ActionHelper.addKeyAction(
+            actionMap,
+            inputMap,
+            "Select next cell",
+            getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_DOWN_MASK),
+            this::nextCell
+        )
+        ActionHelper.addKeyAction(
+            actionMap,
+            inputMap,
+            "Select next cell (KP)",
+            getKeyStroke(KeyEvent.VK_KP_DOWN, InputEvent.SHIFT_DOWN_MASK),
+            this::nextCell
+        )
+
+        ActionHelper.addKeyAction(
+            actionMap,
+            inputMap,
+            "Focus cell",
+            getKeyStroke(KeyEvent.VK_SPACE, 0),
+            this::focusCell
+        )
+
+        ActionHelper.addKeyAction(
+            actionMap, inputMap,
+            "move.up",
+            getKeyStroke(KeyEvent.VK_UP, 0)
+        ) {
+            shiftPoint(0, -1)
+        }
+
+        ActionHelper.addKeyAction(
+            actionMap, inputMap,
+            "move.up",
+            getKeyStroke(KeyEvent.VK_KP_UP, 0)
+        ) {
+            shiftPoint(0, -1)
+        }
+
+        ActionHelper.addKeyAction(
+            actionMap, inputMap,
+            "move.up",
+            getKeyStroke(KeyEvent.VK_KP_UP, 0)
+        ) {
+            shiftPoint(0, -1)
+        }
+
+        ActionHelper.addKeyAction(
+            actionMap, inputMap,
+            "move.down",
+            getKeyStroke(KeyEvent.VK_DOWN, 0)
+        ) {
+            shiftPoint(0, 1)
+        }
+        ActionHelper.addKeyAction(
+            actionMap, inputMap,
+            "move.down",
+            getKeyStroke(KeyEvent.VK_KP_DOWN, 0)
+        ) {
+            shiftPoint(0, 1)
+        }
+        ActionHelper.addKeyAction(
+            actionMap, inputMap,
+            "move.right",
+            getKeyStroke(KeyEvent.VK_RIGHT, 0)
+        ) {
+            shiftPoint(1, 0)
+        }
+
+        ActionHelper.addKeyAction(
+            actionMap, inputMap,
+            "move.right",
+            getKeyStroke(KeyEvent.VK_KP_RIGHT, 0)
+        ) {
+            shiftPoint(1, 0)
+        }
+
+        ActionHelper.addKeyAction(
+            actionMap, inputMap,
+            "move.left",
+            getKeyStroke(KeyEvent.VK_LEFT, 0)
+        ) {
+            shiftPoint(-1, 0)
+        }
+        ActionHelper.addKeyAction(
+            actionMap, inputMap,
+            "move.left",
+            getKeyStroke(KeyEvent.VK_KP_LEFT, 0)
+        ) {
+            shiftPoint(-1, 0)
+        }
+        component.actionMap = actionMap
+        component.setInputMap(condition, inputMap)
+    }
+
 }
 
 interface OnChangePoint {
@@ -412,7 +605,7 @@ interface HasSelectedCell {
      * If point replication is set, index may be different if skipping duplicates
      * @return actually selected index
      */
-    fun setSelected(index: Int): Int
+    fun setSelected(index: Int, sender: Any?): Int
 }
 
 
@@ -446,7 +639,7 @@ private class AttCellCanvas(
     var labels: Boolean,
     var pointNames: List<String>,
     var scale: Double,
-): JPanel() {
+) : JPanel() {
 
     var scaledFont: Font? = null
 

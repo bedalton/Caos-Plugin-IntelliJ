@@ -1,19 +1,20 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose;
 
+import bedalton.creatures.common.structs.BreedKey;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorPanel;
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttFileEditorProvider;
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.PartBreedsProvider;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility;
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
-import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtilKt;
-import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosStringUtilsKt;
-import com.badahori.creatures.plugins.intellij.agenteering.utils.DocumentChangeListener;
-import com.badahori.creatures.plugins.intellij.agenteering.utils.MouseListenerBase;
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -40,10 +41,7 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
@@ -54,8 +52,9 @@ import java.util.stream.Collectors;
 import static com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.BreedDataUtil.findBreeds;
 import static com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.BreedDataUtil.findMatchingBreedInList;
 import static com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseCalculator.HeadPoseData;
+import static com.badahori.creatures.plugins.intellij.agenteering.utils.ActionHelper.action;
 
-public class PoseEditorImpl implements Disposable, BreedPoseHolder {
+public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsProvider {
     private static final Logger LOGGER = Logger.getLogger("#PoseEditor");
     private static final char[] ALL_PARTS = PoseEditorSupport.getAllParts();
     private final Project project;
@@ -149,6 +148,10 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     private final Map<Character, BodyPartFiles> last = new HashMap<>();
 
     private final Map<Character, Integer> partIncrementDirection = new HashMap<>();
+
+    private JPopupMenu openRelatedPopup;
+
+    private final List<BreedSelectionChangeListener> breedSelectionChangeListeners = new ArrayList<>();
 
     public PoseEditorImpl(
             @NotNull final Project project,
@@ -539,6 +542,19 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         initGhostPartsComboBox();
     }
 
+
+    public void openRelatedWithDialog() {
+        if (openRelatedPopup == null) {
+            initOpenRelatedPopupMenu();
+        }
+        final JPanel panel = getMainPanel();
+        final int centerX = panel.getWidth() / 2;
+        final int centerY = panel.getHeight() / 2;
+        final int attemptedWidth = 100;
+        final int x = centerX - (attemptedWidth / 2);
+        openRelatedPopup.show(panel, x, centerY);
+    }
+
     private void initHiddenPartsComboBox() {
         final VisibilityPopup menu = new VisibilityPopup(this, PartVisibility.HIDDEN);
         hidden.addMouseListener(new MouseListenerBase() {
@@ -569,6 +585,22 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             public void mousePressed(@NotNull MouseEvent e) {
                 menu.updateItems();
                 menu.show(e.getComponent(), e.getX(), e.getY());
+            }
+        });
+    }
+
+    private void initOpenRelatedPopupMenu() {
+        final List<Character> availableRelatedParts = ComboBoxHelper
+                .items(openRelated)
+                .stream()
+                .filter(Objects::nonNull)
+                .map(BodyPartFiles::getPart)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        openRelatedPopup = AttEditorSupport.initOpenRelatedPopup(availableRelatedParts, this, (selectedPart) -> {
+            LOGGER.info("Opening related part: "  + selectedPart);
+            if (selectedPart != null) {
+                openRelated(selectedPart);
             }
         });
     }
@@ -773,6 +805,8 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
                 return;
             }
             psiFile.navigate(true);
+            FileEditorManager.getInstance(project).setSelectedEditor(psiFile.getVirtualFile(), AttFileEditorProvider.EDITOR_TYPE_ID);
+
         });
     }
 
@@ -881,6 +915,17 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             final List<BodyPartFiles> theseFiles = getSelectedFiles(box);
             for (final char part : parts) {
                 clearManualAttOnChange(theseFiles, part);
+            }
+
+            final Optional<BreedPartKey> file = theseFiles.stream()
+                    .map(BodyPartFiles::getKey)
+                    .filter(Objects::nonNull)
+                    .findFirst();
+            if (file.isPresent()) {
+                final BreedKey breedKey = file.get().getBreedKey();
+                for (final BreedSelectionChangeListener listener : breedSelectionChangeListeners) {
+                    listener.onBreedSelected(breedKey, parts);
+                }
             }
 
             breedChanged = true;
@@ -1178,7 +1223,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         if (comboBox == null) {
             return;
         }
-        String breedString = "" + part + comboBox.getSelectedItem();
+        String breedString = String.valueOf(part) + comboBox.getSelectedItem();
         model.setManualAtt(
                 part,
                 breedString,
@@ -1743,9 +1788,24 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
 
     public void togglePartVisibility(final char part, final PartVisibility visibility) {
         final PartVisibility currentVisibility = this.visibilityMap.get(part);
-        if (currentVisibility == null || currentVisibility != visibility) {
+        if (part == 'x') {
+            // Toggle all parts on or off
+            final boolean toggleOn = Arrays.stream(PoseEditorModel.getAllPartsChars().toArray(new Character[0]))
+                    .noneMatch(this.visibilityMap::containsKey);
+            if (toggleOn) {
+                // Toggle all points on
+                for (final Character p : PoseEditorModel.getAllPartsChars()) {
+                    this.visibilityMap.put(p, visibility);
+                }
+            } else {
+                // Toggle all points off
+                this.visibilityMap.clear();
+            }
+        } else if (currentVisibility == null || currentVisibility != visibility) {
+            // Toggle visibility on
             this.visibilityMap.put(part, visibility);
         } else {
+            // Toggle visibility off
             this.visibilityMap.remove(part);
         }
         redraw(part);
@@ -1900,6 +1960,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
     public void dispose() {
         LOGGER.info("Dispose called in pose editor");
         poseChangeListeners.clear();
+        breedSelectionChangeListeners.clear();
     }
 
     private int getFacing() {
@@ -2625,6 +2686,39 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
         void onPoseChange(Pose pose);
     }
 
+
+
+    public void addBreedSelectionChangeListener(final BreedSelectionChangeListener listener) {
+        breedSelectionChangeListeners.add(listener);
+    }
+
+    public void removeBreedSelectionChangeListener(final BreedSelectionChangeListener listener) {
+        breedSelectionChangeListeners.remove(listener);
+    }
+
+
+    @Nullable
+    public BreedKey getPartBreed(@Nullable Character part) {
+        if (part == null) {
+            return null;
+        }
+        final JComboBox<Triple<String, BreedPartKey, List<BodyPartFiles>>> breedComboBox =
+                getComboBoxForBreed(part);
+        if (breedComboBox == null) {
+            return null;
+        }
+        final Object selected = breedComboBox.getSelectedItem();
+        if (selected == null) {
+            return null;
+        }
+        @SuppressWarnings("unchecked")
+        final Triple<String, BreedPartKey, List<BodyPartFiles>> breed =
+                (Triple<String, BreedPartKey, List<BodyPartFiles>>) selected;
+
+        return breed.getSecond().getBreedKey();
+    }
+
+
     private class VisibilityPopup extends JPopupMenu implements Disposable {
 
         final JCheckBoxMenuItem all = new JCheckBoxMenuItem("All Parts");
@@ -2732,6 +2826,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             add(item);
             partItems.put(part, item);
         }
+
 
         private final MouseListenerBase mouseListener = new MouseListenerBase() {
             @Override
@@ -2911,6 +3006,11 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder {
             setDefaultPoseItem.setVisible(show && isNotFrontOrBack);
         }
 
+    }
+
+
+    public static interface BreedSelectionChangeListener {
+        void onBreedSelected(BreedKey key, char... parts);
     }
 
 }

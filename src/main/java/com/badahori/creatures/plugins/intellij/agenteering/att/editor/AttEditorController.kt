@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
+import bedalton.creatures.common.structs.BreedKey
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
@@ -22,22 +23,27 @@ internal class AttEditorController(
     spriteFile: VirtualFile,
     variant: CaosVariant,
     override val showFooterNotification: (message: String, messageType: MessageType) -> Unit
-) : AttEditorHandler, AttChangeListener, Disposable {
+) : AttEditorHandler, AttChangeListener, Disposable, PartBreedsProvider {
 
-    private val model: AttEditorModel = AttEditorModel(
-        project,
-        parent,
-        attFile,
-        spriteFile,
-        variant,
-        showFooterNotification,
-        this
-    )
+    private val model: AttEditorModel by lazy {
+        AttEditorModel(
+            project,
+            parent,
+            attFile,
+            spriteFile,
+            variant,
+            showFooterNotification,
+            this,
+            this,
+            this
+        )
+    }
 
     private lateinit var mView: View
 
     override val shiftRelativeAtt: Boolean
-        get() = model.shiftRelativePoint
+        get() = model.shiftAttachmentPointInRelatedAtt
+
     internal val view:  View get() {
         if (this::mView.isInitialized)
             return mView
@@ -59,11 +65,12 @@ internal class AttEditorController(
         }
     override val replications: Map<Int, List<Int>>
         get() = model.getReplications()
+
     override val notReplicatedLines: List<Int>
         get() = model.notReplicatedAtts
 
     override fun setShiftRelativeAtt(shift: Boolean) {
-        model.setShiftRelativeAtt(shift)
+        model.setShiftAttachmentPointInRelatedAtt(shift)
     }
 
     val isInitialized: Boolean
@@ -105,6 +112,9 @@ internal class AttEditorController(
     override val selectedCell: Int
         get() = model.selectedCell
 
+    override val relativePart: Char?
+        get() = model.relativePart
+
     init {
         if (!project.isDisposed) {
             Disposer.register(parent, this)
@@ -138,6 +148,10 @@ internal class AttEditorController(
 
     fun clearPose() {
         view.clearPose()
+    }
+
+    override fun getPartBreed(part: Char?): BreedKey? {
+        return view.getPartBreed(part)
     }
 
     /**
@@ -199,8 +213,19 @@ internal class AttEditorController(
     /**
      * Sets the selected Cell/Line for editing
      */
-    override fun setSelected(index: Int): Int {
-        return model.setSelected(index)
+    override fun setSelected(index: Int, sender: Any?): Int {
+        if (this == sender) {
+            return index
+        }
+        if (this::mView.isInitialized) {
+            if (view.selectedCell != index && view != sender) {
+                view.setSelected(index, sender = sender)
+            }
+        }
+        if (model.selectedCell != index && model != sender) {
+            return model.setSelected(index, sender = sender)
+        }
+        return index
     }
 
     /**
@@ -208,6 +233,10 @@ internal class AttEditorController(
      */
     internal fun getComponent(): Any {
         return view.component
+    }
+
+    internal fun getPreferredFocusComponent(): JComponent {
+        return view.preferredFocusComponent()
     }
 
     internal fun getPopupMessageTarget(): JComponent {
@@ -244,13 +273,14 @@ internal class AttEditorController(
     /**
      * Interface for the view
      */
-    internal interface View: AttChangeListener, Disposable {
+    internal interface View: AttChangeListener, Disposable, PartBreedsProvider, HasSelectedCell {
         val component: Any
         val toolbar: Any
         fun init()
         fun refresh()
         fun clearPose()
         fun scrollCellIntoView()
+        fun preferredFocusComponent(): JComponent;
     }
 
 }
@@ -278,6 +308,7 @@ internal interface AttEditorHandler: OnChangePoint, HasSelectedCell {
     val replications: Map<Int, List<Int>>
     val notReplicatedLines: List<Int>
     val shiftRelativeAtt: Boolean
+    val relativePart: Char?
     fun setShiftRelativeAtt(shift: Boolean)
     fun getCurrentPoint(): Int
     fun getFolded(): List<Int>

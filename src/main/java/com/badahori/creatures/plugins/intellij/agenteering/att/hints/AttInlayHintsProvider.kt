@@ -154,8 +154,9 @@ private fun getPointIndex(element: PsiElement?): Int? {
     }
 
     // Ensure element is an int (should have been done in the check
-    val int = element as? AttInt
-        ?: return null
+    if (element !is AttInt) {
+        return null
+    }
 
     // Int parent is AttItem
     val item = element.parent as? AttItem
