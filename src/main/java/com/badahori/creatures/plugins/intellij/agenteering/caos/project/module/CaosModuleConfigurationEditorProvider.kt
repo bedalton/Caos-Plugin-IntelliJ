@@ -66,9 +66,9 @@ class CaosModuleConfigurationEditor(private val state: ModuleConfigurationState)
         @JvmStatic
         fun invalidLines(textAreaContents: String): List<Int> {
             val lines = textAreaContents.split("\n")
-            return lines.indices.filterNot { i ->
+            return lines.indices.filter { i ->
                 val line = lines[i]
-                line.isBlank() || GameInterfaceName.fromString(line) != null
+                line.isBlank() || GameInterfaceName.fromString(line) == null
             }
         }
     }

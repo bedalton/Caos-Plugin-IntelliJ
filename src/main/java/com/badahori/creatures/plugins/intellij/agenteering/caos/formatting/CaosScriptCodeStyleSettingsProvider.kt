@@ -18,8 +18,12 @@ class CaosScriptCodeStyleSettingsProvider : CodeStyleSettingsProvider() {
 
     override fun getConfigurableDisplayName(): String? = "Caos Script"
 
+    @Deprecated("Deprecated\n" +
+            "use createConfigurable(CodeStyleSettings, CodeStyleSettings) or LanguageCodeStyleSettingsProvider.createConfigurable(CodeStyleSettings, CodeStyleSettings) for language settings.",
+        ReplaceWith("createConfigurable(settings, modelSettings)")
+    )
     override fun createSettingsPage(settings: CodeStyleSettings, modelSettings: CodeStyleSettings): Configurable {
-        return createConfigurable(settings!!, modelSettings!!)
+        return createConfigurable(settings, modelSettings)
     }
 
     override fun createConfigurable(settings: CodeStyleSettings, modelSettings: CodeStyleSettings): CodeStyleConfigurable {

@@ -83,11 +83,11 @@ internal class GameInterfaceConverter : Converter<GameInterfaceName?>() {
 internal class GameInterfaceListConverter : Converter<List<GameInterfaceName>>() {
     override fun toString(values: List<GameInterfaceName>): String {
         var delimiter = DELIMITER
-        val serialized = values.map { it.serialize() }
+        val serialized = values.mapNotNull { it?.serialize() }
         while (serialized.any { it.contains(delimiter) }) {
             delimiter = "#_" + delimiter + "_#"
         }
-        return delimiter + DELIMITER_VALUES_DELIMITER + values.joinToString(delimiter) { it.serialize() }
+        return delimiter + DELIMITER_VALUES_DELIMITER + serialized.joinToString(delimiter)
     }
 
     override fun fromString(rawSerialized: String): List<GameInterfaceName> {

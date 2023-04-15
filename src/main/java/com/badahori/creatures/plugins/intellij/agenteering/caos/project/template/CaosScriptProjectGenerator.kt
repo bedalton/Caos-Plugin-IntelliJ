@@ -17,6 +17,7 @@ import com.intellij.platform.DirectoryProjectGeneratorBase
 import com.intellij.platform.ProjectGeneratorPeer
 import com.intellij.platform.ProjectTemplate
 import icons.CaosScriptIcons
+import org.jetbrains.annotations.Nullable
 import javax.swing.Icon
 
 open class CaosScriptProjectGenerator : DirectoryProjectGeneratorBase<CaosProjectGeneratorInfo>(), ProjectTemplate {
@@ -29,6 +30,13 @@ open class CaosScriptProjectGenerator : DirectoryProjectGeneratorBase<CaosProjec
         return CaosScriptModuleBuilder()
     }
 
+    /**
+     * @return null if ok, error message otherwise
+     * @deprecated unused API
+     */
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("unused API")
+    @Nullable
     override fun validateSettings(): ValidationInfo? {
         return null
     }
@@ -51,9 +59,15 @@ open class CaosScriptProjectGenerator : DirectoryProjectGeneratorBase<CaosProjec
 
     override fun getDescription(): String? = CaosBundle.message("caos.project.description")
 
-    override fun generateProject(project: Project, baseDir: VirtualFile, settings: CaosProjectGeneratorInfo, module: Module) {
+    override fun generateProject(
+        project: Project,
+        baseDir: VirtualFile,
+        settings: CaosProjectGeneratorInfo,
+        module: Module
+    ) {
         ApplicationManager.getApplication().runWriteAction {
-            val modifiableModel: ModifiableRootModel = ModifiableModelsProvider.SERVICE.getInstance().getModuleModifiableModel(module)
+            val modifiableModel: ModifiableRootModel =
+                ModifiableModelsProvider.SERVICE.getInstance().getModuleModifiableModel(module)
             module.rootManager.modifiableModel.apply {
                 contentEntries.firstOrNull()?.apply {
                     addSourceFolder(baseDir, false)
