@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.charAt
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.fileTypes.impl.FileTypeOverrider
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.util.io.ByteArraySequence
 import com.intellij.openapi.util.io.ByteSequence
 import com.intellij.openapi.vfs.VirtualFile
@@ -36,6 +37,9 @@ class AgentFileOverrider : FileTypeOverrider {
             val bytes = virtualFile.inputStream?.readNBytes(4)
             ByteArraySequence(bytes)
         } catch (e: Exception) {
+            if (e is ProcessCanceledException) {
+                throw e
+            }
             return null
         }
         // If file passes pray validation, return pray file type

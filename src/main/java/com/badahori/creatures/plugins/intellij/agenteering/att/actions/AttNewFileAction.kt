@@ -20,6 +20,7 @@ import com.intellij.ide.fileTemplates.FileTemplate
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.module.ModuleType
+import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -102,6 +103,9 @@ class AttNewFileAction :  MyNewFileAction(
             super.createFileFromTemplate(fileName, template, dir)
                 ?: return null
         } catch (e: Exception) {
+            if (e is ProcessCanceledException) {
+                throw e
+            }
             LOG.error("Error while creating new ATT file", e)
             return null
         }
@@ -151,6 +155,9 @@ class AttNewFileAction :  MyNewFileAction(
                 PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
                 true
             } catch (e: Exception) {
+                if (e is ProcessCanceledException) {
+                    throw e
+                }
                 LOG.error("Failed to set initial ATT text. ${e.message}", e)
                 e.printStackTrace()
                 false

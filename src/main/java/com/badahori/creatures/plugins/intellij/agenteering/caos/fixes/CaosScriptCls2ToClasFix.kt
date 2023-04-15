@@ -15,6 +15,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCAssignment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.intellij.openapi.progress.ProcessCanceledException
 
 class CaosScriptCls2ToClasFix(element: CaosScriptCAssignment) : IntentionAction, LocalQuickFix {
 
@@ -65,6 +66,9 @@ class CaosScriptCls2ToClasFix(element: CaosScriptCAssignment) : IntentionAction,
             clas = CaosAgentClassUtils.toClas(family, genus, species)
             "setv clas $clas"
         } catch (e:Exception) {
+            if (e is ProcessCanceledException) {
+                throw e
+            }
             null
         }
     }

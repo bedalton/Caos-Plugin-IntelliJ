@@ -9,7 +9,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
+import com.bedalton.common.util.className
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
@@ -41,11 +43,14 @@ internal class PrayFileTreeNode(
      * PRAY blocks in file
      */
     private val blocks: List<PrayBlock> by lazy {
-        val stream = VirtualFileStreamReaderEx(file)
+        val stream = VirtualFileStreamReader(file)
         runBlocking {
             try {
                 parsePrayAgentBlocks(stream, "*", true)
             } catch (e: Exception) {
+                if (e is ProcessCanceledException) {
+                    throw e
+                }
                 return@runBlocking emptyList()
             }
         }
@@ -60,14 +65,19 @@ internal class PrayFileTreeNode(
         }
         blocks.mapNotNull map@{ block ->
             if (block is DataBlock) {
-                val file = try {
-                    directory.createChildWithContent(block.blockName.text, { block.data() }, false).apply {
-                        this.isWritable = false
-                    }
-                } catch (e: Exception) {
-                    LOGGER.severe("Failed to get data for [${block.blockTag}]->${block.blockName}")
-                    return@map null
-                }
+                val name = block.blockName.text
+                val file = directory[name] ?: (
+                        try {
+                            directory.createChildWithContent(name, block::data, false).apply {
+                                this.isWritable = false
+                            }
+                        } catch (e: Exception) {
+                            if (e is ProcessCanceledException) {
+                                throw e
+                            }
+                            LOGGER.severe("Failed to get data for [${block.blockTag}]->${block.blockName}; ${e.className}: ${e.message}")
+                            return@map null
+                        })
                 GenericFileBasedNode(nonNullProject, file, viewSettings)
             } else {
                 try {
@@ -76,7 +86,7 @@ internal class PrayFileTreeNode(
                     if (e is ProcessCanceledException) {
                         throw e
                     }
-                    LOGGER.severe("Failed to get block tree node for [${block.blockTag}]->${block.blockName}")
+                    LOGGER.severe("Failed to get block tree node for [${block.blockTag}]->${block.blockName}; ${e.className}: ${e.message}")
                     e.printStackTrace()
                     return@lazy emptyList()
                 }
@@ -130,8 +140,14 @@ internal class PrayBlockTreeNode(
         }
 
         val isAgent = try {
-            runBlocking { prayBlock.intTags().any { it.tag like "Agent Type" } || prayBlock.stringTags().any { it.tag like "Agent Type" } }
+            runBlocking {
+                prayBlock.intTags().any { it.tag like "Agent Type" } || prayBlock.stringTags()
+                    .any { it.tag like "Agent Type" }
+            }
         } catch (e: Exception) {
+            if (e is ProcessCanceledException) {
+                throw e
+            }
             LOGGER.severe("Failed to parse block [${prayBlock.blockTag}]->${prayBlock.blockName}")
             e.printStackTrace()
             return@lazy emptyList()
@@ -150,12 +166,15 @@ internal class PrayBlockTreeNode(
             try {
                 prayBlock.stringTags()
             } catch (e: Exception) {
+                if (e is ProcessCanceledException) {
+                    throw e
+                }
                 emptyArray()
             }
         }
         stringTags.filter {
             scriptTagRegex.matches(it.tag)
-        }.map map@{
+        }.mapNotNull map@{
             val caosFile = try {
                 AgentScript.createAgentCaosFile(
                     project,
@@ -164,8 +183,12 @@ internal class PrayBlockTreeNode(
                     variant,
                     it.value
                 )
-            } catch (_: Exception) {
-                return@lazy emptyList()
+            } catch (e: Exception) {
+                if (e is ProcessCanceledException) {
+                    throw e
+                }
+                LOGGER.severe("Failed to create agent CAOS file; ${e.className}: ${e.message};\n${e.stackTrace}")
+                return@map null
             }
             ChildCaosScriptFileTreeNode(
                 project,
@@ -183,6 +206,9 @@ internal class PrayBlockTreeNode(
         return try {
             childNodes
         } catch (e: Exception) {
+            if (e is ProcessCanceledException) {
+                throw e
+            }
             LOGGER.severe("Failed to get child nodes for [${prayBlock.blockTag}]->${prayBlock.blockName}")
             e.printStackTrace()
             emptyList()
