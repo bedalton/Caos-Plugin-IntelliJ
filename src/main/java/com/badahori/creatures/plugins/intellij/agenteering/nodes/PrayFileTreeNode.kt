@@ -27,6 +27,8 @@ import kotlinx.coroutines.runBlocking
 
 private val PRAY_TREE_CHILD_CACHE_KEY = Key<Pair<String, List<AbstractTreeNode<*>>>>("bedalton.node.pray.PRAY_CHILDREN")
 
+private var gzipError = false
+
 internal class PrayFileTreeNode(
     project: Project,
     private val file: VirtualFile,
@@ -74,9 +76,16 @@ internal class PrayFileTreeNode(
                                 try {
                                     block.data()
                                 } catch (e: PrayDataBlockDecompressionException) {
-                                    CaosNotifications.createErrorNotification(project, "Unpack Error", "Failed to extract data for ${block.blockName}; ${e.message}")
-                                        .show()
-                                    e.originalBytes
+                                    if (!gzipError) {
+                                        gzipError = true
+                                        CaosNotifications.createErrorNotification(
+                                            project,
+                                            "Unpack Error",
+                                            "Failed to extract data for ${block.blockName}; ${e.message}"
+                                        )
+                                            .show()
+                                    }
+                                    null
                                 }
                             }
                             directory.createChildWithContent(name, data, false).apply {
