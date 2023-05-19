@@ -134,6 +134,7 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("C
                 .withGenerateScriptRemovers(opts.generateScriptRemovers)
                 .withLogProgress(false)
                 .withPrintStats(false)
+                .withCompressionLevel(opts.compressionLevel)
             logProgress(true)
             try {
                 return compilePrayAndWrite(LocalFileSystem!!, fileOpts, false)
