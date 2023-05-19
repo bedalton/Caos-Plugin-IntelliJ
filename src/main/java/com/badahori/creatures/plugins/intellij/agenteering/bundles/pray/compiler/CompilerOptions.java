@@ -21,21 +21,20 @@ public class CompilerOptions {
     JCheckBox autogenerateEventScriptRemoversCheckBox;
     JCheckBox autogenerateAgentRemoversCheckBox;
     JCheckBox validatePRAYFileCheckBox;
+    private JComboBox compressionLevel;
 
     public JPanel getComponent() {
         return panel1;
     }
 
     CompilerOptions(
-            @Nullable
-            final PrayCompileOptions options) {
+            @Nullable final PrayCompileOptions options) {
         $$$setupUI$$$();
         setCompilerOptions(options);
     }
 
     void setCompilerOptions(
-            @Nullable
-            final PrayCompileOptions options) {
+            @Nullable final PrayCompileOptions options) {
         if (options == null) {
             return;
         }
@@ -54,8 +53,21 @@ public class CompilerOptions {
                 autogenerateAgentRemoversCheckBox.isSelected(),
                 validatePRAYFileCheckBox.isSelected(),
                 new String[0],
-                false
+                false,
+                getCompressionLevel()
         );
+    }
+
+    private Integer getCompressionLevel() {
+        final String levelText = (String) compressionLevel.getSelectedItem();
+        if (levelText == null) {
+            return null;
+        }
+        final char levelChar = levelText.charAt(0);
+        if (levelChar < '0' || levelChar > '9') {
+            return null;
+        }
+        return levelChar - '0';
     }
 
     /**
@@ -94,7 +106,7 @@ public class CompilerOptions {
         this.$$$loadButtonText$$$(validatePRAYFileCheckBox, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/caos-bundle", "pray.compiler.options.validate"));
         panel2.add(validatePRAYFileCheckBox, cc.xy(1, 1));
         final JLabel label1 = new JLabel();
-        Font label1Font = this.getFontLocal(null, - 1, 18, label1.getFont());
+        Font label1Font = this.getFontLocal(null, -1, 18, label1.getFont());
         if (label1Font != null) {
             label1.setFont(label1Font);
         }
@@ -126,14 +138,14 @@ public class CompilerOptions {
         StringBuffer result = new StringBuffer();
         boolean haveMnemonic = false;
         char mnemonic = '\0';
-        int mnemonicIndex = - 1;
+        int mnemonicIndex = -1;
         for (int i = 0; i < text.length(); i++) {
             if (text.charAt(i) == '&') {
                 i++;
                 if (i == text.length()) {
                     break;
                 }
-                if (! haveMnemonic && text.charAt(i) != '&') {
+                if (!haveMnemonic && text.charAt(i) != '&') {
                     haveMnemonic = true;
                     mnemonic = text.charAt(i);
                     mnemonicIndex = result.length();
@@ -155,14 +167,14 @@ public class CompilerOptions {
         StringBuffer result = new StringBuffer();
         boolean haveMnemonic = false;
         char mnemonic = '\0';
-        int mnemonicIndex = - 1;
+        int mnemonicIndex = -1;
         for (int i = 0; i < text.length(); i++) {
             if (text.charAt(i) == '&') {
                 i++;
                 if (i == text.length()) {
                     break;
                 }
-                if (! haveMnemonic && text.charAt(i) != '&') {
+                if (!haveMnemonic && text.charAt(i) != '&') {
                     haveMnemonic = true;
                     mnemonic = text.charAt(i);
                     mnemonicIndex = result.length();
