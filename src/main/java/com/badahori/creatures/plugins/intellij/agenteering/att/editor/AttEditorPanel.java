@@ -593,7 +593,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
      */
     void addNumberedPointKeyBinding(final InputMap inputMap, final ActionMap actionMap, final int point) {
         final String TEXT = "Set Point " + point;
-        inputMap.put(KeyStroke.getKeyStroke("" + (point + 1)), TEXT);
+        inputMap.put(KeyStroke.getKeyStroke(String.valueOf(point + 1)), TEXT);
         actionMap.put(TEXT, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -975,6 +975,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     }
 
     @Override
+    @NotNull
     public JComponent preferredFocusComponent() {
         final Pose currentPose = controller.getPose();
         if (currentPose == null) {
