@@ -21,11 +21,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vcs.CodeSmellDetector
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.components.CheckBox
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.swing.BoxLayout
 import javax.swing.JCheckBox
 import javax.swing.JLabel
@@ -266,6 +268,17 @@ private fun collectScriptsAtPath(
     childPath: String,
 ): Collection<CaosScriptScriptElement> {
     val linkedVirtualFile = parentDirectory.findChildRecursive(childPath, true)
+        ?: File(
+                PathUtil.combine(
+                parentDirectory.path,
+                childPath
+            )).let {
+                if (it.exists() && it.isFile) {
+                    VfsUtil.findFileByIoFile(it, true)
+                } else {
+                    null
+                }
+        }
         ?: throw Exception(
             "Failed to find linked script: '$childPath'; File at absolutePath: '${
                 PathUtil.combine(
