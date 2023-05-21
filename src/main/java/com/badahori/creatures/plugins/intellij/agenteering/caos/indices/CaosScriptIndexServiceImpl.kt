@@ -26,4 +26,11 @@ class CaosScriptIndexServiceImpl : CaosScriptIndexService {
         indexSink.occurrence(CaosScriptStringLiteralIndex.KEY, stub.value)
     }
 
+
+    override fun indexToken(stub: CaosScriptTokenRValueStub, indexSink: IndexSink) {
+        stub.tokenText?.let {text ->
+            indexSink.occurrence(CaosScriptStringLiteralIndex.KEY, text)
+        }
+    }
+
 }
