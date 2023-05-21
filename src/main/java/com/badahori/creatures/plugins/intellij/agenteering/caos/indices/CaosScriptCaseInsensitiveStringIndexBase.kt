@@ -29,7 +29,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
     open operator fun get(key: String, project: Project): List<PsiT> {
         return getAllKeys(project).filter { it.equals(key, true) }.flatMap {
             ProgressIndicatorProvider.checkCanceled()
-            get(it, project, GlobalSearchScope.allScope(project))
+            get(it, project, GlobalSearchScope.projectScope(project))
         }
     }
 
@@ -116,9 +116,9 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
         for (key in keys) {
             ProgressIndicatorProvider.checkCanceled()
             if (out.containsKey(key)) {
-                out[key]!!.addAll(get(key, project, globalSearchScope ?: GlobalSearchScope.allScope(project)))
+                out[key]!!.addAll(get(key, project, globalSearchScope ?: GlobalSearchScope.projectScope(project)))
             } else {
-                out[key] = get(key, project, globalSearchScope ?: GlobalSearchScope.allScope(project)).toMutableList()
+                out[key] = get(key, project, globalSearchScope ?: GlobalSearchScope.projectScope(project)).toMutableList()
             }
         }
         return out
@@ -189,7 +189,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
     }
 
     private fun scopeOrDefault(scope : GlobalSearchScope?, project: Project) : GlobalSearchScope {
-        return scope ?: GlobalSearchScope.allScope(project)
+        return scope ?: GlobalSearchScope.projectScope(project)
     }
 
     companion object {

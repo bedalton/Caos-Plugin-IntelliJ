@@ -26,7 +26,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
     }
 
     open operator fun get(variableName: String, project: Project): List<PsiT> {
-        return get(variableName, project, GlobalSearchScope.allScope(project))
+        return get(variableName, project, GlobalSearchScope.projectScope(project))
     }
 
     override operator fun get(keyString: String, project: Project, scope: GlobalSearchScope): List<PsiT> {
@@ -87,9 +87,9 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
         val out = HashMap<String, MutableList<PsiT>>() as MutableMap<String, MutableList<PsiT>>
         for (key in keys) {
             if (out.containsKey(key)) {
-                out[key]!!.addAll(get(key, project, globalSearchScope ?: GlobalSearchScope.allScope(project)))
+                out[key]!!.addAll(get(key, project, globalSearchScope ?: GlobalSearchScope.projectScope(project)))
             } else {
-                out[key] = get(key, project, globalSearchScope ?: GlobalSearchScope.allScope(project)).toMutableList()
+                out[key] = get(key, project, globalSearchScope ?: GlobalSearchScope.projectScope(project)).toMutableList()
             }
         }
         return out
@@ -158,7 +158,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
     }
 
     private fun scopeOrDefault(scope : GlobalSearchScope?, project: Project) : GlobalSearchScope {
-        return scope ?: GlobalSearchScope.allScope(project)
+        return scope ?: GlobalSearchScope.projectScope(project)
     }
 
     companion object {
