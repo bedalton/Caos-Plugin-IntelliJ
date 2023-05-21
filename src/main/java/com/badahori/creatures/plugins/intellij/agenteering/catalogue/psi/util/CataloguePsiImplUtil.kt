@@ -1,10 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.util
 
 import com.bedalton.common.util.stripSurroundingQuotes
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueArray
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueItemName
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueTag
+import com.badahori.creatures.plugins.intellij.agenteering.catalogue.references.CatalogueTagNameReference
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.api.CatalogueItemType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.psi.PsiElement
@@ -111,5 +111,10 @@ object CataloguePsiImplUtil {
     @JvmStatic
     fun getItemsAsStrings(tag: CatalogueArray): List<String> {
         return tag.stub?.items ?: tag.itemList.map { it.text.stripSurroundingQuotes(true) }
+    }
+
+    @JvmStatic
+    fun getReference(nameElement: CatalogueItemName): CatalogueTagNameReference {
+        return CatalogueTagNameReference(nameElement)
     }
 }
