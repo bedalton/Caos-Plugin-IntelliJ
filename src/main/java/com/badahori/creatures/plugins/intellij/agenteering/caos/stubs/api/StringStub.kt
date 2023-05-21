@@ -8,27 +8,34 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.commandStringUpper
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 
 
-enum class StringStubKind(val isFile: Boolean) {
-    GAME(false),
-    EAME(false),
-    NAME(false),
-    JOURNAL(false),
-    WAV(true),
-    C16(true),
-    S16(true),
-    C2E_SPRITE(true),
-    BLK(true),
-    COS(true),
-    SPR(true),
-    MNG(true)
+enum class StringStubKind(val extensions: List<String>? = null) {
+    GAME(null),
+    EAME(null),
+    NAME(null),
+    JOURNAL(null),
+    WAV( listOf("WAV")),
+    MNG( listOf("MNG", "MING")),
+    MIDI( listOf("MIDI")),
+    AUDIO( listOf("WAV", "MNG", "MING")),
+    SPR( listOf("SPR")),
+    S16(listOf("S16")),
+    C16(listOf("C16")),
+    GEN(listOf("GEN")),
+    C2E_SPRITE(listOf("S16", "C16")),
+    BLK(listOf("BLK")),
+    COS(listOf("COS", "CAOS")),
     ;
 
+    val isFile get() = extensions.isNotNullOrEmpty()
 
     override fun toString(): String {
         return name
@@ -100,7 +107,7 @@ private fun getStringStubKindForExtension(extension: String?): StringStubKind? {
     if (extension == null) {
         return null
     }
-    return when (extension) {
+    return when (extension.uppercase()) {
         "COS" -> StringStubKind.COS
         "SPR" -> StringStubKind.SPR
         "S16" -> StringStubKind.S16
@@ -108,7 +115,11 @@ private fun getStringStubKindForExtension(extension: String?): StringStubKind? {
         "C16/S16", "S16/C16" -> StringStubKind.C2E_SPRITE
         "WAV" -> StringStubKind.WAV
         "MNG" -> StringStubKind.MNG
+        "MNG/WAV", "WAV/MNG" -> StringStubKind.AUDIO
         "BLK" -> StringStubKind.BLK
+        "GEN" -> StringStubKind.GEN
+        "JOURNAL" -> StringStubKind.JOURNAL
+        "MIDI" -> StringStubKind.MIDI
         else -> null
     }
 }
@@ -150,16 +161,25 @@ private fun getArgumentStubType(variant: CaosVariant, argument: CaosScriptArgume
         return it.stringStubKind
     }
 
+    // Get parameter information
+    var index = argument.index
     // Get parent command
-    val command = argument.parent as? CaosScriptCommandElement
+    var command = argument.parent as? CaosScriptCommandElement
         ?: return null
+
+    // Handle TOKN, which returns an int, but is needed for genome files
+    if (variant.isOld && command.commandStringUpper == "TOKN") {
+        index = command.getSelfOrParentOfType(CaosScriptArgument::class.java)?.index
+            ?: return null
+        command = command.getParentOfType(CaosScriptCommandElement::class.java)
+            ?: return null
+    }
+
 
     // Get called command details
     val commandDefinition = command.commandDefinition
         ?: return null
 
-    // Get parameter information
-    val index = argument.index
     val parameter = commandDefinition.parameters.getOrNull(index)
         ?: return null
 

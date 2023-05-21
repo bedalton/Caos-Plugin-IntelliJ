@@ -491,6 +491,7 @@ caos_2_value_token
 			getName
 			setName
 			isClosed
+			getStringStubKind
 		]
 	}
 	;
@@ -2518,6 +2519,7 @@ character
 		methods = [
 			getStringValue
 			isClosed
+			getStringStubKind
 		]
 		methods = [
 			ghostQuote="/GHOST_QUOTE"
@@ -2544,6 +2546,7 @@ c1_string
 			getUseScope
 			isClosed
 			getStringValue
+			getStringStubKind
 			openQuote="/OPEN_BRACKET"
 			closeQuote="/CLOSE_BRACKET"
 		]
@@ -2591,6 +2594,7 @@ string_text
 			getReference
 			getPresentation
 			getUseScope
+			getStringStubKind
 		]
 	}
 	;
@@ -2647,6 +2651,7 @@ token
 	|	ID
 	{
 		implements = [
+		    "com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandCallLike"
 			"com.intellij.psi.PsiNamedElement"
@@ -2656,6 +2661,9 @@ token
 			getName
 			setName
 			getStringValue
+			getStringStubKind
+			getReference
+			isClosed
 		]
 	}
 	;
