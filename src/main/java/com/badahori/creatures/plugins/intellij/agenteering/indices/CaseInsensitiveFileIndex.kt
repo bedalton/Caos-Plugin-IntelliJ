@@ -46,7 +46,6 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
             return findMatching(project, key, searchScope)
         }
 
-
         fun findWithFileName(
             project:Project,
             fileName:String,
@@ -54,6 +53,23 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
         ) : Collection<VirtualFile> {
             val key = FileNameInfo(fileName, null, null)
             return findMatching(project, key, searchScope)
+        }
+
+
+
+        fun findWithFileNameAndExtensions(
+            project:Project,
+            fileNameWithoutExtension:String,
+            extensions: List<String>,
+            searchScope: GlobalSearchScope? = null
+        ) : Collection<VirtualFile> {
+            if (extensions.isEmpty()) {
+                return emptyList()
+            }
+            return extensions.flatMap { extension ->
+                val key = FileNameInfo(fileNameWithoutExtension, null, extension)
+                findMatching(project, key, searchScope)
+            }.distinctBy { it.path }
         }
 
         fun keys(project: Project): Set<FileNameInfo> {
