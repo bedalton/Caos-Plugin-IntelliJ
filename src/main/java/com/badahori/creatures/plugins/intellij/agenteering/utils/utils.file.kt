@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
+import java.io.File
 
 fun VirtualFile.findChildInSelfOrParent(childName:String, ignoreCase:Boolean, scope: GlobalSearchScope? = null) : VirtualFile? {
     val visited = mutableListOf<VirtualFile>()
@@ -43,11 +44,29 @@ fun VirtualFile.findChildRecursive(baseName: String, extensions: List<String>, i
 }
 
 private fun VirtualFile.findChildRecursive(childName:String, ignoreCase: Boolean, visited:MutableList<VirtualFile>, scope: GlobalSearchScope? = null) : VirtualFile? {
-    if (visited.contains(this))
+    if (visited.contains(this)) {
         return null
-    visited.add(this)
-    if (scope?.contains(this) == false)
+    }
+
+    // Prevent jumping out when child may or may come back into this folder
+    if (!childName.contains("..")) {
+        visited.add(this)
+    }
+
+    if (scope?.contains(this) == false) {
         return null
+    }
+
+    var parent: VirtualFile = this
+    if (childName.contains("..")) {
+        val components = childName.trim('/').split("[" +File.separator + "/]".toRegex(), limit = 2)
+        if (components.size == 2 && components[0] == "..") {
+            parent = parent.parent
+                ?: return null
+            return parent.findChildRecursive(components[1], ignoreCase, visited)
+        }
+    }
+
     findChild(childName)?.let { return it }
     val childNameToLower = childName.lowercase()
     for (child in children) {
