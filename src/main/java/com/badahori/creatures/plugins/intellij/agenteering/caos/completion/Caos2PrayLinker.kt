@@ -329,7 +329,12 @@ internal class LinkFilesInsertHandler(
         } else {
             try {
                 val regex = regexRaw.toRegex()
-                selected.filter { regex.matches(it.virtualFile.name) }
+                selected.filter { regex.matches(it.virtualFile.name) || try {
+                    ".*?$regexRaw".toRegex().matches(it.virtualFile.path)
+                } catch (_: Exception) {
+                    false
+                }
+                }
             } catch (e: Exception) {
                 filtered.text = "Regex error"
                 filtered.foreground = JBColor.red
