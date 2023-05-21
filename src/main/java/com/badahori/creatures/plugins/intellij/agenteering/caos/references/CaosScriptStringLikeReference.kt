@@ -329,7 +329,8 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
         return (indexedStrings + inFileStrings)
             .filter {
                 if (it.stringStubKind == StringStubKind.JOURNAL) {
-                    val thisMeta = it.meta
+                    val thisMeta = (it as? CaosScriptQuoteStringLiteral)?.meta
+                            ?: return@filter false
                     meta == -1 || thisMeta == -1 || meta == thisMeta && journalName.equalsIgnoreCase(it.stringValue)
                 } else {
                     false
