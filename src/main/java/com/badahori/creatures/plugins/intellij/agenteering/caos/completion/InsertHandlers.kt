@@ -2,12 +2,14 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpressionPrime
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
 
 
 object SpaceAfterInsertHandler : InsertHandler<LookupElement> {
@@ -31,6 +33,36 @@ class ReplaceFromStartInsertHandler(private val start: Int, private val afterIns
     override fun handleInsert(context: InsertionContext, lookupEl: LookupElement) {
         context.document.replaceString(start, context.tailOffset, lookupEl.lookupString)
         afterInsert?.handleInsert(context, lookupEl)
+    }
+}
+
+class InsertToknBeforeToken(private val afterInsert: InsertHandler<LookupElement>? = null) : InsertHandler<LookupElement> {
+    override fun handleInsert(context: InsertionContext, lookupEl: LookupElement) {
+        if (replace(lookupEl.psiElement, lookupEl)) {
+            return
+        }
+        context.document.insertString(context.startOffset, "tokn " + lookupEl.lookupString)
+        afterInsert?.handleInsert(context, lookupEl)
+    }
+
+    private fun replace(element: PsiElement?, lookupElement: LookupElement): Boolean {
+        if (element == null) {
+            return false
+        }
+        val token = lookupElement.lookupString
+        if (token.length != 4) {
+            return false
+        }
+        val toknRvalue = try {
+            CaosScriptPsiElementFactory.createToknCommandWithToken(element.project, token)
+        } catch (_: Exception) {
+            null
+        } ?: return false
+        return try {
+            element.replace(toknRvalue) != null
+        } catch (_: Exception) {
+            false
+        }
     }
 }
 

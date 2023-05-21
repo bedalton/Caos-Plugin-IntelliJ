@@ -26,6 +26,7 @@ import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.completion.CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED
+import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
@@ -456,10 +457,20 @@ private fun addStringCompletions(
     val quoteStringElement = element as? CaosScriptQuoteStringLiteral
         ?: element.parent as? CaosScriptQuoteStringLiteral
         ?: element.parent?.parent as? CaosScriptQuoteStringLiteral
+
+
+    var insertHandler: InsertHandler<LookupElement>? = null
+    if (variant.isOld && element !is CaosScriptToken && element !is CaosScriptTokenRvalue) {
+        if (StringStubKind.fromPsiElement(element) == GEN) {
+            val command = element.getParentOfType(CaosScriptCommandElement::class.java)
+            if (command?.commandStringUpper != "TOKN") {
+                insertHandler = InsertToknBeforeToken()
+            }
+        }
+    }
     val quoter = if (variant.isOld) {
         { text: String ->
-            PathUtil.getFileNameWithoutExtension(text)
-                ?: text
+            (PathUtil.getFileNameWithoutExtension(text) ?: text)
         }
     } else if (quoteStringElement != null) {
         quoter(quoteStringElement.text.replace(DUMMY_IDENTIFIER_TRIMMED, ""))
@@ -478,6 +489,7 @@ private fun addStringCompletions(
             expandedSearch,
             element,
             kind,
+            insertHandler,
             quoter
         )
     } else if (variant.isNotOld) {
@@ -560,14 +572,17 @@ private fun addUserCreatedStringCompletions(
             } else if (kind != JOURNAL) {
                 // If not journal, no meta to match
                 true
-            } else {
+            } else if (it is CaosScriptQuoteStringLiteral) {
                 // If kind is journal, it also needs to match location which is the meta
                 val thisMeta = it.meta
                 meta == -1 || thisMeta == -1 || meta == thisMeta
+            } else {
+                false
             }
         }
     val case = element.textWithoutCompletionIdString
         .case
+
     val lookupElements = strings.map {
         val completionText = it.stringValue
         LookupElementBuilder
@@ -592,6 +607,7 @@ private fun addFilenameStringCompletions(
     expandedSearch: Boolean,
     element: PsiElement,
     kind: StringStubKind,
+    insertHandler: InsertHandler<LookupElement>? = null,
     quoter: (String) -> String,
 ) {
 
@@ -599,17 +615,8 @@ private fun addFilenameStringCompletions(
         return
     }
 
-    val extensions = when (kind) {
-        COS -> listOf("COS", "CAOS")
-        S16 -> listOf("S16")
-        C16 -> listOf("C16")
-        C2E_SPRITE -> listOf("C16", "S16")
-        WAV -> listOf("WAV")
-        BLK -> listOf("BLK", "BACK")
-        SPR -> listOf("SPR")
-        MNG -> listOf("MNG", "MING")
-        else -> return
-    }
+    val extensions = kind.extensions
+        ?: return
 
     val commandString = element.getParentOfType(CaosScriptCommandElement::class.java)
         ?.commandStringUpper
@@ -623,6 +630,7 @@ private fun addFilenameStringCompletions(
         extensions,
         dropExtension,
         element,
+        insertHandler,
         quoter
     )
 }
@@ -634,6 +642,7 @@ private fun addFileNameCompletionsForFileTypes(
     extensions: Collection<String>,
     dropExtension: Boolean,
     element: PsiElement,
+    insertHandler: InsertHandler<LookupElement>? = null,
     quoter: (String) -> String,
 ) {
 
@@ -664,11 +673,15 @@ private fun addFileNameCompletionsForFileTypes(
     // Util function to search for files with an extension and scope if non-null
     val search: (extension: String) -> Collection<VirtualFile> = if (searchScope != null) {
         ({ extension: String ->
-            FilenameIndex.getAllFilesByExt(project, extension, searchScope)
+            (FilenameIndex.getAllFilesByExt(project, extension.lowercase(), searchScope) +
+                    FilenameIndex.getAllFilesByExt(project, extension.uppercase(), searchScope) +
+                    FilenameIndex.getAllFilesByExt(project, extension.capitalize(), searchScope)).distinct()
         })
     } else {
         ({ extension: String ->
-            FilenameIndex.getAllFilesByExt(project, extension)
+            (FilenameIndex.getAllFilesByExt(project, extension) +
+                    FilenameIndex.getAllFilesByExt(project, extension.uppercase()) +
+                    FilenameIndex.getAllFilesByExt(project, extension.capitalize())).distinct()
         })
     }
 
@@ -708,11 +721,16 @@ private fun addFileNameCompletionsForFileTypes(
             }
             // Get location string for autocomplete tail-text
             val location = relativePath(file.parent)?.let { " in $it" } ?: "..."
-            LookupElementBuilder
+            var builder = LookupElementBuilder
                 .createWithSmartPointer(quoter(completionText), element)
                 .withLookupString(completionText)
                 .withPresentableText(file.name)
                 .withTailText(location, true)
+
+            if (insertHandler != null) {
+                builder = builder.withInsertHandler(insertHandler)
+            }
+            builder
                 .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE)
         }
 
