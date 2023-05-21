@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptCaseInsensitiveStringIndexBase
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.IndexKeyUtil
 import com.intellij.openapi.project.Project
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StubIndexKey
 
 class CaosDefCommandElementsByNameIndex : CaosScriptCaseInsensitiveStringIndexBase<CaosDefCommandDefElement>(CaosDefCommandDefElement::class.java) {
@@ -13,6 +14,10 @@ class CaosDefCommandElementsByNameIndex : CaosScriptCaseInsensitiveStringIndexBa
 
     override fun getVersion(): Int {
         return super.getVersion() + CaosDefStubVersions.STUB_VERSION + VERSION
+    }
+
+    override fun get(key: String, project: Project): List<CaosDefCommandDefElement> {
+        return super.get(key, project, GlobalSearchScope.allScope(project))
     }
 
     companion object {
