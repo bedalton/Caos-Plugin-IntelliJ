@@ -14,6 +14,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getFilesWithExtension
 import com.intellij.ide.scratch.ScratchUtil
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolder
@@ -132,15 +134,30 @@ fun VirtualFile.inferVariantHard(project: Project, searchParent: Boolean = true)
 }
 
 private fun VirtualFile.inferVariantSimple(): CaosVariant? {
+    ProgressIndicatorProvider.checkCanceled()
     val text = try {
-        contents.replace(COMMENTS, "")
+        contents.replace(COMMENTS, "").replace("\\s".toRegex(), " ").let {
+            if (contents.length > 500) {
+                val lastIndex = contents.indexOf(' ', 480)
+                if (lastIndex < 0) {
+                    it
+                } else {
+                    contents.substring(0, lastIndex)
+                }
+            } else {
+                it
+            }
+        }
     } catch (e: Exception) {
         LOGGER.severe("Failed to replace strings and comments in ${path}")
         return null
     }
     val matchC1 = C1_ITEMS.containsMatchIn(text)
+    ProgressIndicatorProvider.checkCanceled()
     val matchC2 = C2_ITEMS.containsMatchIn(text)
+    ProgressIndicatorProvider.checkCanceled()
     val matchDS = DS_ITEMS.containsMatchIn(text)
+    ProgressIndicatorProvider.checkCanceled()
     return if (matchDS && !matchC2 && !matchC1) {
         CaosVariant.DS
     } else if (matchC1 && !matchC2 && !matchDS) {
@@ -166,7 +183,7 @@ private val COMMENTS = "^[ \t]*[*][^\n]*".toRegex()
 private const val C1_STRING = "\\[\\s*([^]0-9 ]|[0-9 ]+[^]0-9 ])[^]]*\\s*]"
 
 private val C1_ITEMS by lazy {
-    "(clas|var\\d|obv\\d|edit|bbd:|dde:|bt|bf|objp|setv\\s+attr|setv\\s+driv|(simp|comp)\\s+[a-zA-Z0-9]{4}|$C1_STRING)".toRegex(
+    "(clas|var\\d|obv\\d|edit|bbd:|dde:|bt|bf|objp|setv\\s+attr|f\\*\\*k|setv\\s+driv|(simp|comp)\\s+[a-zA-Z0-9]{4}|$C1_STRING)".toRegex(
         RegexOption.IGNORE_CASE
     )
 }
@@ -328,7 +345,7 @@ private fun variantInScopeFinal(
         } catch (e: Exception) {
             return null
         }
-        val withoutQuotes = file.replace(COMMENTS, " ")
+        val withoutQuotes = Regex.escape(file.replace(COMMENTS, " "))
         if (!hasSpr && C3_ITEMS.matches(withoutQuotes)) {
             return CaosVariant.DS
         }

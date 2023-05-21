@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -20,6 +21,7 @@ internal fun getFilesWithExtension(
     fileExtensionTemp: String,
     searchScope: GlobalSearchScope? = null
 ): List<VirtualFile> {
+    ProgressIndicatorProvider.checkCanceled()
     // Lowercase the extension
     val fileExtension = fileExtensionTemp.lowercase()
 
@@ -59,6 +61,7 @@ private fun getFilesWithExtensionWithoutIndex(virtualFile: VirtualFile, extensio
         return getFilesWithExtensionWithoutIndex(virtualFile.parent, extension)
     }
     return virtualFile.collectChildren {
+        ProgressIndicatorProvider.checkCanceled()
         it.extension?.equals(extension, true) == true
     } ?: emptyList()
 }
