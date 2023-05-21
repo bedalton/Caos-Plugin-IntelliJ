@@ -114,8 +114,8 @@ object ClassifierCompletion {
 
         val typingName = quickComplete && elementText.toIntOrNull() == null
 
-        val classifierSoFar = if (typingName) "" else numbers.copyOfRange(0, i).reversed().joinToString(" ")
-        val valuesToDrop = if (typingName) 0 else i
+        val classifierSoFar = if (typingName) "" else numbers.copyOfRange(0, i - 1).reversed().joinToString(" ")
+        val valuesToDrop = if (typingName) 0 else (i - 1)
 
         val variantScope: GlobalSearchScope? = element.variant?.let {
             CaosVariantGlobalSearchScope(project, it, strict = false, searchLibraries = false)
@@ -127,11 +127,7 @@ object ClassifierCompletion {
             val directory = element.containingFile.directory
             if (directory != null) {
                 val directoryScope = GlobalSearchScopes.directoriesScope(project, false, directory)
-                if (scope != null) {
-                    scope = scope.intersectWith(directoryScope)
-                } else {
-                    scope = directoryScope
-                }
+                scope = scope?.intersectWith(directoryScope) ?: directoryScope
             }
         }
 
