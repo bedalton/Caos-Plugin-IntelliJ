@@ -1,10 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.CaosInvalidTokenLengthException
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
 import com.intellij.openapi.project.Project
@@ -14,8 +14,6 @@ import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.text.BlockSupport
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.refactoring.rename.RenameInputValidator
-import com.intellij.util.IncorrectOperationException
 
 object CaosScriptPsiElementFactory {
 
@@ -53,6 +51,14 @@ object CaosScriptPsiElementFactory {
         @Suppress("SpellCheckingInspection") val script = "sndf $newNameString"
         val file = createFileFromText(project, script,  CaosVariant.C1, "dummy.cos")
         return PsiTreeUtil.collectElementsOfType(file, CaosScriptToken::class.java).firstOrNull()
+    }
+
+    fun createToknCommandWithToken(project: Project, token: String): CaosScriptRvalue {
+        if (token.length != 4) {
+            throw CaosInvalidTokenLengthException(token.toCharArray(), "Cannot create TOKN statement with invalid token length")
+        }
+        val script = "tokn $token"
+        return createRValue(project, script, CaosVariant.C1)
     }
 
     fun createStringRValue(project: Project, newNameString: String, start: Char, end: Char = start): CaosScriptRvalue {

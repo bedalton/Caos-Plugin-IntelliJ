@@ -2,7 +2,6 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
-import com.bedalton.common.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCodeBlock
@@ -36,7 +35,6 @@ import icons.CaosScriptIcons
 import com.bedalton.common.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptRValuePrimeStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
 import com.intellij.psi.search.GlobalSearchScopes
 import javax.swing.Icon
@@ -1016,6 +1014,13 @@ object CaosScriptPsiImplUtil {
         return CaosScriptSubroutineNameReference(name)
     }
 
+    /**
+     * Gets reference object for a command token
+     */
+    @JvmStatic
+    fun getReference(element: CaosScriptToken): CaosScriptTokenReference {
+        return CaosScriptTokenReference(element)
+    }
 
     @JvmStatic
     fun getUseScope(element: CaosScriptSubroutine): SearchScope {
@@ -1299,6 +1304,11 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun isClosed(element: CaosScriptCaos2ValueToken): Boolean {
+        return true
+    }
+
+    @JvmStatic
+    fun isClosed(element: CaosScriptToken): Boolean {
         return true
     }
 
