@@ -106,3 +106,4 @@ Guides/images/raw
 /Guides/Intellij Tutorial
 /Guides/.idea
 /Guides/**/*.afdesign
+jflex-*.jar
