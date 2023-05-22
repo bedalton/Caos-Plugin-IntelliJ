@@ -6,17 +6,18 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.messa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CLIInjectFlag.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.bedalton.common.util.className
 import com.bedalton.common.util.psuedoRandomUUID
 import com.bedalton.common.util.stripSurroundingQuotes
-import com.bedalton.io.bytes.decodeToCreaturesEncoding
 import com.bedalton.io.bytes.decodeToWindowsCP1252
 import com.bedalton.log.Log
 import com.bedalton.log.eIf
 import com.bedalton.log.iIf
+import com.intellij.execution.target.value.DeferredTargetValue
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import korlibs.io.util.escape
@@ -25,6 +26,8 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * Class for managing a connection to C3 for CAOS injection
@@ -41,6 +44,13 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
         file
     }
     val prefix = File(data.prefix)
+
+
+    val isWin32 by lazy {
+        !File(prefix, "drive_c" + File.separator + "Program Files (x86)").exists()
+    }
+
+    val isWin64 get() = !isWin32
 
     private val tempDir by lazy {
         File(prefix, "windows/temp")
@@ -87,7 +97,7 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
             try {
                 val tempFile = File(caosOrFile)
                 if (tempFile.exists()) {
-                    tempFile.delete()
+//                    tempFile.delete()
                 }
             } catch (e: Exception) {
                 LOGGER.severe("Failed to delete temp CAOS file")
@@ -276,8 +286,10 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
             )
         }
 
+
+
         // Try to get the absolute path to the wine executable
-        val wineExec = wineExecutable
+        val wineExec = getWineExecutable()
             ?: return InjectionStatus.BadConnection(
                 fileName,
                 descriptor,
@@ -306,7 +318,7 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
         } catch (e: Exception) {
             e.printStackTrace()
             LOGGER.severe(
-                "Failed to run command:\n\tWINEDEBUG=-all WINEPREFIX=\"${data.prefix.escape()}\" $argsString"
+                "Failed to run command:\n\tWINEDEBUG=-all \"$wineExec\" WINEPREFIX=\"${data.prefix.escape()}\" $argsString"
             )
             return InjectionStatus.BadConnection(
                 fileName,
@@ -315,6 +327,8 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
                 variant
             )
         }
+
+        LOGGER.info("Command = WINEDEBUG=-all WINEPREFIX=\"${data.prefix.escape()}\" \"$wineExec\" $argsString")
 
         // Parse result
         return try {
@@ -377,6 +391,59 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
             )
         }
         return formatResponse(fileName, descriptor, response)
+    }
+
+    private suspend fun getWineExecutable(project: Project): String {
+
+        var executable: String? = data.wineExecutable
+        if (executable != null && File(executable).exists()) {
+            return executable
+        }
+
+        val applicationSettings = CaosApplicationSettingsService
+            .getInstance()
+        executable = if (isWin32) {
+            applicationSettings.wine32Path ?: applicationSettings.winePath
+        } else {
+            applicationSettings.wine64Path ?: applicationSettings.winePath
+        }
+        if (executable != null && File(executable).exists()) {
+            return executable
+        }
+
+        executable = wineResolvedWithWhich
+
+        if (executable != null && File(executable).exists()) {
+            return executable
+        }
+
+        val prompt = if (isWin32) {
+            "Select Wine 32 Executable"
+        } else {
+            "Select Wine 64 Executable"
+        }
+        val startPath = if (executable != null) {
+            try {
+                File(executable).parent
+            } catch (e: Exception) {
+                "/usr/local/bin"
+            }
+        } else {
+            "/usr/local/bin"
+        }
+
+        return suspendCoroutine<String?> { cont ->
+            WineExecutableSelector.create(
+                project,
+                startPath,
+                isWin32,
+            ) { path ->
+                cont.resume(path)
+            }
+        }
+
+
+
     }
 
     private fun formatResponse(fileName: String, descriptor: String?, response: WineResult): InjectionStatus {
@@ -510,17 +577,34 @@ internal data class WineResult(
 
 private fun which(name: String): String? {
     val proc = try {
-        ProcessBuilder("bash", "-l", "-c", "echo $(which $name)")
+        ProcessBuilder("type", "-a", name)
             .start()
     } catch (e: Exception) {
+        LOGGER.warning("Failed to find wine through which; ${e.className}: ${e.message}")
         return null
     }
-    proc.waitFor()
+    val returnCode = proc.waitFor()
+    if (returnCode != 0) {
+        val error = try {
+            proc.errorStream?.readAllBytes()?.decodeToString() ?: "<NONE>"
+        } catch(e: Exception) {
+            "${e.className}: ${e.message}"
+        }
+        LOGGER.severe("PROC call for which returned error code: $returnCode; Error: $error")
+
+    }
     return try {
-        proc.inputStream
+        val result = proc.inputStream
             .readAllBytes()
             .decodeToString()
             .trim()
+            .nullIfEmpty()
+        result?.split(" is ", limit = 2)
+            ?.getOrNull(1)
+            ?.trim()
+            .also {
+                LOGGER.info("Path to wine: $it")
+            }
     } catch (e: Exception) {
         Log.eIf(DEBUG_INJECTOR) {
             "Failed to find $name exec with WHICH in bash. ${e.message ?: ""}\n${e.stackTraceToString()}"
@@ -529,10 +613,12 @@ private fun which(name: String): String? {
     }
 }
 
-private val wineExecutable by lazy {
+private val wineResolvedWithWhich by lazy {
+
     which("wine")
         ?: which("wine32on64")
         ?: which("wine32")
+        ?: which("wine64")
 }
 
 private fun String.unsafeWineShellEscape(): String {
