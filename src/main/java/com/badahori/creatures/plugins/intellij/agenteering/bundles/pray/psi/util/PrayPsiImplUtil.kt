@@ -4,9 +4,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTag
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayTagValue
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.PrayQuoteStringReference
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
+import com.badahori.creatures.plugins.intellij.agenteering.utils.hasParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.likeAny
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
+import com.bedalton.common.util.PathUtil
 import com.intellij.psi.PsiElement
 import com.bedalton.common.util.stripSurroundingQuotes
 
@@ -274,5 +280,48 @@ object PrayPsiImplUtil {
     @JvmStatic
     fun isClosed(@Suppress("UNUSED_PARAMETER") element: PrayIncompleteString): Boolean {
         return false
+    }
+
+    @JvmStatic
+    fun getStringStubKind(element: CaosScriptStringLike): StringStubKind? {
+        if (!element.hasParentOfType(PrayTagTagValue::class.java)) {
+            return null
+        }
+
+        val inputFileName = element.getParentOfType(PrayInputFileName::class.java)
+        if (inputFileName != null) {
+            val extension = PathUtil.getExtension(element.stringValue)
+                ?: return null
+            return StringStubKind.fromExtension(extension)
+        }
+
+        val parent = element.getParentOfType(PrayTag::class.java)
+            ?: return null
+        val tag = parent.tagName
+            .nullIfEmpty()
+            ?: return null
+        val tagComponents = tag.split(' ', limit = 2)
+        if (tagComponents.size != 2) {
+            return null
+        }
+        val tagKind = tagComponents[0]
+            .trim()
+            .lowercase()
+            .nullIfEmpty()
+            ?: return null
+
+        if (tagComponents[1].toIntOrNull() == null) {
+            return null
+        }
+
+        return when (tagKind) {
+            "script" -> StringStubKind.COS
+            "dependency" -> {
+                val extension = PathUtil.getExtension(element.stringValue)
+                    ?: return null
+                return StringStubKind.fromExtension(extension)
+            }
+            else -> null
+        }
     }
 }

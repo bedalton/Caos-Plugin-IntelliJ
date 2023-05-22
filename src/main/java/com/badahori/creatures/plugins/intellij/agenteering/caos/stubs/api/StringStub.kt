@@ -9,10 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnkno
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.commandStringUpper
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParentOfType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 
@@ -55,6 +52,14 @@ enum class StringStubKind(val extensions: List<String>? = null) {
 
         fun fromPsiElement(element: PsiElement): StringStubKind? {
             return getStubKind(element)
+        }
+
+        fun fromExtension(extension: String): StringStubKind? {
+            return values().firstOrNull {
+                val extensions = it.extensions
+                    ?: return@firstOrNull false
+                extension likeAny extensions
+            }
         }
     }
 }
