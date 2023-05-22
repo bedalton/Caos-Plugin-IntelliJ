@@ -19,6 +19,7 @@ sealed class GameInterfaceName {
     abstract val path: String?
     abstract val kind: String
     protected abstract val nickname: String?
+    open val tail: String? = null
 
     open val name: String get()  {
         val code = if (code == "AL" || code == "ANY") {
@@ -85,7 +86,7 @@ sealed class GameInterfaceName {
     protected abstract fun asSerial(): String
 
     companion object {
-        private val BASIC_REGEX = "([^:]+\\s*):\\s*([^\\[]+)\\s*(?:\\[\\s*([^\\]]+)](:.*)?\\s*)?".toRegex()
+        private val BASIC_REGEX = "([^:]+\\s*):\\s*([^\\[]+)\\s*(?:\\[\\s*([^\\]]+)])?\\s*(:.*?)?\\s*".toRegex()
         private const val TYPE_DELIMITER = "__;;;;;;;;;;__"
         private const val GAME_NAME_PATH_DELIMITER = "<__;;x;;;;;;x;;__>"
         internal const val ADDITIONAL_DATA_DELIMITER = "##__xx__##"
@@ -174,7 +175,9 @@ sealed class GameInterfaceName {
         internal fun defaultComponents(data: String): DefaultComponents? {
             val parts = BASIC_REGEX.matchEntire(data)
                 ?.groupValues
-                ?: return null
+                ?: return null.also {
+                    LOGGER.info("Failed to parse Injector interface string: <$data>")
+                }
             val code = parts[1]
                 .trim()
                 .nullIfEmpty()
