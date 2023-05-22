@@ -46,7 +46,7 @@ object Injector {
 
         val response =
             injectPrivateSafe(project, fallbackVariant, gameInterfaceName, "$$\$private$$$", false) { connection ->
-                connection.inject("$$\$private$$$", null, rawCode)
+                connection.inject(project, "$$\$private$$$", null, rawCode)
             } ?: return fallbackVariant
 
         if (response !is InjectionStatus.Ok) {
@@ -349,9 +349,10 @@ internal interface CaosConnection {
     val variant: CaosVariant
 
     val supportsJect: Boolean
-    fun inject(fileName: String, descriptor: String?, caos: String): InjectionStatus
-    fun injectWithJect(caos: CaosScriptFile, flags: Int): InjectionStatus
+    fun inject(project: Project, fileName: String, descriptor: String?, caos: String): InjectionStatus
+    fun injectWithJect(project: Project, caos: CaosScriptFile, flags: Int): InjectionStatus
     fun injectEventScript(
+        project: Project,
         fileName: String,
         family: Int,
         genus: Int,

@@ -21,7 +21,11 @@ internal class DDEConnection(override val variant: CaosVariant, private val data
     override val supportsJect: Boolean
         get() = false
 
-    override fun injectWithJect(caos: CaosScriptFile, flags: Int): InjectionStatus {
+    override fun injectWithJect(
+        project: Project,
+        caos: CaosScriptFile,
+        flags: Int
+    ): InjectionStatus {
         return InjectionStatus.ActionNotSupported(
             caos.name,
             null,
@@ -38,7 +42,12 @@ internal class DDEConnection(override val variant: CaosVariant, private val data
             }
         } ?: VIVARIUM
 
-    override fun inject(fileName: String, descriptor: String?, caos: String): InjectionStatus {
+    override fun inject(
+        project: Project,
+        fileName: String,
+        descriptor: String?,
+        caos: String
+    ): InjectionStatus {
         if (!OsUtil.isWindows) {
             return NOT_WINDOWS_STATUS
         }
@@ -83,6 +92,7 @@ internal class DDEConnection(override val variant: CaosVariant, private val data
     }
 
     override fun injectEventScript(
+        project: Project,
         fileName: String,
         family: Int,
         genus: Int,
@@ -101,7 +111,7 @@ internal class DDEConnection(override val variant: CaosVariant, private val data
         } else {
             caos
         }
-        return inject(fileName, "scrp $family $genus $species $eventNumber", caosFormatted)
+        return inject(project, fileName, "scrp $family $genus $species $eventNumber", caosFormatted)
     }
 
     override fun disconnect(): Boolean {

@@ -50,7 +50,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
             }
         }
 
-    override fun injectWithJect(caos: CaosScriptFile, flags: Int): InjectionStatus {
+    override fun injectWithJect(project: Project, caos: CaosScriptFile, flags: Int): InjectionStatus {
         return InjectionStatus.ActionNotSupported(
             caos.name,
             null,
@@ -59,7 +59,12 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
     }
 
     @Suppress("SameParameterValue")
-    override fun inject(fileName: String, descriptor: String?, caos: String): InjectionStatus {
+    override fun inject(
+        project: Project,
+        fileName: String,
+        descriptor: String?,
+        caos: String
+    ): InjectionStatus {
         if (!isWindows) {
             return NOT_WINDOWS_STATUS
         }
@@ -182,6 +187,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
      * Inject caos code into CV+ games
      */
     override fun injectEventScript(
+        project: Project,
         fileName: String,
         family: Int,
         genus: Int,
