@@ -383,8 +383,11 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
     }
 
     private fun isReferenceToFile(anElement: PsiElement): Boolean {
-        if (anElement !is PsiFile)
+
+        if (anElement !is PsiFile) {
             return false
+        }
+
         val otherVirtualFile = anElement.virtualFile
             ?: return false
         if (relative) {

@@ -156,6 +156,7 @@ string
 			getStringValue
 			isClosed
 			getReference
+			getStringStubKind
 		]
 	}
 	;
@@ -254,6 +255,7 @@ incompleteString
 		methods = [
 			getStringValue
 			isClosed
+			getStringStubKind
 		]
 	}
 	;
