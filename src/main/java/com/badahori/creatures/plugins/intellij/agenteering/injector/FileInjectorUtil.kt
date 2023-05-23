@@ -38,7 +38,7 @@ internal object FileInjectorUtil {
         useJect: Boolean,
     ): InjectionStatus {
         if (useJect && connection.supportsJect) {
-            return connection.injectWithJect(caosFile, flags)
+            return connection.injectWithJect(project, caosFile, flags)
         }
 
         val fileScripts = runReadAction {
@@ -56,14 +56,14 @@ internal object FileInjectorUtil {
         if (flags hasFlag Injector.REMOVAL_SCRIPT_FLAG) {
             val scripts = fileScripts.filterIsInstance<CaosScriptRemovalScript>()
             if (canInjectSingleScript && flags == Injector.REMOVAL_SCRIPT_FLAG && scripts.size == 1) {
-                return injectSingle(connection, caosFile.name, scripts[0])
+                return injectSingle(project, connection, caosFile.name, scripts[0])
             }
             scriptBlocks[JectScriptType.REMOVAL] = scripts
         }
         if (flags hasFlag Injector.EVENT_SCRIPT_FLAG) {
             val scripts = fileScripts.filterIsInstance<CaosScriptEventScript>()
-            if (canInjectSingleScript && canInjectSingleScript && flags == Injector.EVENT_SCRIPT_FLAG && scripts.size == 1) {
-                return injectSingleEventScript(connection, caosFile.name, scripts.first())
+            if (canInjectSingleScript && flags == Injector.EVENT_SCRIPT_FLAG && scripts.size == 1) {
+                return injectSingleEventScript(project, connection, caosFile.name, scripts.first())
 
             }
             scriptBlocks[JectScriptType.EVENT] = scripts
@@ -72,7 +72,7 @@ internal object FileInjectorUtil {
         if (flags hasFlag Injector.INSTALL_SCRIPT_FLAG) {
             val scripts = fileScripts.filterIsInstance<CaosScriptMacroLike>()
             if (canInjectSingleScript && flags == Injector.INSTALL_SCRIPT_FLAG && scripts.size == 1) {
-                return injectSingle(connection, caosFile.name, scripts[0])
+                return injectSingle(project, connection, caosFile.name, scripts[0])
             }
             scriptBlocks[JectScriptType.INSTALL] = scripts
         }
@@ -81,6 +81,7 @@ internal object FileInjectorUtil {
     }
 
     private fun injectSingle(
+        project: Project,
         connection: CaosConnection,
         fileName: String,
         script: CaosScriptScriptElement,
@@ -88,7 +89,7 @@ internal object FileInjectorUtil {
         val pointer = runReadAction {
             SmartPointerManager.createPointer(script)
         }
-        val response = connection.inject(fileName, script.getDescriptor(), formatCaos(script.codeBlock) ?: "")
+        val response = connection.inject(project, fileName, script.getDescriptor(), formatCaos(script.codeBlock) ?: "")
         return if (response is InjectionStatus.Bad && response.error.contains("{@}")) {
             val positions = runReadAction {
                 findPossiblePsiElementOffsets(pointer, response.error)
@@ -100,6 +101,7 @@ internal object FileInjectorUtil {
     }
 
     private fun injectSingleEventScript(
+        project: Project,
         connection: CaosConnection,
         fileName: String,
         eventScript: CaosScriptEventScript,
@@ -107,6 +109,7 @@ internal object FileInjectorUtil {
         val pointer = SmartPointerManager.createPointer(eventScript as PsiElement)
 
         val response = connection.injectEventScript(
+            project,
             fileName,
             eventScript.family,
             eventScript.genus,
@@ -325,6 +328,7 @@ internal object FileInjectorUtil {
             ?: return true
         val result = if (script is CaosScriptEventScript) {
             connection.injectEventScript(
+                project,
                 fileName,
                 family = script.family,
                 genus = script.genus,
@@ -333,7 +337,7 @@ internal object FileInjectorUtil {
                 caos = content
             )
         } else {
-            connection.inject(fileName, descriptor, content)
+            connection.inject(project, fileName, descriptor, content)
         }
         callback(project, result, scriptPointer, index)
         return result is InjectionStatus.Ok
@@ -433,13 +437,13 @@ private fun combine(resultsIn: List<InjectionStatus>): String {
             val couldBeEventScriptDescriptor = result.descriptor?.startsWith("scrp ") == true
                     && result.descriptor?.contains(".") == false
             if (resultRaw == null) {
-                val word = when (result) {
-                    is InjectionStatus.Ok -> "OK"
-                    is InjectionStatus.Bad -> "BAD"
-                    is InjectionStatus.BadConnection -> "BAD CONNECTION"
-                    is InjectionStatus.ActionNotSupported -> "UNSUPPORTED INJECTOR"
-                    else -> continue
-                }
+//                val word = when (result) {
+//                    is InjectionStatus.Ok -> "OK"
+//                    is InjectionStatus.Bad -> "BAD"
+//                    is InjectionStatus.BadConnection -> "BAD CONNECTION"
+//                    is InjectionStatus.ActionNotSupported -> "UNSUPPORTED INJECTOR"
+//                    else -> continue
+//                }
 //                builder.append("> $word")
             } else if (!couldBeEventScriptDescriptor || !resultRaw.equalsIgnoreCase("OK")) {
 //                if (resultRaw.trimEnd().contains('\n')) {
