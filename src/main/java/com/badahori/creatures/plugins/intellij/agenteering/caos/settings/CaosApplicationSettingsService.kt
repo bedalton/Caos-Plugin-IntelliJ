@@ -15,6 +15,9 @@ interface CaosApplicationSettingsService:
 {
     var isAutoPoseEnabled: Boolean
     var lastWineDirectory: String?
+    var wine32Path: String?
+    var wine64Path: String?
+    var winePath: String?
     var combineAttNodes: Boolean
     var replicateAttsToDuplicateSprites: Boolean?
     override var ignoredCatalogueTags: List<String>
