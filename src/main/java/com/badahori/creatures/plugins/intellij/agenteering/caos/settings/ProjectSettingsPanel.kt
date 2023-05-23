@@ -105,6 +105,8 @@ private class ProjectSettingsPanel(
     private val originalDefaultVariant: String = projectSettings.defaultVariant?.code ?: ""
     private val originalIsAutoPoseEnabled: Boolean = applicationSettings.isAutoPoseEnabled
     private val originalTrimBlk: Boolean? = projectSettings.trimBLKs
+    private val originalWine32Path: String? = applicationSettings.wine32Path
+    private val originalWine64Path: String? = applicationSettings.wine64Path
 
     private var mInterfaceNamesAreValid = true
     val interfaceNamesAreValid get() = mInterfaceNamesAreValid
@@ -192,6 +194,14 @@ private class ProjectSettingsPanel(
         }
     }
 
+    val wine32PathTextField by lazy {
+        JTextField(originalWine32Path)
+    }
+
+    val wine64PathTextField by lazy {
+        JTextField(originalWine64Path)
+    }
+
     val panel: JPanel by lazy {
         FormBuilder.createFormBuilder()
             .addLabeledComponent(JLabel("Default Variant"), defaultVariant, 1, false)
@@ -200,6 +210,8 @@ private class ProjectSettingsPanel(
             .addLabeledComponent(JLabel("Trim BLK right and bottom"), trimBlkCheckbox, 1, false)
             .addLabeledComponent(JLabel("Ignored File Names"), ignoredFileNames, 1, true)
             .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNames, 1, true)
+            .addLabeledComponent(JLabel("Wine32Path"), wine32PathTextField, 1, false)
+            .addLabeledComponent(JLabel("Wine64Path"), wine64PathTextField, 1, false)
             .addLabeledComponent(JLabel("Enable AutoPose action"), autoPoseCheckbox, 1, false)
             .panel
             .apply {
@@ -232,6 +244,12 @@ private class ProjectSettingsPanel(
         if (trimBlkCheckbox.isSelected != projectSettings.trimBLKs) {
             return true
         }
+        if (wine32PathTextField.text != originalWine32Path) {
+            return true
+        }
+        if (wine64PathTextField.text != originalWine64Path) {
+            return true
+        }
         return false
     }
 
@@ -259,6 +277,8 @@ private class ProjectSettingsPanel(
             this.gameInterfaceNames = gameInterfaceNames
             this.isAutoPoseEnabled = autoPoseCheckbox.isSelected
             this.replicateAttsToDuplicateSprites = this@ProjectSettingsPanel.replicateAttToDuplicateSprites.isSelected
+            this.wine64Path = this@ProjectSettingsPanel.wine64PathTextField.text
+            this.wine32Path = this@ProjectSettingsPanel.wine32PathTextField.text
         }
         applicationSettings = newSettings
         return newSettings
@@ -282,6 +302,8 @@ private class ProjectSettingsPanel(
         combineAttNodes.isSelected = originalCombineAttNodes
         replicateAttToDuplicateSprites.isSelected = originalReplicateAttToDuplicateSprite
         trimBlkCheckbox.isSelected = originalTrimBlk != false
+        wine32PathTextField.text = originalWine32Path
+        wine64PathTextField.text = originalWine64Path
     }
 
     /**

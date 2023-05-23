@@ -34,6 +34,9 @@ class CaosApplicationSettingsState : CaosApplicationSettingsService,
     private var mLastWineDirectory: String? = null
     private var mCombineAttNodes: Boolean = false
     private var mReplicateAttToDuplicateSprite: Boolean? = null
+    private var mWinePath: String? = null
+    private var mWine32Path: String? = null
+    private var mWine64Path: String? = null
 
     @Attribute(converter = StringListConverter::class)
     private var mIgnoredCatalogueTags: List<String> = emptyList()
@@ -142,9 +145,38 @@ class CaosApplicationSettingsState : CaosApplicationSettingsService,
         }
 
     override var gameInterfaceNames: List<GameInterfaceName>
-        get() = mGameInterfaceNames.filterNotNull()
+        get() = mGameInterfaceNames
         set(value) {
-            mGameInterfaceNames = value.filterNotNull()
+            mGameInterfaceNames = value
+            loadState(this)
+        }
+
+    override var winePath: String?
+        get() = mWinePath ?: wine32Path ?: wine64Path
+        set(value) {
+            mWinePath = value
+
+            if (mWine32Path == null) {
+                mWine32Path = value
+            }
+            
+            if (mWine64Path == null) {
+                mWine64Path = value
+            }
+            loadState(this)
+        }
+
+    override var wine32Path: String?
+        get() = mWine32Path
+        set(value) {
+            mWine32Path = value
+            loadState(this)
+        }
+
+    override var wine64Path: String?
+        get() = mWine64Path
+        set(value) {
+            mWine64Path = value
             loadState(this)
         }
 

@@ -1,12 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import com.bedalton.common.util.OS
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle.message
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.injectorInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.bedalton.common.util.OS
+import kotlinx.serialization.Serializable
 import java.net.URL
 
 /**
@@ -18,6 +19,7 @@ sealed class GameInterfaceName {
     abstract val path: String?
     abstract val kind: String
     protected abstract val nickname: String?
+    open val tail: String? = null
 
     open val name: String get()  {
         val code = if (code == "AL" || code == "ANY") {
@@ -84,7 +86,7 @@ sealed class GameInterfaceName {
     protected abstract fun asSerial(): String
 
     companion object {
-        private val BASIC_REGEX = "([^:]+\\s*):\\s*([^\\[]+)\\s*(?:\\[\\s*([^\\]]+)]\\s*)?".toRegex()
+        private val BASIC_REGEX = "([^:]+\\s*):\\s*([^\\[]+)\\s*(?:\\[\\s*([^\\]]+)])?\\s*(:.*?)?\\s*".toRegex()
         private const val TYPE_DELIMITER = "__;;;;;;;;;;__"
         private const val GAME_NAME_PATH_DELIMITER = "<__;;x;;;;;;x;;__>"
         internal const val ADDITIONAL_DATA_DELIMITER = "##__xx__##"
@@ -173,7 +175,9 @@ sealed class GameInterfaceName {
         internal fun defaultComponents(data: String): DefaultComponents? {
             val parts = BASIC_REGEX.matchEntire(data)
                 ?.groupValues
-                ?: return null
+                ?: return null.also {
+                    LOGGER.info("Failed to parse Injector interface string: <$data>")
+                }
             val code = parts[1]
                 .trim()
                 .nullIfEmpty()
@@ -184,9 +188,13 @@ sealed class GameInterfaceName {
             val nickname = parts.getOrNull(3)
                 ?.trim()
                 ?.nullIfEmpty()
+            val tail = parts.getOrNull(4)
+                ?.nullIfEmpty()
+                ?.substring(1)
+                ?.trim()
             val gameName = pathParts[0].trim().let { if (it == NULL) null else it }
             val path = pathParts.getOrNull(1)?.trim().let { if (it == NULL) null else it }
-            return DefaultComponents(code, gameName, path, nickname)
+            return DefaultComponents(code, gameName, path, nickname, tail)
         }
 
         internal fun defaultSerial(
@@ -194,6 +202,7 @@ sealed class GameInterfaceName {
             gameName: String?,
             path: String?,
             nickname: String?,
+            tail: String? = null
         ): String {
             val combinedPath = (gameName ?: NULL) + (path?.let { GAME_NAME_PATH_DELIMITER + it } ?: "")
             val builder = StringBuilder()
@@ -201,6 +210,9 @@ sealed class GameInterfaceName {
             builder.append(combinedPath)
             if (nickname != null) {
                 builder.append('[').append(nickname).append(']')
+            }
+            if (tail != null) {
+                builder.append(':').append(tail)
             }
             return builder.toString()
         }
@@ -255,12 +267,14 @@ data class NativeInjectorInterface constructor(
     }
 }
 
+@Serializable
 data class WineInjectorInterface constructor(
     override val code: String,
     override val gameName: String?,
     val prefix: String,
     val creaturesDirectory: String?,
     override val nickname: String?,
+    val wineExecutable: String?
 ) : GameInterfaceName() {
 
     override val kind get() = KIND
@@ -270,7 +284,7 @@ data class WineInjectorInterface constructor(
         get() = prefix
 
     override fun asSerial(): String {
-        return prefix + DELIMITER + defaultSerial(code, gameName, creaturesDirectory, nickname)
+        return prefix + DELIMITER + defaultSerial(code, gameName, creaturesDirectory, nickname, wineExecutable)
     }
 
     override fun withCode(code: String): GameInterfaceName {
@@ -286,14 +300,15 @@ data class WineInjectorInterface constructor(
             val prefix = parts[0]
             val data = parts.getOrNull(1)
                 ?: return null
-            val (code, gameName, creaturesDirectory, nickname) = defaultComponents(data)
+            val (code, gameName, creaturesDirectory, nickname, tail) = defaultComponents(data)
                 ?: return null
             return WineInjectorInterface(
                 code = code,
                 gameName = gameName,
                 prefix = prefix,
                 creaturesDirectory = creaturesDirectory,
-                nickname = nickname
+                nickname = nickname,
+                wineExecutable = tail
             )
         }
 
@@ -560,4 +575,5 @@ internal data class DefaultComponents(
     val gameName: String?,
     val path: String?,
     val nickName: String?,
+    val tail: String? = null
 )

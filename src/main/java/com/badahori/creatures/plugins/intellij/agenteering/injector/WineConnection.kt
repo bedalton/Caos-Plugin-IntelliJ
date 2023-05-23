@@ -6,31 +6,38 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.messa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CLIInjectFlag.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.injector.InjectorHelper.escape
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.bedalton.common.util.psuedoRandomUUID
-import com.bedalton.common.util.stripSurroundingQuotes
-import com.bedalton.io.bytes.decodeToCreaturesEncoding
+import com.bedalton.common.util.*
 import com.bedalton.io.bytes.decodeToWindowsCP1252
 import com.bedalton.log.Log
 import com.bedalton.log.eIf
 import com.bedalton.log.iIf
+import com.intellij.execution.target.value.DeferredTargetValue
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import korlibs.io.util.escape
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * Class for managing a connection to C3 for CAOS injection
  */
-internal class WineConnection(override val variant: CaosVariant, private val data: WineInjectorInterface) :
-    CaosConnection {
+internal class WineConnection(
+    override val variant: CaosVariant,
+    private val data: WineInjectorInterface
+) : CaosConnection {
     override val supportsJect: Boolean
         get() = false
 
@@ -42,6 +49,13 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
     }
     val prefix = File(data.prefix)
 
+
+    val isWin32 by lazy {
+        !File(prefix, "drive_c" + File.separator + "Program Files (x86)").exists()
+    }
+
+    val isWin64 get() = !isWin32
+
     private val tempDir by lazy {
         File(prefix, "windows/temp")
     }
@@ -51,7 +65,7 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
 
     }
 
-    override fun injectWithJect(caos: CaosScriptFile, flags: Int): InjectionStatus {
+    override fun injectWithJect(project: Project, caos: CaosScriptFile, flags: Int): InjectionStatus {
 //        Caos
 //        val fileName = copyForJect(variant, data, caos.text)
         return InjectionStatus.ActionNotSupported(
@@ -65,7 +79,7 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
     /**
      * Injects raw CAOS using the Windows CLI injector
      */
-    override fun inject(fileName: String, descriptor: String?, caos: String): InjectionStatus {
+    override fun inject(project: Project, fileName: String, descriptor: String?, caos: String): InjectionStatus {
         val parts = prepareCaos(caos, true)
         val caosOrFile = parts.first
         val cliTypeFlag = parts.second
@@ -80,14 +94,14 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
             caosOrFile
         ).toTypedArray()
         return try {
-            process(fileName, descriptor, args)
+            process(project, fileName, descriptor, args)
         } catch (e: Exception) {
             throw e
         } finally {
             try {
                 val tempFile = File(caosOrFile)
                 if (tempFile.exists()) {
-                    tempFile.delete()
+//                    tempFile.delete()
                 }
             } catch (e: Exception) {
                 LOGGER.severe("Failed to delete temp CAOS file")
@@ -99,6 +113,7 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
      * Inject caos code into CV+ games
      */
     override fun injectEventScript(
+        project: Project,
         fileName: String,
         family: Int,
         genus: Int,
@@ -129,7 +144,7 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
         ).toTypedArray()
 
         return try {
-            process(fileName, descriptor, args)
+            process(project, fileName, descriptor, args)
         } catch (e: Exception) {
             throw e
         } finally {
@@ -264,8 +279,7 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
         return tempFile.path
     }
 
-    private fun process(fileName: String, descriptor: String?, args: Array<String>): InjectionStatus {
-
+    private fun process(project: Project, fileName: String, descriptor: String?, args: Array<String>): InjectionStatus {
         // Ensure prefix
         if (data.prefix.nullIfEmpty() == null) {
             return InjectionStatus.BadConnection(
@@ -276,8 +290,9 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
             )
         }
 
+
         // Try to get the absolute path to the wine executable
-        val wineExec = wineExecutable
+        val wineExec = runBlocking { getWineExecutable(project) }
             ?: return InjectionStatus.BadConnection(
                 fileName,
                 descriptor,
@@ -289,7 +304,7 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
         val processBuilder = ProcessBuilder(wineExec, *args)
         val env = processBuilder.environment()
         env["WINEPREFIX"] = data.prefix
-        env["WINEDEBUG"] = "-all"
+//        env["WINEDEBUG"] = "-all"
 
         val argsString = args.joinToString(" ") {
             if (it.contains(' ')) {
@@ -306,7 +321,7 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
         } catch (e: Exception) {
             e.printStackTrace()
             LOGGER.severe(
-                "Failed to run command:\n\tWINEDEBUG=-all WINEPREFIX=\"${data.prefix.escape()}\" $argsString"
+                "Failed to run command:\n\tWINEDEBUG=-all WINEPREFIX=\"${data.prefix.escape()}\" \"$wineExec\" $argsString"
             )
             return InjectionStatus.BadConnection(
                 fileName,
@@ -316,6 +331,8 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
             )
         }
 
+        LOGGER.info("Command = WINEDEBUG=-all WINEPREFIX=\"${data.prefix.escape()}\" \"$wineExec\" $argsString")
+
         // Parse result
         return try {
             proc.waitFor()
@@ -324,13 +341,9 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
                 try {
                     val error = proc.errorStream?.bufferedReader()?.readText()?.trim()?.nullIfEmpty()
 
-                    if (error != null) {
-                        return if (error.startsWith('{')) {
-                            formatResponse(fileName, descriptor, error)
-                        } else {
-                            InjectionStatus.Bad(fileName, descriptor, error)
-                        }
-                    }
+                    LOGGER.severe(
+                        "Failed to run command:\n\tWINEDEBUG=-all WINEPREFIX=\"${data.prefix.escape()}\" \"$wineExec\" $argsString\nSTDERR: $error"
+                    )
                 } catch (e: Exception) {
                     e.printStackTrace()
                     InjectionStatus.Bad(
@@ -379,6 +392,89 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
         return formatResponse(fileName, descriptor, response)
     }
 
+    private suspend fun getWineExecutable(project: Project): String? {
+
+        var executable: String? = data.wineExecutable
+        if (executable != null && File(executable).exists()) {
+            return executable
+        }
+
+        val applicationSettings = CaosApplicationSettingsService
+            .getInstance()
+        executable = if (isWin32) {
+            applicationSettings.wine32Path ?: applicationSettings.winePath
+        } else {
+            applicationSettings.wine64Path ?: applicationSettings.winePath
+        }
+        if (executable != null && File(executable).exists()) {
+            return executable
+        }
+
+        executable = wineResolvedWithWhich
+
+        if (executable != null && File(executable).exists()) {
+            return executable
+        }
+
+        executable = if (isWin32) {
+            wineX86InKnownLocations.firstOrNull()
+        } else {
+            wineX64InKnownLocations.firstOrNull()
+        }
+
+        if (executable != null && File(executable).exists()) {
+            return executable
+        }
+
+        val prompt = if (isWin32) {
+            "Select Wine 32 Executable"
+        } else {
+            "Select Wine 64 Executable"
+        }
+
+        val unixPath = if (Platform.isMacOs()) {
+            "/usr/local/bin/wine"
+        } else {
+            "/usr/local/share/wine"
+        }
+        val startPath = if (executable != null) {
+            try {
+                File(executable).parent
+            } catch (e: Exception) {
+                unixPath
+            }
+        } else {
+            unixPath
+        }
+
+        return suspendCoroutine { cont ->
+            WineExecutableSelector.create(
+                project,
+                startPath,
+                isWin32,
+            ) { path ->
+                if (path == null) {
+                    cont.resume(null)
+                    return@create
+                }
+                val settings = CaosApplicationSettingsService.getInstance()
+                settings.gameInterfaceNames = settings.gameInterfaceNames.replaceAllInstances(
+                    data.copy(wineExecutable = path)
+                ) { it == data }
+
+                if (isWin32) {
+                    settings.wine32Path = path
+                } else {
+                    settings.wine64Path = path
+                }
+                if (settings.winePath == null) {
+                    settings.winePath = path
+                }
+                cont.resume(path)
+            }
+        }
+    }
+
     private fun formatResponse(fileName: String, descriptor: String?, response: WineResult): InjectionStatus {
         val code = response.status
         val message = response.message
@@ -389,8 +485,20 @@ internal class WineConnection(override val variant: CaosVariant, private val dat
                 CaosBundle.message("caos.injector.errors.internal-plugin-error", response.details ?: "<none>"),
                 variant
             )
-            "!CON" -> InjectionStatus.BadConnection(fileName, descriptor, message ?: CaosBundle.message("caos.injector.errors.failed-to-connect", variant.code), variant)
-            "!ERR" -> InjectionStatus.Bad(fileName, descriptor, message ?: CaosBundle.message("caos.errors.unknown-error"))
+
+            "!CON" -> InjectionStatus.BadConnection(
+                fileName,
+                descriptor,
+                message ?: CaosBundle.message("caos.injector.errors.failed-to-connect", variant.code),
+                variant
+            )
+
+            "!ERR" -> InjectionStatus.Bad(
+                fileName,
+                descriptor,
+                message ?: CaosBundle.message("caos.errors.unknown-error")
+            )
+
             else -> {
                 if (message == null) {
                     return InjectionStatus.Ok(fileName, descriptor, "")
@@ -510,17 +618,34 @@ internal data class WineResult(
 
 private fun which(name: String): String? {
     val proc = try {
-        ProcessBuilder("bash", "-l", "-c", "echo $(which $name)")
+        ProcessBuilder("type", "-a", name)
             .start()
     } catch (e: Exception) {
+        LOGGER.warning("Failed to find wine through which; ${e.className}: ${e.message}")
         return null
     }
-    proc.waitFor()
+    val returnCode = proc.waitFor()
+    if (returnCode != 0) {
+        val error = try {
+            proc.errorStream?.readAllBytes()?.decodeToString() ?: "<NONE>"
+        } catch (e: Exception) {
+            "${e.className}: ${e.message}"
+        }
+        LOGGER.severe("PROC call for which returned error code: $returnCode; Error: $error")
+
+    }
     return try {
-        proc.inputStream
+        val result = proc.inputStream
             .readAllBytes()
             .decodeToString()
             .trim()
+            .nullIfEmpty()
+        result?.split(" is ", limit = 2)
+            ?.getOrNull(1)
+            ?.trim()
+            .also {
+                LOGGER.info("Path to wine: $it")
+            }
     } catch (e: Exception) {
         Log.eIf(DEBUG_INJECTOR) {
             "Failed to find $name exec with WHICH in bash. ${e.message ?: ""}\n${e.stackTraceToString()}"
@@ -529,10 +654,37 @@ private fun which(name: String): String? {
     }
 }
 
-private val wineExecutable by lazy {
+private val wineResolvedWithWhich by lazy {
+
     which("wine")
         ?: which("wine32on64")
         ?: which("wine32")
+        ?: which("wine64")
+}
+
+private val knownBinLocations by lazy {
+    listOf(
+        "/usr/bin",
+        "/usr/local/bin",
+        "/usr/local/share",
+        "/opt/wine-stable/bin",
+    )
+}
+
+private val wineX86InKnownLocations by lazy {
+    knownBinLocations.filter { folder ->
+        File(folder.ensureEndsWith('/') + "wine").exists()
+    } + knownBinLocations.filter { folder ->
+        File(folder.ensureEndsWith('/') + "wine32on64").exists()
+    }
+}
+
+private val wineX64InKnownLocations by lazy {
+    knownBinLocations.filter { folder ->
+        File(folder.ensureEndsWith('/') + "wine64").exists()
+    }.nullIfEmpty() ?: knownBinLocations.filter { folder ->
+        File(folder.ensureEndsWith('/') + "wine").exists()
+    }
 }
 
 private fun String.unsafeWineShellEscape(): String {

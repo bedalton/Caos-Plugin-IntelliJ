@@ -23,7 +23,12 @@ internal class TCPConnection(override val variant: CaosVariant, private val game
         gameInterfaceName.getURL(variant)
     }
 
-    override fun inject(fileName: String, descriptor: String?, caos: String): InjectionStatus {
+    override fun inject(
+        project: Project,
+        fileName: String,
+        descriptor: String?,
+        caos: String
+    ): InjectionStatus {
 //        val url = url
 //            ?: return InjectionStatus.BadConnection("Invalid URL for POST http connection")
         return InjectionStatus.ActionNotSupported(
@@ -33,7 +38,7 @@ internal class TCPConnection(override val variant: CaosVariant, private val game
         )
     }
 
-    override fun injectWithJect(caos: CaosScriptFile, flags: Int): InjectionStatus {
+    override fun injectWithJect(project: Project, caos: CaosScriptFile, flags: Int): InjectionStatus {
         return InjectionStatus.ActionNotSupported(
             caos.name,
             null,
@@ -42,6 +47,7 @@ internal class TCPConnection(override val variant: CaosVariant, private val game
     }
 
     override fun injectEventScript(
+        project: Project,
         fileName: String,
         family: Int,
         genus: Int,
@@ -75,7 +81,7 @@ internal class TCPConnection(override val variant: CaosVariant, private val game
         } else {
             caos
         }
-        return inject(fileName, descriptor, caosFormatted)
+        return inject(project, fileName, descriptor, caosFormatted)
     }
 
     override fun disconnect(): Boolean = true

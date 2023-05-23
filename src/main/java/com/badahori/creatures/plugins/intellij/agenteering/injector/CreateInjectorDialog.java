@@ -37,6 +37,8 @@ public class CreateInjectorDialog extends DialogBuilder {
     private JTextField nickname;
     private JLabel winePrefixLabel;
     private JLabel nicknameLabel;
+    private JComponent wineExecutable;
+    private JLabel wineExecutableLabel;
 
     private boolean nameIsDefault = true;
 
@@ -145,7 +147,7 @@ public class CreateInjectorDialog extends DialogBuilder {
         }
         updateInjector();
         if (getSelectedInjectorKind() == WINE) {
-            setDefaultWineGameDirectory();
+            setDefaultWineGameDirectory(null);
         }
     }
 
@@ -188,6 +190,7 @@ public class CreateInjectorDialog extends DialogBuilder {
         showDirectory(true);
         showPrefix(false);
         showNickname(true);
+        showWineBinary(false);
         okActionEnabled(true);
     }
 
@@ -198,6 +201,7 @@ public class CreateInjectorDialog extends DialogBuilder {
         showPrefix(false);
         showDirectory(false);
         showNickname(true);
+        showWineBinary(false);
         okActionEnabled(true);
     }
 
@@ -208,6 +212,7 @@ public class CreateInjectorDialog extends DialogBuilder {
         showNetOptions(false);
         clearURL();
         showNickname(true);
+        showWineBinary(true);
         okActionEnabled(true);
     }
 
@@ -218,6 +223,7 @@ public class CreateInjectorDialog extends DialogBuilder {
         showNetOptions(false);
         clearURL();
         showNickname(false);
+        showWineBinary(false);
         okActionEnabled(false);
     }
 
@@ -332,6 +338,12 @@ public class CreateInjectorDialog extends DialogBuilder {
         nicknameLabel.setVisible(show);
     }
 
+
+    private void showWineBinary(final boolean show) {
+        wineExecutable.setVisible(show);
+        wineExecutableLabel.setVisible(show);
+    }
+
     private void onOK() {
         try {
             out = buildInterface();
@@ -361,6 +373,7 @@ public class CreateInjectorDialog extends DialogBuilder {
         final String gamePath = getGamePath(injectorKind);
         final String prefixPath = getPrefixPathThrowing(injectorKind);
         final String url = isNet ? getUrlThrowing(injectorKind) : null;
+        final String wineBinary = getWineBinaryThrowing();
         GameInterfaceName gameInterface;
         switch (injectorKind) {
             case NATIVE:
@@ -380,7 +393,8 @@ public class CreateInjectorDialog extends DialogBuilder {
                         gameName,
                         Objects.requireNonNull(prefixPath),
                         gamePath,
-                        nickname
+                        nickname,
+                        wineBinary
                 );
                 break;
             case TCP:
@@ -481,6 +495,23 @@ public class CreateInjectorDialog extends DialogBuilder {
     }
 
     @Nullable
+    private String getWineBinaryThrowing() {
+        final String executable = ((TextFieldWithBrowseButton)wineExecutable).getText();
+        if (executable.isBlank()) {
+            return null;
+        }
+        File file = new File(executable);
+        if (file.exists()) {
+            return executable;
+        }
+        file = new File(executable.trim());
+        if (file.exists()) {
+            return file.getPath();
+        }
+        throw new InvalidValueException("Wine binary path is invalid", wineExecutable);
+    }
+
+    @Nullable
     private String getUrlThrowing(final int injectorKind) {
         if (injectorKind != TCP && injectorKind != POST) {
             return null;
@@ -565,6 +596,11 @@ public class CreateInjectorDialog extends DialogBuilder {
 
         gameName.setText(gameNameOrURL != null ? gameNameOrURL : "");
         nickname.setText(interfaceName.getNickname() != null ? interfaceName.getNickname() : "");
+        String wineExecutablePath = interfaceName.getTail();
+        if (wineExecutablePath == null || wineExecutablePath.isBlank()) {
+            wineExecutablePath = "";
+        }
+        ((TextFieldWithBrowseButton)wineExecutable).setText(wineExecutablePath);
         ((TextFieldWithBrowseButton)gameFolder).setText(gamePath != null ? gamePath : "");
     }
 
@@ -577,6 +613,7 @@ public class CreateInjectorDialog extends DialogBuilder {
         final File home = getHomeDirectory();
         initializeBootstrapField(home);
         initializeWinePrefixField(home);
+        initializeWineBinaryField(home);
     }
 
     @Nullable
@@ -696,12 +733,20 @@ public class CreateInjectorDialog extends DialogBuilder {
             }
         });
         prefix.setToolTipText(CaosBundle.message("caos.injector.dialog.wine-prefix.tooltip"));
-        prefix.addActionListener((e) -> setDefaultWineGameDirectory());
+        prefix.addActionListener((e) -> setDefaultWineGameDirectory(prefix.getText()));
         winePrefix = prefix;
     }
 
-    private void setDefaultWineGameDirectory() {
-        final String text = ((TextFieldWithBrowseButton) winePrefix).getText().trim();
+    private void initializeWineBinaryField(final File home) {
+        this.wineExecutable = createSelectFileField(
+                "Wine Binary",
+                "The wine binary used to run this prefix. Sometimes at /usr/bin/wine",
+                getDefaultWineBinaryDirectory(home)
+        );
+    }
+
+    private void setDefaultWineGameDirectory(@Nullable final String prefix) {
+        final String text = prefix != null && !prefix.isBlank() ? prefix : ((TextFieldWithBrowseButton) winePrefix).getText().trim();
         if (text.length() == 0) {
             return;
         }
@@ -727,6 +772,14 @@ public class CreateInjectorDialog extends DialogBuilder {
         String lastWineDirectory = state.getLastWineDirectory();
         File wineDir = lastWineDirectory != null ? new File(lastWineDirectory) : new File(home, ".wine");
         return wineDir.exists() ? wineDir : home;
+    }
+
+
+    private File getDefaultWineBinaryDirectory(final File home) {
+        final CaosApplicationSettingsService state = CaosApplicationSettingsService.getInstance();
+        String lastWineDirectory = state.getWinePath();
+        File wineDir = lastWineDirectory != null ? new File(lastWineDirectory) : new File("/usr/local/bin/wine");
+        return wineDir.exists() ? wineDir : (new File("/usr/local/bin/wine"));
     }
 
     private String getWineGamePath(final CaosVariant variant, final File prefix) {
@@ -793,6 +846,43 @@ public class CreateInjectorDialog extends DialogBuilder {
                 new FileChooserDescriptor(
                         false,
                         true,
+                        false,
+                        false,
+                        false,
+                        false
+                )
+        );
+        if (file != null) {
+            field.setText(file.getPath());
+        }
+        return field;
+    }
+
+    private TextFieldWithBrowseButton createSelectFileField(
+            final String label, final String description,
+            @Nullable
+            File defaultFileOrStartingFolder
+    ) {
+        File file = null;
+        if (defaultFileOrStartingFolder != null) {
+            if (defaultFileOrStartingFolder.exists()) {
+                file = defaultFileOrStartingFolder;
+            } else {
+                file = defaultFileOrStartingFolder.getParentFile();
+            }
+        }
+
+        if (file != null && !file.exists()) {
+            file = null;
+        }
+        final TextFieldWithBrowseButton field = new TextFieldWithBrowseButton();
+        field.addBrowseFolderListener(
+                label,
+                description,
+                project,
+                new FileChooserDescriptor(
+                        true,
+                        false,
                         false,
                         false,
                         false,
