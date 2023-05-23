@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
-import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
@@ -8,7 +7,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVaria
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.toTokenOrNull
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.token
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy
 import com.intellij.codeInsight.lookup.LookupElementBuilder
@@ -16,7 +14,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.GlobalSearchScopes
-import com.intellij.psi.util.elementType
 
 object ClassifierCompletion {
 
@@ -114,8 +111,13 @@ object ClassifierCompletion {
 
         val typingName = quickComplete && elementText.toIntOrNull() == null
 
-        val classifierSoFar = if (typingName) "" else numbers.copyOfRange(0, i - 1).reversed().joinToString(" ")
-        val valuesToDrop = if (typingName) 0 else (i - 1)
+        val gonePastEndIndex = i >= numbers.size
+        val classifierSoFar = if (typingName || gonePastEndIndex) {
+            ""
+        } else {
+            numbers.copyOfRange(0, i).reversed().joinToString(" ")
+        }
+        val valuesToDrop = if (typingName || gonePastEndIndex) 0 else i
 
         val variantScope: GlobalSearchScope? = element.variant?.let {
             CaosVariantGlobalSearchScope(project, it, strict = false, searchLibraries = false)
