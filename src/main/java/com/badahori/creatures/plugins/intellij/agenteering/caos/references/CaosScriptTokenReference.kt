@@ -48,7 +48,8 @@ class CaosScriptTokenReference(private val element: CaosScriptToken) :
             .nullIfEmpty()
             ?: return EMPTY_ARRAY
 
-        val results = CaseInsensitiveFileIndex.findWithFileNameAndExtensions(project, name, extensions)
+        val results = CaseInsensitiveFileIndex
+            .findWithFileNameAndExtensions(project, name, extensions)
             .map {
                 it.toNavigableElement(project)
             }
