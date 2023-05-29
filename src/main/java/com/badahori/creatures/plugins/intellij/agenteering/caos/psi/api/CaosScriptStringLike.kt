@@ -5,5 +5,5 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.String
 interface CaosScriptStringLike : CaosScriptCompositeElement{
     val stringValue:String
     val isClosed:Boolean
-    val stringStubKind: StringStubKind
+    val stringStubKind: StringStubKind?
 }
