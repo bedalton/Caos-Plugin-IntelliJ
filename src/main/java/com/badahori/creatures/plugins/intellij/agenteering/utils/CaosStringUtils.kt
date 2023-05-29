@@ -226,26 +226,45 @@ enum class Case {
     CAPITAL_FIRST
 }
 
+/**
+ * Compares two strings without case
+ */
 infix fun String?.like(other: String?): Boolean {
     return this != null && other != null && this.equals(other, true)
 }
 
+/**
+ * Checks if string equals any in collection ignoring case
+ */
 infix fun String?.likeAny(others: Collection<String>): Boolean {
     return others.any { this like it }
 }
 
+
+/**
+ * Checks if string equals any string in array, ignoring case
+ */
 infix fun String?.likeAny(others: Array<String>): Boolean {
     return others.any { this like it }
 }
 
+/**
+ * Checks string is not equal to any string in collection, ignoring case
+ */
 infix fun String?.likeNone(others: Collection<String>): Boolean {
     return others.none { this like it }
 }
 
+/**
+ * Checks string is not equal to any string in array, ignoring case
+ */
 infix fun String?.likeNone(others: Array<String>): Boolean {
     return others.none { this like it }
 }
 
+/**
+ * Checks string is not equal to another string, ignoring case
+ */
 infix fun String?.notLike(other: String?): Boolean {
     return this == null || other == null || !this.equals(other, true)
 }

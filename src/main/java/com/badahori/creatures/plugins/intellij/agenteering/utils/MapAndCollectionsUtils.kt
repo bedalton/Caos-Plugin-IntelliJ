@@ -152,3 +152,15 @@ suspend fun <A, B> Array<A>.mapAsync(f: suspend (A) -> B): List<B> = coroutineSc
 suspend fun <A, B> Iterable<A>.mapAsync(f: suspend (A) -> B): List<B> = coroutineScope {
     map { async { f(it) } }.awaitAll()
 }
+
+internal fun <K,V> MutableMap<K, MutableList<V>>.put(key: K, value: V) {
+    set(key, value)
+}
+
+internal operator fun <K,V> MutableMap<K, MutableList<V>>.set(key: K, value: V) {
+    get(key)?.let {
+        it.add(value)
+        return
+    }
+    put(key, mutableListOf(value))
+}

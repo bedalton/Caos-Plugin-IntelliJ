@@ -1,5 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.bedalton.common.util.className
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
@@ -60,14 +62,14 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
         fun findWithFileNameAndExtensions(
             project:Project,
             fileNameWithoutExtension:String,
-            extensions: List<String>,
+            extensions: Set<String>,
             searchScope: GlobalSearchScope? = null
         ) : Collection<VirtualFile> {
             if (extensions.isEmpty()) {
                 return emptyList()
             }
             return extensions.flatMap { extension ->
-                val key = FileNameInfo(fileNameWithoutExtension, null, extension)
+                val key = FileNameInfo(null, fileNameWithoutExtension, extension)
                 findMatching(project, key, searchScope)
             }.distinctBy { it.path }
         }
@@ -98,9 +100,9 @@ data class FileNameInfo(
     val nameWithoutExtension:String?,
     val extension:String?
 ) {
-    override fun toString(): String {
-        return fileName ?: nameWithoutExtension?.let { "$it.*"} ?: extension?.let { "*.$it" } ?: "<empty>"
-    }
+//    override fun toString(): String {
+//        return fileName ?: nameWithoutExtension?.let { "$it.*"} ?: extension?.let { "*.$it" } ?: "<empty>"
+//    }
 }
 
 private object Indexer : DataIndexer<FileNameInfo, Void, FileContent> {
@@ -109,7 +111,7 @@ private object Indexer : DataIndexer<FileNameInfo, Void, FileContent> {
         val key = FileNameInfo(
             file.name.lowercase(),
             file.nameWithoutExtension.lowercase(),
-            file.extension?.lowercase() ?: ""
+            file.extension?.lowercase()
         )
         return Collections.singletonMap(key, null)
     }

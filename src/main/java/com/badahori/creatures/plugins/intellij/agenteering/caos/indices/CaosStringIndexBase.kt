@@ -76,6 +76,16 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
         return getByPattern(patternString, project, null)
     }
 
+    open fun getByPattern(pattern: Regex, project: Project): Map<String, List<PsiT>> {
+        val globalSearchScope: GlobalSearchScope = GlobalSearchScope.projectScope(project)
+        return getByPattern(pattern, project, globalSearchScope)
+    }
+
+    open fun getByPattern(pattern: Regex, project: Project, globalSearchScope: GlobalSearchScope): Map<String, List<PsiT>> {
+        val keysByPattern = getKeysByPattern(pattern, project, globalSearchScope)
+        return getAllForKeys(keysByPattern, project, globalSearchScope)
+    }
+
     open fun getByPattern(patternString: String?, project: Project, globalSearchScope: GlobalSearchScope?): Map<String, List<PsiT>> {
         return if (patternString == null) {
             emptyMap()
@@ -120,6 +130,24 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
             }
         }
         return out
+    }
+
+    @JvmOverloads
+    open fun getKeysByPattern(pattern: Regex, project: Project, @Suppress("UNUSED_PARAMETER") globalSearchScope: GlobalSearchScope? = null): List<String> {
+        val matchingKeys = ArrayList<String>()
+        val notMatchingKeys = ArrayList<String>()
+
+        for (key in getAllKeys(project)) {
+            if (notMatchingKeys.contains(key) || matchingKeys.contains(key)) {
+                continue
+            }
+            if (pattern.matches(key)) {
+                matchingKeys.add(key)
+            } else {
+                notMatchingKeys.add(key)
+            }
+        }
+        return matchingKeys
     }
 
     @JvmOverloads
