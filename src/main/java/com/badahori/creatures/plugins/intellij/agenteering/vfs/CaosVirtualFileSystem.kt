@@ -268,17 +268,19 @@ class CaosVirtualFileSystem : DeprecatedVirtualFileSystem() {
             filePathIn
         val names: MutableList<String> = pathWithoutSchema.split("/").toMutableList()
         val parentName = names.removeAt(0)
-        var currentFile: CaosVirtualFile = if (createSubFolders)
+        var currentFile: CaosVirtualFile = if (createSubFolders) {
             getOrCreateRootChildDirectory(parentName)
-        else
+        } else {
             root[parentName] ?: return null
+        }
         while (names.isNotEmpty()) {
             val name = names.removeAt(0)
             currentFile = currentFile.findChild(name)
-                ?: if (names.isNotEmpty() && createSubFolders)
+                ?: if (names.isNotEmpty() && createSubFolders) {
                     createChildDirectory(null, currentFile, name)
-                else
+                }else {
                     return null
+                }
         }
         return currentFile
     }
