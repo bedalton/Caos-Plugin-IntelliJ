@@ -389,8 +389,9 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 .range(element)
                 .create()
         }
-        if (!element.hasParentOfType(CaosScriptNoJump::class.java))
+        if (!element.hasParentOfType(CaosScriptNoJump::class.java)) {
             return
+        }
         holder.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.loop-should-not-be-jumped-out-of"))
             .range(element.textRange)
             .create()

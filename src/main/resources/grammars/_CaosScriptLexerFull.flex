@@ -473,10 +473,12 @@ DDE_PICT=[^\s]{3}
 	[Gg][Ss][Uu][Bb]       	{ yypush(IN_SUBROUTINE_NAME); return CaosScript_K_GSUB; }
 	[Ss][Uu][Bb][Rr]       	{ enter(SUBR); yybegin(IN_SUBROUTINE_NAME); return CaosScript_K_SUBR; }
 	[Rr][Ee][Tt][Nn]       	{
-		if (mBlocks.size() > 1)
+		if (mBlocks.size() > 1){
 			return CaosScript_K_CRETN;
-		if (exit(SUBR))
+        }
+		if (exit(SUBR)) {
 			return CaosScript_K_RETN;
+        }
 	  	return CaosScript_K_BAD_LOOP_TERMINATOR;
 	}
 	[Rr][Ee][Pp][Ss]       	{ enter(REPS); return CaosScript_K_REPS; }

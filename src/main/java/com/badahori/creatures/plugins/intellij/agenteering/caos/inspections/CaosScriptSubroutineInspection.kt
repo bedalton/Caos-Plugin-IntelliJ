@@ -38,8 +38,9 @@ class CaosScriptSubroutineInspection : LocalInspectionTool(), DumbAware {
         if ((variant == CaosVariant.C1 || variant == CaosVariant.C2) && name.length != 4) {
             holder.registerProblem(element, CaosBundle.message("caos.annotator.syntax-error-annotator.subroutine-name-invalid-length", variant))
         }
-        if (element.hasParentOfType(CaosScriptSubroutineHeader::class.java))
+        if (element.hasParentOfType(CaosScriptSubroutineHeader::class.java)) {
             return
+        }
         val searchScope = GlobalSearchScope.fileScope(element.containingFile)
         val matches = CaosScriptSubroutineIndex.instance[name, element.project, searchScope]
         val parent = element.getParentOfType(CaosScriptScriptBodyElement::class.java)
