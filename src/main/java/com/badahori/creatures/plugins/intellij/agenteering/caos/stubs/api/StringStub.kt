@@ -14,22 +14,22 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.util.elementType
 
 
-enum class StringStubKind(val extensions: List<String>? = null) {
+enum class StringStubKind(val extensions: Set<String>? = null) {
     GAME(null),
     EAME(null),
     NAME(null),
     JOURNAL(null),
-    WAV( listOf("WAV")),
-    MNG( listOf("MNG", "MING")),
-    MIDI( listOf("MIDI")),
-    AUDIO( listOf("WAV", "MNG", "MING")),
-    SPR( listOf("SPR")),
-    S16(listOf("S16")),
-    C16(listOf("C16")),
-    GEN(listOf("GEN")),
-    C2E_SPRITE(listOf("S16", "C16")),
-    BLK(listOf("BLK")),
-    COS(listOf("COS", "CAOS")),
+    WAV(setOf("WAV")),
+    MNG(setOf("MNG", "MING")),
+    MIDI(setOf("MIDI")),
+    AUDIO(setOf("WAV", "MNG", "MING")),
+    SPR(setOf("SPR")),
+    S16(setOf("S16")),
+    C16(setOf("C16")),
+    GEN(setOf("GEN")),
+    C2E_SPRITE(setOf("S16", "C16")),
+    BLK(setOf("BLK")),
+    COS(setOf("COS", "CAOS")),
     ;
 
     val isFile get() = extensions.isNotNullOrEmpty()
@@ -127,6 +127,48 @@ private fun getStringStubKindForExtension(extension: String?): StringStubKind? {
         "MIDI" -> StringStubKind.MIDI
         else -> null
     }
+}
+
+infix fun StringStubKind?.notLike(other: StringStubKind?): Boolean {
+    if (this == null || other == null) {
+        return false
+    }
+    if (this == other) {
+        return false
+    }
+    val thisExtensions = this.extensions
+        .nullIfEmpty()
+        ?.map { it.uppercase() }
+        ?.toSet()
+    val otherExtensions = other.extensions
+        .nullIfEmpty()
+        ?.map { it.uppercase() }
+        ?.toSet()
+    return thisExtensions == null ||
+            otherExtensions == null ||
+            thisExtensions.intersect(otherExtensions).isEmpty()
+}
+
+infix fun StringStubKind?.like(other: StringStubKind?): Boolean {
+    if (this == null || other == null) {
+        return false
+    }
+    if (this == other) {
+        return true
+    }
+    val thisExtensions = this.extensions
+        .nullIfEmpty()
+        ?.map { it.uppercase() }
+        ?.toSet()
+        ?: return false
+
+    val otherExtensions = other.extensions
+        .nullIfEmpty()
+        ?.map { it.uppercase() }
+        ?.toSet()
+        ?: return false
+
+    return thisExtensions.intersect(otherExtensions).isNotEmpty()
 }
 
 private fun getParameterStubKind(variant: CaosVariant, element: CaosScriptQuoteStringLiteral): StringStubKind? {
@@ -349,27 +391,5 @@ private fun getC2eCaos2TagStubKind(
         "S16", "C16" -> StringStubKind.C2E_SPRITE
         "COS", "CAOS" -> StringStubKind.COS
         else -> null
-    }
-}
-
-internal infix fun StringStubKind?.like(other: StringStubKind?): Boolean {
-    if (this == null || other == null) {
-        return false
-    }
-    return if (this == StringStubKind.C2E_SPRITE) {
-        when (other) {
-            StringStubKind.S16 -> true
-            StringStubKind.C16 -> true
-            StringStubKind.C2E_SPRITE -> true
-            else -> false
-        }
-    } else if (other == StringStubKind.C2E_SPRITE) {
-        when (this) {
-            StringStubKind.S16 -> true
-            StringStubKind.C16 -> true
-            else -> false
-        }
-    } else {
-        this == other
     }
 }

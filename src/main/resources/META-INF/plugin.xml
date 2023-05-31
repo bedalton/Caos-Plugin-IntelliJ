@@ -279,6 +279,8 @@
         <enterHandlerDelegate
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEnterHandler"/>
 
+        <referencesSearch implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosFileElementsSearchExecutor" />
+
         <!-- Project -->
         <iconProvider
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleIconProvider"

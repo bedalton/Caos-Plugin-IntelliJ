@@ -16,6 +16,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.commandStringUpper
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.like
+import com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrBlank
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
@@ -71,6 +73,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         }
         val caosFile = element.containingFile.originalFile as? CaosScriptFile
             ?: return
+
         val variant = caosFile.variant
             ?: return
 
@@ -116,6 +119,9 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 }
             }
 
+
+            LOGGER.info("Is CAOS2Block")
+
             // No more completions should be added
             return
         }
@@ -138,6 +144,7 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         if (previous != "[" && previous != "\"" && previous.nullIfEmpty()?.let { !WHITESPACE_ONLY.matches(it) }
                 .orFalse()) {
             resultSet.stopHere()
+            LOGGER.info("Token is touching another token; Return")
             return
         }
 
@@ -567,7 +574,7 @@ private fun addUserCreatedStringCompletions(
     val strings = (inFileStrings + indexedStrings)
         .distinct()
         .filter {
-            if (it.stringStubKind == kind) {
+            if (it.stringStubKind like kind) {
                 true
             } else if (kind != JOURNAL) {
                 // If not journal, no meta to match
@@ -653,10 +660,6 @@ private fun addFileNameCompletionsForFileTypes(
 
     val containingFile = element.containingFile?.virtualFile
         ?: element.originalElement?.containingFile?.virtualFile
-        ?: return
-
-    // Get module of containing file
-    val module = element.module
 
     // Get search scope
     // If expanded search is false, only get files in the parent directory
@@ -666,51 +669,29 @@ private fun addFileNameCompletionsForFileTypes(
             GlobalSearchScopes.directoryScope(it, true)
         }
     } else {
-        module?.moduleContentScope
-            ?: GlobalSearchScope.projectScope(project)
+        GlobalSearchScope.projectScope(project)
     }
 
     // Util function to search for files with an extension and scope if non-null
-    val search: (extension: String) -> Collection<VirtualFile> = if (searchScope != null) {
-        ({ extension: String ->
-            (FilenameIndex.getAllFilesByExt(project, extension.lowercase(), searchScope) +
-                    FilenameIndex.getAllFilesByExt(project, extension.uppercase(), searchScope) +
-                    FilenameIndex.getAllFilesByExt(project, extension.capitalize(), searchScope)).distinct()
-        })
-    } else {
-        ({ extension: String ->
-            (FilenameIndex.getAllFilesByExt(project, extension) +
-                    FilenameIndex.getAllFilesByExt(project, extension.uppercase()) +
-                    FilenameIndex.getAllFilesByExt(project, extension.capitalize())).distinct()
-        })
+    val search: (extension: String) -> Collection<VirtualFile> = { extension: String ->
+        CaseInsensitiveFileIndex.findWithExtension(project, extension, searchScope).distinctBy { it.path }
     }
 
-    val roots = module?.rootManager?.contentRoots?.toList()
-        ?: module?.myModuleFile?.toListOf()
-        ?: project.projectFile?.toListOf()
     // Util method to get the relative path between a file and its parent module or directory
-    val relativePath: (path: VirtualFile?) -> String? = path@{ path: VirtualFile? ->
-        if (path == null) {
-//            LOGGER.info("Path is null for virtual file")
-            return@path null
+    val relativePath: (path: VirtualFile?) -> String? = if (containingFile != null) {
+        path@{ path: VirtualFile? ->
+            if (path == null) {
+                return@path null
+            }
+            VfsUtil.getRelativePath(path, containingFile)
         }
-        val inModule = roots.isNullOrEmpty() || roots!!.any { parent -> VfsUtil.isAncestor(parent, path, true) }
-
-        if (!inModule) {
-//            LOGGER.info("File not in Roots: [${roots?.joinToString()}]")
-            return@path null
-        }
-        VfsUtil.getRelativePath(path, containingFile)
+    } else {
+        { "project" }
     }
 
     // Get files as completion elements
     val files = extensions
-        .flatMap { extension ->
-            (search(extension) + search(extension.uppercase()))
-                .distinctBy {
-                    it.path
-                }
-        }
+        .flatMap(search)
         .toSet()
         .map { file ->
             // Get the file name, dropping extension if necessary
@@ -719,6 +700,7 @@ private fun addFileNameCompletionsForFileTypes(
             } else {
                 file.name
             }
+
             // Get location string for autocomplete tail-text
             val location = relativePath(file.parent)?.let { " in $it" } ?: "..."
             var builder = LookupElementBuilder
@@ -734,9 +716,21 @@ private fun addFileNameCompletionsForFileTypes(
                 .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE)
         }
 
+    if (files.isEmpty() && !expandedSearch) {
+        return addFileNameCompletionsForFileTypes(
+            project,
+            resultSet,
+            expandedSearch = true,
+            extensions,
+            dropExtension,
+            element,
+            insertHandler,
+            quoter
+        )
+    }
+
     // Add all elements
     resultSet.addAllElements(files)
-
 }
 
 // TODO: See if the new generic string index function works just as well
