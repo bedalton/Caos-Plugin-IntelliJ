@@ -1908,9 +1908,10 @@ c_gsub
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCommandLike"
 		]
 		methods = [
+		    getCommandTokenElementType
+		    getCommandToken
 			getCommandString
 			getCommandStringUpper
-			commandToken="/c_kw_gsub"
 			getArguments
 			getArgumentValues
 			getCommandDefinition
@@ -1920,6 +1921,7 @@ c_gsub
 
 c_kw_gsub
 	::= K_GSUB
+	|   K_GOTO
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptIsCommandToken"
@@ -4641,8 +4643,7 @@ c_kw_r_r_r_r_r_r_r_r_r_r
 	;
 
 c_kw_t
-	::=	K_GOTO
-	|	K_PLDS
+	::=	K_PLDS
 	|	K_SNDC <<isOldVariant>>
 	|	K_SNDE <<isOldVariant>>
 	|	K_SNDF <<isOldVariant>>

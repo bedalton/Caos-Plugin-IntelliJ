@@ -517,7 +517,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
                     break
                 char = originalText[charIndex]
                 if (charIndex == startIndices && (char == 's' || char == 'g')) {
-                    couldBeSubroutine = next == CaosScript_K_SUBR || next == CaosScript_K_GSUB
+                    couldBeSubroutine = next == CaosScript_K_SUBR || next == CaosScript_K_GSUB || next == CaosScript_K_GOTO
                 }
                 if (char == '\n' || char == ',')
                     break
@@ -671,6 +671,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
         CaosScript_K_ENDM,
         CaosScript_K_SUBR,
         CaosScript_K_GSUB,
+        CaosScript_K_GOTO,
         CaosScript_K_RETN,
         CaosScript_K_CRETN,
         CaosScript_K_REPS,

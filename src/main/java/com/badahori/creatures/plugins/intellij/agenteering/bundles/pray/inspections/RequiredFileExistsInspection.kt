@@ -320,7 +320,7 @@ internal fun tagRequiresFileOfType(tagName: String): Pair<List<String>?, Boolean
 // Check that RSCR is a script not a file path
 private const val FILE_NAME_CHAR = "[a-zA-Z0-9_'\" \\-#$&@()]"
 private val PATH_REGEX by lazy { "(^[a-zA-Z]:\\\\[a-zA-Z0-9_'\" \\-#$&@()]+(\\.[^\"\\\\\n]+)?)|(^([a-zA-Z0-9_'\" \\-#\$&@()]*[/\\\\])*[a-zA-Z0-9_'\" \\-#\$&@()]+\\.[^\$\n]+\$)".toRegex() }
-private val PRIMITIVE_CAOS_REGEX by lazy { "^((\\\\n)|(\\\\t)|( )|\\t|([+-]?[0-9]+)|\"([^\"\\\\]|\\\\.)*\"|\\[[^]]*]|([-+]?[0-9]*\\.[0-9]+)|((subr|gsub)\\s+[^\\\\\\s]+)|([a-zA-Z_][a-zA-Z_\$*#:]{3})|(\\*([^\\n\\\\]|\\\\[^\\n])*))+\$".toRegex() }
+private val PRIMITIVE_CAOS_REGEX by lazy { "^((\\\\n)|(\\\\t)|( )|\\t|([+-]?[0-9]+)|\"([^\"\\\\]|\\\\.)*\"|\\[[^]]*]|([-+]?[0-9]*\\.[0-9]+)|((subr|gsub|goto)\\s+[^\\\\\\s]+)|([a-zA-Z_][a-zA-Z_\$*#:]{3})|(\\*([^\\n\\\\]|\\\\[^\\n])*))+\$".toRegex() }
 internal fun isRawScriptNotFile(text: String): Boolean {
     if (text.isEmpty())
         return true
