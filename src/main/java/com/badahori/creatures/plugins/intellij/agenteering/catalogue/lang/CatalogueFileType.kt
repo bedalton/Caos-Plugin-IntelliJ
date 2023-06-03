@@ -20,7 +20,7 @@ object CatalogueFileType : LanguageFileType(CatalogueLanguage) {
 
     override fun getIcon(): Icon? = CaosScriptIcons.CATALOGUE_FILE_ICON
 
-    override fun getCharset(p0: VirtualFile, p1: ByteArray): String = Charsets.US_ASCII.name()
+    override fun getCharset(p0: VirtualFile, p1: ByteArray): String = "windows-1252"
 
     @JvmStatic
     val DEFAULT_EXTENSION = "catalogue"
