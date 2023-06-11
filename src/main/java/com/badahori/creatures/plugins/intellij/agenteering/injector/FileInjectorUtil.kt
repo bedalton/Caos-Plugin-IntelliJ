@@ -782,7 +782,7 @@ private fun findPossiblePsiElementOffsets(
     var out = findPossiblePsiElementOffsets(script, text, regex)
 
     if (out.isEmpty()) {
-        regex = ("$prefix(${matchParts[1]})\\s*(${matchParts[2]})$suffix")
+        regex = ("$prefix(${Regex.escape(matchParts[1])})\\s*(${Regex.escape(matchParts[2])})$suffix")
             .toRegex()
         out = findPossiblePsiElementOffsets(script, text, regex)
     }
