@@ -466,8 +466,14 @@ const val NEEDS_EXTENSION = 1
 const val NO_EXTENSION = 2
 
 internal fun getStringNameRangeInString(text: String): TextRange {
-    if (text.isEmpty())
+    if (text.isEmpty()) {
         return TextRange(0, 0)
+    }
+
+    if (text.length == 1 && (text[0] == '"' || text[0] == '\'')) {
+        return TextRange(0,0)
+    }
+
     val firstChar = text[0]
     val startQuote = if (firstChar == '"' || firstChar == '\'') {
         firstChar
@@ -483,13 +489,8 @@ internal fun getStringNameRangeInString(text: String): TextRange {
     }
 
     val lastChar = text.last()
-    val endOffset = if (startQuote != null && lastChar == firstChar) {
-        1
-    } else if (lastChar == '"' || lastChar == '\'') {
-        1
-    } else {
-        0
-    }
+
+
 
     val startIndex = if (firstSlash >= 0) {
         firstSlash
@@ -498,8 +499,16 @@ internal fun getStringNameRangeInString(text: String): TextRange {
     } else {
         0
     }
+    val endOffset = if (startQuote != null && lastChar == firstChar) {
+        1
+    } else if (lastChar == '"' || lastChar == '\'') {
+        1
+    } else {
+        0
+    }
 
-    return TextRange(startIndex, text.length - endOffset)
+    val endIndex = text.length - endOffset
+    return TextRange(startIndex, endIndex)
 
 }
 
