@@ -3,10 +3,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Cob
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCodeBlock
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
 import com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
+import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
@@ -18,25 +20,23 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVariantSearchScope
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.NUMBER_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.bedalton.common.util.stripSurroundingQuotes
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.SearchScope
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import icons.CaosScriptIcons
-import com.bedalton.common.util.stripSurroundingQuotes
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
-import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameIndex
-import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
-import com.intellij.psi.search.GlobalSearchScopes
 import javax.swing.Icon
 
 
@@ -105,12 +105,30 @@ object CaosScriptPsiImplUtil {
         return element.cKwTarg
     }
 
+
+    /**
+     * Gets command token for a TARG {agent} command call
+     */
+    @JvmStatic
+    fun getCommandTokenElement(element: CaosScriptCGsub): CaosScriptIsCommandToken {
+        return element.cKwGsub.firstChild as CaosScriptIsCommandToken
+    }
+
     /**
      * Gets command token for a TARG {agent} command call
      */
     @JvmStatic
     fun getCommandTokenElementType(element: CaosScriptCTarg): IElementType? {
         return element.cKwTarg.firstChild?.elementType
+    }
+
+
+    /**
+     * Gets command token for a TARG {agent} command call
+     */
+    @JvmStatic
+    fun getCommandTokenElementType(element: CaosScriptCGsub): IElementType? {
+        return element.cKwGsub.firstChild?.elementType
     }
 
     /**
@@ -1012,14 +1030,6 @@ object CaosScriptPsiImplUtil {
     @JvmStatic
     fun getReference(name: CaosScriptSubroutineName): CaosScriptSubroutineNameReference {
         return CaosScriptSubroutineNameReference(name)
-    }
-
-    /**
-     * Gets reference object for a command token
-     */
-    @JvmStatic
-    fun getReference(element: CaosScriptToken): CaosScriptTokenReference {
-        return CaosScriptTokenReference(element)
     }
 
     @JvmStatic
