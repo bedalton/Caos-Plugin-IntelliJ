@@ -28,6 +28,7 @@ val ideaVersionStart: String by project
 val psiViewerVersion: String by project
 val javaVersion: String by project
 
+val kotlinxCoroutinesVersion: String by project
 val korImagesVersion: String by project
 val creaturesAgentUtilVersion: String by project
 val creaturesSpriteUtilVersion: String by project
@@ -51,7 +52,7 @@ dependencies {
         excludeKotlin()
     }
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")
 
     implementation("org.apache.commons:commons-imaging:1.0-alpha2") {
         excludeKotlin()
