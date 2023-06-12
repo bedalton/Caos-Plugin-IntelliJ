@@ -316,7 +316,7 @@
 
         <applicationService
                 serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService"
-                serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsState"
+                serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsImpl"
         />
 
         <filePropertyPusher

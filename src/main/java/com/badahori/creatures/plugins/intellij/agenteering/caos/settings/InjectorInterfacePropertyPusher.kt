@@ -68,10 +68,10 @@ internal class InjectorInterfacePropertyPusher private constructor() : FilePrope
             val stream = INJECTOR_ATTRIBUTE.readAttribute(file)
                 ?: return null
             val length = stream.readInt()
-            val out = StringBuilder()
             if (length <= 0) {
                 return null
             }
+            val out = StringBuilder()
             (0 until length).forEach { _ ->
                 out.append(stream.readChar())
             }
@@ -86,7 +86,7 @@ internal class InjectorInterfacePropertyPusher private constructor() : FilePrope
                 return
             file.putUserData(INJECTOR_INTERFACE_USER_DATA_KEY, gameInterfaceName)
             val stream = INJECTOR_ATTRIBUTE.writeAttribute(file)
-            val name = gameInterfaceName?.serialize() ?: ""
+            val name = gameInterfaceName?.id ?: ""
             stream.writeInt(name.length)
             stream.writeChars(name)
             stream.close()

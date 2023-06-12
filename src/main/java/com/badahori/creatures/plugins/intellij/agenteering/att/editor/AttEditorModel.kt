@@ -13,7 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedIfNotCached
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsState
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ExplicitVariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.ImplicitVariantFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
@@ -170,7 +170,7 @@ internal class AttEditorModel(
         initDocumentListeners(project, psiFile)
 
         // Add application level settings listener
-        CaosApplicationSettingsState.addSettingsChangedListener(this) { _, it ->
+        CaosApplicationSettingsImpl.addSettingsChangedListener(this) { _, it ->
             replicateAttsToDuplicateSprites = it.replicateAttsToDuplicateSprites
             mFoldedLines = null
             ApplicationManager.getApplication().invokeLater {

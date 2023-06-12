@@ -401,11 +401,11 @@ fun CaosProjectSettingsService.removeIgnoredFile(fileName: String) {
 fun CaosApplicationSettingsService.addGameInterfaceName(interfaceName: GameInterfaceName) {
     val state = state
     loadState(
-        state.copy {
+        state.copy(
             gameInterfaceNames = (state.gameInterfaceNames + interfaceName)
                 .distinct()
                 .filter { it != null && (it !is NativeInjectorInterface || !it.isDefault) }
-        }
+        )
     )
 }
 
@@ -415,10 +415,10 @@ fun CaosApplicationSettingsService.addGameInterfaceName(interfaceName: GameInter
  */
 fun CaosApplicationSettingsService.removeGameInterfaceName(interfaceName: GameInterfaceName) {
     val state = state
-    loadState(state.copy {
+    loadState(state.copy(
         gameInterfaceNames = state.gameInterfaceNames
             .filter { it != null && it != interfaceName }
-    })
+    ))
 }
 
 /**
@@ -467,7 +467,7 @@ fun CaosProjectSettingsService.lastInterface(variant: CaosVariant, interfaceName
         state.copy(
             lastGameInterfaceNames = state.lastGameInterfaceNames.filterNot {
                 it.startsWith(prefix)
-            } + (prefix + interfaceName.serialize())
+            } + (prefix + interfaceName.id)
         )
     )
 }
@@ -525,9 +525,9 @@ var CaosApplicationSettingsService.replicateAttToDuplicateSprites: Boolean?
         if (value == state.replicateAttsToDuplicateSprites)
             return
         loadState(
-            state.copy {
+            state.copy(
                 replicateAttsToDuplicateSprites = value != false
-            }
+            )
         )
     }
 

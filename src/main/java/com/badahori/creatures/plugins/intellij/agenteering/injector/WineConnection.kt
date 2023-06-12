@@ -399,28 +399,7 @@ internal class WineConnection(
             return executable
         }
 
-        val applicationSettings = CaosApplicationSettingsService
-            .getInstance()
-        executable = if (isWin32) {
-            applicationSettings.wine32Path ?: applicationSettings.winePath
-        } else {
-            applicationSettings.wine64Path ?: applicationSettings.winePath
-        }
-        if (executable != null && File(executable).exists()) {
-            return executable
-        }
-
-        executable = wineResolvedWithWhich
-
-        if (executable != null && File(executable).exists()) {
-            return executable
-        }
-
-        executable = if (isWin32) {
-            wineX86InKnownLocations.firstOrNull()
-        } else {
-            wineX64InKnownLocations.firstOrNull()
-        }
+        executable = WineHelper.getDefault(isWin32, false)
 
         if (executable != null && File(executable).exists()) {
             return executable
@@ -668,6 +647,7 @@ private val knownBinLocations by lazy {
         "/usr/local/bin",
         "/usr/local/share",
         "/opt/wine-stable/bin",
+        "/opt/homebrew/bin"
     )
 }
 
@@ -676,6 +656,8 @@ private val wineX86InKnownLocations by lazy {
         File(folder.ensureEndsWith('/') + "wine").exists()
     } + knownBinLocations.filter { folder ->
         File(folder.ensureEndsWith('/') + "wine32on64").exists()
+    } + knownBinLocations.filter { folder ->
+        File(folder.ensureEndsWith('/') + "wine32").exists()
     }
 }
 
@@ -695,5 +677,39 @@ private fun String.unsafeWineShellEscape(): String {
         "\"$out\"".escape()
     } else {
         out.escape()
+    }
+}
+
+object WineHelper {
+    @JvmStatic
+    fun getDefault(isWin32: Boolean, nullIfNotExists: Boolean): String? {
+
+        val applicationSettings = CaosApplicationSettingsService
+            .getInstance()
+       var executable = if (isWin32) {
+            applicationSettings.wine32Path ?: applicationSettings.winePath
+        } else {
+            applicationSettings.wine64Path ?: applicationSettings.winePath
+        }
+        if (executable != null && File(executable).exists()) {
+            return executable
+        }
+
+        executable = wineResolvedWithWhich
+
+        if (executable != null && File(executable).exists()) {
+            return executable
+        }
+
+        executable = if (isWin32) {
+            wineX86InKnownLocations.firstOrNull()
+        } else {
+            wineX64InKnownLocations.firstOrNull()
+        }
+
+        if (executable != null && (!nullIfNotExists || File(executable).exists())) {
+            return executable
+        }
+        return null
     }
 }

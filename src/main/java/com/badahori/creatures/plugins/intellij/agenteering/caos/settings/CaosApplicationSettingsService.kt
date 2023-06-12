@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsImpl.CaosApplicationSettingsState
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager

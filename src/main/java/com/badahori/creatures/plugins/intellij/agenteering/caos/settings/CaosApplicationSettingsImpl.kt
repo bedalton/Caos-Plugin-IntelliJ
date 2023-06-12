@@ -2,11 +2,11 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsImpl.CaosApplicationSettingsState
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInjectorInterface
 import com.badahori.creatures.plugins.intellij.agenteering.utils.GameInterfaceListConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
-import com.bedalton.log.Log
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
@@ -14,7 +14,6 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.annotations.Attribute
 import java.util.*
 import com.intellij.openapi.components.Storage
-import com.intellij.util.xmlb.XmlSerializerUtil
 
 
 /**
@@ -25,37 +24,29 @@ import com.intellij.util.xmlb.XmlSerializerUtil
     storages = [Storage(value = "CAOS.xml")]
 )
 @Storage("CAOS.xml")
-class CaosApplicationSettingsState : CaosApplicationSettingsService,
+class CaosApplicationSettingsImpl : CaosApplicationSettingsService,
     PersistentStateComponent<CaosApplicationSettingsState>, Disposable {
 
-    @Attribute(converter = GameInterfaceListConverter::class)
-    private var mGameInterfaceNames: List<GameInterfaceName> = listOf()
-    private var mIsAutoPoseEnabled: Boolean = false
-    private var mLastWineDirectory: String? = null
-    private var mCombineAttNodes: Boolean = false
-    private var mReplicateAttToDuplicateSprite: Boolean? = null
-    private var mWinePath: String? = null
-    private var mWine32Path: String? = null
-    private var mWine64Path: String? = null
+    data class CaosApplicationSettingsState(
+        @Attribute(converter = GameInterfaceListConverter::class)
+        val gameInterfaceNames: List<GameInterfaceName> = listOf(),
+        val isAutoPoseEnabled: Boolean = false,
+        val lastWineDirectory: String? = null,
+        val combineAttNodes: Boolean = false,
+        val replicateAttsToDuplicateSprites: Boolean? = null,
+        val winePath: String? = null,
+        val wine32Path: String? = null,
+        val wine64Path: String? = null,
+        @Attribute(converter = StringListConverter::class)
+        val ignoredCatalogueTags: List<String> = emptyList()
+    )
 
-    @Attribute(converter = StringListConverter::class)
-    private var mIgnoredCatalogueTags: List<String> = emptyList()
+    private var mState: CaosApplicationSettingsState = CaosApplicationSettingsState()
 
     private var loading = false
 
     override fun getState(): CaosApplicationSettingsState {
-        return this
-    }
-
-    fun copy(work: CaosApplicationSettingsState.() -> Unit): CaosApplicationSettingsState {
-        val oldState = copy()
-        return oldState.apply(work)
-    }
-
-    fun copy(): CaosApplicationSettingsState {
-        val oldState = CaosApplicationSettingsState().apply { loading = true }
-        XmlSerializerUtil.copyBean(this, oldState)
-        return oldState
+        return mState
     }
 
     override fun loadState(state: CaosApplicationSettingsState) {
@@ -66,11 +57,11 @@ class CaosApplicationSettingsState : CaosApplicationSettingsService,
         loading = true
 
         // Copy old state for use in listeners
-        val oldState = copy()
+        val oldState = mState
 
         // Ensure we do not serialize default game interface names
-        mGameInterfaceNames = state.gameInterfaceNames
-            .filter { it != null && (it !is NativeInjectorInterface || !it.isDefault) }
+        val actualState = state.copy(gameInterfaceNames = state.gameInterfaceNames
+            .filter { it != null && (it !is NativeInjectorInterface || !it.isDefault) })
 
         // Only load state if changed
         if (state == oldState) {
@@ -82,10 +73,11 @@ class CaosApplicationSettingsState : CaosApplicationSettingsService,
         loading = true
 
         // Copy state to this state object
-        XmlSerializerUtil.copyBean(state, this)
+//        XmlSerializerUtil.copyBean(actualState, this)
 
         // Notify listeners of update
-        onUpdate(oldState, state)
+        onUpdate(oldState, actualState)
+        mState = actualState
 
         // Clear loading flag to allow calling loadState
         loading = false
@@ -93,91 +85,112 @@ class CaosApplicationSettingsState : CaosApplicationSettingsService,
 
 
     override var combineAttNodes: Boolean
-        get() = state.mCombineAttNodes
+        get() = state.combineAttNodes
         set(value) {
-            if (value == state.mCombineAttNodes) {
+            if (value == state.combineAttNodes) {
                 return
             }
-            mCombineAttNodes = value
-            loadState(this)
+            loadState(
+                mState.copy(
+                    combineAttNodes = value
+                )
+            )
         }
 
     override var replicateAttsToDuplicateSprites: Boolean?
-        get() = mReplicateAttToDuplicateSprite
+        get() = mState.replicateAttsToDuplicateSprites
         set(value) {
-            if (value == mReplicateAttToDuplicateSprite) {
+            if (value == mState.replicateAttsToDuplicateSprites) {
                 return
             }
-            mReplicateAttToDuplicateSprite = value != false
-            loadState(this)
+            loadState(mState.copy(
+                replicateAttsToDuplicateSprites =  value != false
+            ))
         }
 
 
     override var isAutoPoseEnabled: Boolean
-        get() = state.mIsAutoPoseEnabled
+        get() = state.isAutoPoseEnabled
         set(value) {
-            if (mIsAutoPoseEnabled == value) {
+            if (mState.isAutoPoseEnabled == value) {
                 return
             }
-            mIsAutoPoseEnabled = value
-            loadState(this)
+            loadState(mState.copy(isAutoPoseEnabled = value))
         }
 
     override var ignoredCatalogueTags: List<String>
-        get() = state.mIgnoredCatalogueTags
+        get() = mState.ignoredCatalogueTags
         set(ignoredTags) {
             val distinct = ignoredTags.distinct()
-            if (mIgnoredCatalogueTags.containsAll(distinct) && distinct.containsAll(mIgnoredCatalogueTags)) {
+            if (mState.ignoredCatalogueTags.containsAll(distinct) && distinct.containsAll(mState.ignoredCatalogueTags)) {
                 return
             }
-            mIgnoredCatalogueTags = ignoredTags.distinct()
-            loadState(this)
+            loadState(
+                mState.copy(
+                    ignoredCatalogueTags = ignoredTags.distinct()
+                )
+            )
         }
 
     override var lastWineDirectory: String?
-        get() = state.mLastWineDirectory
+        get() = mState.lastWineDirectory
         set(value) {
-            if (mLastWineDirectory == value) {
+            if (mState.lastWineDirectory == value) {
                 return
             }
-            mLastWineDirectory = value
-            loadState(this)
+            loadState(
+                mState.copy(
+                    lastWineDirectory = value
+                )
+            )
         }
 
     override var gameInterfaceNames: List<GameInterfaceName>
-        get() = mGameInterfaceNames
+        get() = mState.gameInterfaceNames
         set(value) {
-            mGameInterfaceNames = value
-            loadState(this)
+            loadState(
+                mState.copy(
+                    gameInterfaceNames = value
+                )
+            )
         }
 
     override var winePath: String?
-        get() = mWinePath ?: wine32Path ?: wine64Path
+        get() = mState.winePath ?: wine32Path ?: wine64Path
         set(value) {
-            mWinePath = value
-
-            if (mWine32Path == null) {
-                mWine32Path = value
-            }
-            
-            if (mWine64Path == null) {
-                mWine64Path = value
-            }
-            loadState(this)
+            loadState(
+                mState.copy(
+                    winePath = value,
+                    wine64Path = mState.wine64Path ?: value,
+                    wine32Path = mState.wine32Path ?: value
+                )
+            )
         }
 
     override var wine32Path: String?
-        get() = mWine32Path
+        get() = mState.wine32Path
         set(value) {
-            mWine32Path = value
-            loadState(this)
+            if (mState.wine32Path == value) {
+                return
+            }
+            loadState(
+                mState.copy(
+                    wine32Path = value
+                )
+            )
         }
 
     override var wine64Path: String?
-        get() = mWine64Path
+        get() = mState.wine64Path
         set(value) {
-            mWine64Path = value
-            loadState(this)
+            if (wine64Path == value) {
+                return
+            }
+            loadState(
+                mState.copy(
+                    wine64Path = value
+                )
+            )
         }
 
     private fun onUpdate(oldState: CaosApplicationSettingsState, newState: CaosApplicationSettingsState) {
@@ -206,10 +219,16 @@ class CaosApplicationSettingsState : CaosApplicationSettingsService,
          * Adds a listener to track and change to the settings component
          * Listener should be released automatically when parent is disposed
          */
-        fun addSettingsChangedListener(disposable: Disposable, listener: (oldState: CaosApplicationSettingsState, newState: CaosApplicationSettingsState) -> Unit) {
+        fun addSettingsChangedListener(
+            disposable: Disposable,
+            listener: (oldState: CaosApplicationSettingsState, newState: CaosApplicationSettingsState) -> Unit
+        ) {
             try {
                 addSettingsChangedListener(disposable, object : CaosApplicationSettingsChangeListener {
-                    override fun onChange(oldState: CaosApplicationSettingsState, newState: CaosApplicationSettingsState) {
+                    override fun onChange(
+                        oldState: CaosApplicationSettingsState,
+                        newState: CaosApplicationSettingsState
+                    ) {
                         listener(oldState, newState)
                     }
                 })
@@ -249,26 +268,13 @@ class CaosApplicationSettingsState : CaosApplicationSettingsService,
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as CaosApplicationSettingsState
+        other as CaosApplicationSettingsImpl
 
-        if (mGameInterfaceNames != other.mGameInterfaceNames) return false
-        if (mIsAutoPoseEnabled != other.mIsAutoPoseEnabled) return false
-        if (mLastWineDirectory != other.mLastWineDirectory) return false
-        if (mCombineAttNodes != other.mCombineAttNodes) return false
-        if (mReplicateAttToDuplicateSprite != other.mReplicateAttToDuplicateSprite) return false
-        if (mIgnoredCatalogueTags != other.mIgnoredCatalogueTags) return false
-
-        return true
+        return mState == other.mState
     }
 
     override fun hashCode(): Int {
-        var result = mGameInterfaceNames.hashCode()
-        result = 31 * result + mIsAutoPoseEnabled.hashCode()
-        result = 31 * result + (mLastWineDirectory?.hashCode() ?: 0)
-        result = 31 * result + mCombineAttNodes.hashCode()
-        result = 31 * result + (mReplicateAttToDuplicateSprite?.hashCode() ?: 0)
-        result = 31 * result + mIgnoredCatalogueTags.hashCode()
-        return result
+        return mState.hashCode()
     }
 }
 

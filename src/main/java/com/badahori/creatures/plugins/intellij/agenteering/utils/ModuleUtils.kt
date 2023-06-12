@@ -119,7 +119,7 @@ internal fun CaosModuleSettingsService.lastGameInterface(gameInterfaceName: Game
     if (gameInterfaceName.isVariant(variant))
         loadState(
             state.copy(
-                lastGameInterfaceName = gameInterfaceName.serialize()
+                lastGameInterfaceName = gameInterfaceName.id
             )
         )
 }

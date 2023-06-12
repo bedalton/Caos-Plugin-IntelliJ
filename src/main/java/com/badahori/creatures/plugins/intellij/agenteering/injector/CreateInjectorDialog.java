@@ -596,7 +596,9 @@ public class CreateInjectorDialog extends DialogBuilder {
 
         gameName.setText(gameNameOrURL != null ? gameNameOrURL : "");
         nickname.setText(interfaceName.getNickname() != null ? interfaceName.getNickname() : "");
-        String wineExecutablePath = interfaceName.getTail();
+        String wineExecutablePath = (interfaceName instanceof WineInjectorInterface)
+                ? ((WineInjectorInterface)interfaceName).getWineExecutable()
+                : null;
         if (wineExecutablePath == null || wineExecutablePath.isBlank()) {
             wineExecutablePath = "";
         }
@@ -710,6 +712,7 @@ public class CreateInjectorDialog extends DialogBuilder {
                 state.setLastWineDirectory(text);
                 if (!((TextFieldWithBrowseButton)gameFolder).getText().startsWith(text)) {
                     ((TextFieldWithBrowseButton)gameFolder).setText(text);
+                    ((TextFieldWithBrowseButton)gameFolder).getTextField().setText(text);
                 }
             }
         };
@@ -778,6 +781,9 @@ public class CreateInjectorDialog extends DialogBuilder {
     private File getDefaultWineBinaryDirectory(final File home) {
         final CaosApplicationSettingsService state = CaosApplicationSettingsService.getInstance();
         String lastWineDirectory = state.getWinePath();
+        if (lastWineDirectory == null) {
+            lastWineDirectory = WineHelper.getDefault(false, true);
+        }
         File wineDir = lastWineDirectory != null ? new File(lastWineDirectory) : new File("/usr/local/bin/wine");
         return wineDir.exists() ? wineDir : (new File("/usr/local/bin/wine"));
     }

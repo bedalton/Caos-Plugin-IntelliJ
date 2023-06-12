@@ -406,7 +406,7 @@ private fun populate(
         variantPanel.isVisible = false
     }
 
-    CaosApplicationSettingsState.addSettingsChangedListener(fileEditor) { _, settings ->
+    CaosApplicationSettingsImpl.addSettingsChangedListener(fileEditor) { _, settings ->
         if ((settings.gameInterfaceNames + injectorList).distinct().isEmpty())
             return@addSettingsChangedListener
         injectorList = settings.gameInterfaceNames

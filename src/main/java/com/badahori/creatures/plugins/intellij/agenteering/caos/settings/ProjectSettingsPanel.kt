@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsImpl.CaosApplicationSettingsState
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CreateInjectorDialog
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -272,14 +273,14 @@ private class ProjectSettingsPanel(
      */
     fun applyApplicationSettings(): CaosApplicationSettingsState {
         val gameInterfaceNames = getGameInterfaceNames()
-        val newSettings = applicationSettings.copy {
-            this.combineAttNodes = this@ProjectSettingsPanel.combineAttNodes.isSelected
-            this.gameInterfaceNames = gameInterfaceNames
-            this.isAutoPoseEnabled = autoPoseCheckbox.isSelected
-            this.replicateAttsToDuplicateSprites = this@ProjectSettingsPanel.replicateAttToDuplicateSprites.isSelected
-            this.wine64Path = this@ProjectSettingsPanel.wine64PathTextField.text
-            this.wine32Path = this@ProjectSettingsPanel.wine32PathTextField.text
-        }
+        val newSettings = applicationSettings.copy(
+            combineAttNodes = this@ProjectSettingsPanel.combineAttNodes.isSelected,
+            gameInterfaceNames = gameInterfaceNames,
+            isAutoPoseEnabled = autoPoseCheckbox.isSelected,
+            replicateAttsToDuplicateSprites = this@ProjectSettingsPanel.replicateAttToDuplicateSprites.isSelected,
+            wine64Path = this@ProjectSettingsPanel.wine64PathTextField.text,
+            wine32Path = this@ProjectSettingsPanel.wine32PathTextField.text,
+        )
         applicationSettings = newSettings
         return newSettings
     }
@@ -576,5 +577,5 @@ internal class GameInterfaceNamesList(
 }
 
 private fun List<GameInterfaceName>.serialized(): List<String> {
-    return map { it.serialize() }
+    return map { it.toJSON() }
 }

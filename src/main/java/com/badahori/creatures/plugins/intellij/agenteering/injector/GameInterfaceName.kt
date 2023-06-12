@@ -6,41 +6,51 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.injectorInt
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.randomString
 import com.bedalton.common.util.OS
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import java.net.URL
 
 /**
  * Base class for data required by the supported CAOS injectors
  */
+@Serializable
 sealed class GameInterfaceName {
     abstract val code: String
     abstract val gameName: String?
     abstract val path: String?
     abstract val kind: String
     protected abstract val nickname: String?
-    open val tail: String? = null
+    abstract val id: String
 
-    open val name: String get()  {
-        val code = if (code == "AL" || code == "ANY") {
-            "*"
-        } else {
-            code
+    open val name: String
+        get() {
+            val code = if (code == "AL" || code == "ANY") {
+                "*"
+            } else {
+                code
+            }
+            if (nickname != null) {
+                return "$code: $nickname"
+            }
+            if (gameName != null) {
+                return "$code: $gameName"
+            }
+            val variant = variant
+            if (variant != null && variant.isBase) {
+                return "$kind: $variant"
+            }
+            return "$kind: $code"
         }
-        if (nickname != null) {
-            return "$code: $nickname"
-        }
-        if (gameName != null) {
-            return "$code: $gameName"
-        }
-        val variant = variant
-        if (variant != null && variant.isBase) {
-            return "$kind: $variant"
-        }
-        return "$kind: $code"
-    }
 
     val variant get() = CaosVariant.fromVal(code).nullIfUnknown()
+
+    open val presentableText by lazy {
+        defaultPresentableText(
+            code, gameName, path, nickname
+        )
+    }
 
     fun isVariant(aVariant: CaosVariant?): Boolean {
         val variant = variant
@@ -75,30 +85,44 @@ sealed class GameInterfaceName {
         return out
     }
 
-    abstract fun withCode(code: String): GameInterfaceName
 
-    fun serialize(): String {
-        return kind + TYPE_DELIMITER + asSerial()
+    fun toJSON(): String {
+        return json.encodeToString(serializer(), this)
     }
 
-    fun getKey(): String = asSerial()
-
-    protected abstract fun asSerial(): String
+    abstract fun withCode(code: String): GameInterfaceName
 
     companion object {
-        private val BASIC_REGEX = "([^:]+\\s*):\\s*([^\\[]+)\\s*(?:\\[\\s*([^\\]]+)])?\\s*(:.*?)?\\s*".toRegex()
+        private val BASIC_REGEX = "([^:]+\\s*):\\s*([^\\[]+)\\s*(?:\\[\\s*([^\\]]+)]\\s*)?".toRegex()
         private const val TYPE_DELIMITER = "__;;;;;;;;;;__"
         private const val GAME_NAME_PATH_DELIMITER = "<__;;x;;;;;;x;;__>"
         internal const val ADDITIONAL_DATA_DELIMITER = "##__xx__##"
         internal const val NULL = ";;@@null@@;;"
 
+        internal val json by lazy {
+            Json {
+                ignoreUnknownKeys = true
+            }
+        }
+
+        @JvmStatic
+        fun id(code: String, gameName: String?, path: String?, nickname: String?): String {
+            return randomString(16) + code + gameName + path + nickname
+        }
+
         /**
          * Creates a Game interface from its previously serialized string
          */
         fun fromString(text: String): GameInterfaceName? {
+
+            if (text.trim().startsWith('{') && text.trim().endsWith('}')) {
+                return json.decodeFromString(serializer(), text.trim())
+            }
+
             if (!text.contains(TYPE_DELIMITER)) {
                 return fromStringOld(text)
             }
+
             val parts = text.split(TYPE_DELIMITER, limit = 2)
             val kind = parts[0]
             val serial = parts.getOrNull(1)
@@ -176,7 +200,7 @@ sealed class GameInterfaceName {
             val parts = BASIC_REGEX.matchEntire(data)
                 ?.groupValues
                 ?: return null.also {
-                    LOGGER.info("Failed to parse Injector interface string: <$data>")
+                    LOGGER.info("Failed to parse Injector interface string:\n\tData: <$data>;\n\tRegex: ${BASIC_REGEX.pattern}")
                 }
             val code = parts[1]
                 .trim()
@@ -188,21 +212,16 @@ sealed class GameInterfaceName {
             val nickname = parts.getOrNull(3)
                 ?.trim()
                 ?.nullIfEmpty()
-            val tail = parts.getOrNull(4)
-                ?.nullIfEmpty()
-                ?.substring(1)
-                ?.trim()
             val gameName = pathParts[0].trim().let { if (it == NULL) null else it }
             val path = pathParts.getOrNull(1)?.trim().let { if (it == NULL) null else it }
-            return DefaultComponents(code, gameName, path, nickname, tail)
+            return DefaultComponents(code, gameName, path, nickname)
         }
 
-        internal fun defaultSerial(
+        internal fun defaultPresentableText(
             code: String,
             gameName: String?,
             path: String?,
             nickname: String?,
-            tail: String? = null
         ): String {
             val combinedPath = (gameName ?: NULL) + (path?.let { GAME_NAME_PATH_DELIMITER + it } ?: "")
             val builder = StringBuilder()
@@ -211,22 +230,37 @@ sealed class GameInterfaceName {
             if (nickname != null) {
                 builder.append('[').append(nickname).append(']')
             }
-            if (tail != null) {
-                builder.append(':').append(tail)
-            }
             return builder.toString()
         }
+
     }
 
 }
 
-data class NativeInjectorInterface constructor(
+@Serializable
+data class NativeInjectorInterface(
     override val code: String,
     override val gameName: String?,
     override val path: String?,
     override val nickname: String?,
     val isDefault: Boolean,
+    override val id: String = id(code, gameName, path, nickname)
 ) : GameInterfaceName() {
+
+    constructor(
+        code: String,
+        gameName: String?,
+        path: String?,
+        nickname: String?,
+        isDefault: Boolean,
+    ) : this(
+        code,
+        gameName,
+        path,
+        nickname,
+        isDefault,
+        id = id(code, gameName, path, nickname)
+    )
 
     override val kind get() = KIND
 
@@ -234,12 +268,9 @@ data class NativeInjectorInterface constructor(
         return copy(code = code)
     }
 
-    override fun asSerial(): String {
-        return defaultSerial(code, gameName, path, nickname)
-    }
-
     companion object {
         internal const val KIND = "native"
+
         fun fromString(serial: String): NativeInjectorInterface? {
             val (code, gameName, path, nickname) = defaultComponents(serial)
                 ?: return null
@@ -268,23 +299,41 @@ data class NativeInjectorInterface constructor(
 }
 
 @Serializable
-data class WineInjectorInterface constructor(
+data class WineInjectorInterface(
     override val code: String,
     override val gameName: String?,
     val prefix: String,
     val creaturesDirectory: String?,
     override val nickname: String?,
-    val wineExecutable: String?
+    val wineExecutable: String?,
+    override val id: String = id(code, gameName, wineExecutable + prefix, nickname)
 ) : GameInterfaceName() {
 
-    override val kind get() = KIND
 
+    constructor(
+        code: String,
+        gameName: String?,
+        prefix: String,
+        creaturesDirectory: String?,
+        nickname: String?,
+        wineExecutable: String?,
+    ) : this(
+        code = code,
+        gameName = gameName,
+        prefix = prefix,
+        creaturesDirectory = creaturesDirectory,
+        nickname = nickname,
+        wineExecutable = wineExecutable,
+        id = id(code, gameName, wineExecutable + prefix, nickname)
+    )
+
+    override val kind get() = KIND
 
     override val path: String
         get() = prefix
 
-    override fun asSerial(): String {
-        return prefix + DELIMITER + defaultSerial(code, gameName, creaturesDirectory, nickname, wineExecutable)
+    override val presentableText by lazy {
+        prefix + "::" + defaultPresentableText(code, gameName, path, nickname)
     }
 
     override fun withCode(code: String): GameInterfaceName {
@@ -300,7 +349,7 @@ data class WineInjectorInterface constructor(
             val prefix = parts[0]
             val data = parts.getOrNull(1)
                 ?: return null
-            val (code, gameName, creaturesDirectory, nickname, tail) = defaultComponents(data)
+            val (code, gameName, creaturesDirectory, nickname) = defaultComponents(data)
                 ?: return null
             return WineInjectorInterface(
                 code = code,
@@ -308,7 +357,7 @@ data class WineInjectorInterface constructor(
                 prefix = prefix,
                 creaturesDirectory = creaturesDirectory,
                 nickname = nickname,
-                wineExecutable = tail
+                wineExecutable = null
             )
         }
 
@@ -324,8 +373,8 @@ interface IsNet {
     fun getURL(variant: CaosVariant?): URL?
 
     companion object {
-        val CODE_PLACEHOLDER = message("caos.injector.url.placeholders.code")
-        val GAME_NAME_PLACEHOLDER = message("caos.injector.url.placeholders.game-name")
+        private val CODE_PLACEHOLDER = message("caos.injector.url.placeholders.code")
+        private val GAME_NAME_PLACEHOLDER = message("caos.injector.url.placeholders.game-name")
 
         /**
          * Check url for basic validity
@@ -349,7 +398,8 @@ interface IsNet {
                 if (temp.protocol.nullIfEmpty() != null) {
                     return temp
                 }
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+            }
             return try {
                 URL("http://$url")
             } catch (_: Exception) {
@@ -392,22 +442,34 @@ interface IsNet {
 /**
  * Interface for internet POST based injectors that pass CAOS in the POST body
  */
-data class PostInjectorInterface constructor(
+@Serializable
+data class PostInjectorInterface(
     override val code: String,
     override val gameName: String?,
     override val path: String,
     val parameterName: String?,
     override val nickname: String?,
+    override val id: String = id(code, gameName, path + parameterName, nickname)
 ) : GameInterfaceName(), IsNet {
+
+    constructor(
+        code: String,
+        gameName: String?,
+        path: String,
+        parameterName: String?,
+        nickname: String?,
+    ) : this(
+        code = code,
+        gameName = gameName,
+        path = path,
+        parameterName = parameterName,
+        nickname = nickname,
+        id = id(code, gameName, path + parameterName, nickname)
+    )
 
     override val kind get() = KIND
 
     override fun getURL(variant: CaosVariant?): URL? = IsNet.getUrl(variant ?: this.variant, path, gameName)
-
-    override fun asSerial(): String {
-        val dataPath = path + (parameterName?.let { ADDITIONAL_DATA_DELIMITER + it } ?: "")
-        return defaultSerial(code, gameName, dataPath, nickname)
-    }
 
     override fun withCode(code: String): GameInterfaceName {
         return copy(code = code)
@@ -447,20 +509,31 @@ data class PostInjectorInterface constructor(
 /**
  * Gets an interface for 20kdc's TCP based injector
  */
-data class TCPInjectorInterface constructor(
+@Serializable
+data class TCPInjectorInterface(
     override val code: String,
     override val gameName: String?,
     override val path: String,
     override val nickname: String?,
+    override val id: String = id(code, gameName, path, nickname)
 ) : GameInterfaceName(), IsNet {
+
+    constructor(
+        code: String,
+        gameName: String?,
+        path: String,
+        nickname: String?
+    ) : this(
+        code = code,
+        gameName = gameName,
+        path = path,
+        nickname = nickname,
+        id = id(code, gameName, path, nickname)
+    )
 
     override val kind get() = KIND
 
     override fun getURL(variant: CaosVariant?): URL? = IsNet.getUrl(variant ?: this.variant, path, gameName)
-
-    override fun asSerial(): String {
-        return defaultSerial(code, gameName, path, nickname)
-    }
 
     override fun withCode(code: String): GameInterfaceName {
         return copy(code = code)
@@ -494,13 +567,22 @@ data class TCPInjectorInterface constructor(
  * Gets the closest Game injector by its key
  */
 internal fun List<GameInterfaceName>.forKey(variant: CaosVariant?, serial: String): GameInterfaceName? {
+
     // First simply try to deserialize the string
     GameInterfaceName.fromString(serial)?.let {
         return it
     }
+
+    LOGGER.info("Getting for key $serial with list of ${size} interfaces\n\t${joinToString("\n\t"){it.toJSON()}}")
+
+    // Get by new ID entries
+    firstOrNull { it.id == serial }?.let {
+        return it
+    }
+
     // Take the serial and return its base components broken up
     val (code, gameName, name, url) = GameInterfaceName.decompose(serial)
-        // If decompose fails, try to decompose as if this is only the data portion of serial
+    // If decompose fails, try to decompose as if this is only the data portion of serial
         ?: GameInterfaceName.defaultComponents(serial)
         ?: return null
 
@@ -525,14 +607,25 @@ internal fun List<GameInterfaceName>.forKey(variant: CaosVariant?, serial: Strin
     // Get the closest match by variant
     return interfaces
         .firstOrNull { it.isVariant(variant) }
-        // Nothing matches variant, so return "closest" match
+    // Nothing matches variant, so return "closest" match
         ?: interfaces.firstOrNull()
 }
 
 /**
  * Interface for internet POST based injectors that pass CAOS in the POST body
  */
-class CorruptInjectorInterface(private val serial: String): GameInterfaceName() {
+@Serializable
+class CorruptInjectorInterface(
+    private val serial: String,
+    override val id: String = randomString(16) + serial,
+) : GameInterfaceName() {
+
+    constructor(
+        serial: String
+    ) : this(
+        serial,
+        id = randomString(16) + serial
+    )
 
     // Static values for this interface
     override val code: String get() = "!"
@@ -544,10 +637,6 @@ class CorruptInjectorInterface(private val serial: String): GameInterfaceName() 
 
     override fun withCode(code: String): GameInterfaceName {
         return CorruptInjectorInterface(serial)
-    }
-
-    override fun asSerial(): String {
-        return serial
     }
 
     override fun equals(other: Any?): Boolean {
@@ -574,6 +663,5 @@ internal data class DefaultComponents(
     val code: String,
     val gameName: String?,
     val path: String?,
-    val nickName: String?,
-    val tail: String? = null
+    val nickName: String?
 )

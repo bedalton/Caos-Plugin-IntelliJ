@@ -68,7 +68,7 @@ class InjectorActionGroup(file: CaosScriptFile) : ActionGroup(
             val projectGameInterfaces = CaosApplicationSettingsService.getInstance().gameInterfaceNames(variant)
             val variantInterfaces = getDefaultInjectors(variant)
             return (projectGameInterfaces + variantInterfaces)
-                .distinctBy { it.serialize().replace("\\[.+]$".toRegex(), "") }
+                .distinctBy { it.id }
         }
 
         private fun getDefaultInjectors(variant: CaosVariant?): List<GameInterfaceName> {
@@ -206,8 +206,9 @@ internal class AddGameInterfaceAction(private val project: Project, private val 
             .withGroupId("caos.ADD_GAME_INTERFACE")
             .withUndoConfirmationPolicy(UndoConfirmationPolicy.REQUEST_CONFIRMATION)
             .run<Exception> write@{
-                if (project.isDisposed)
+                if (project.isDisposed) {
                     return@write
+                }
                 UndoManager.getInstance(project).undoableActionPerformed(undoableAction)
             }
 
@@ -218,74 +219,6 @@ internal class AddGameInterfaceAction(private val project: Project, private val 
     companion object {
         @Suppress("MemberVisibilityCanBePrivate")
         private fun getGameInterface(project: Project, variant: CaosVariant?): GameInterfaceName? {
-//            val codes = arrayOf(
-//                "C1",
-//                "C2",
-//                "CV",
-//                "C3",
-//                "DS",
-//                "SM",
-//                "*"
-//            )
-//            val comboBox = JComboBox(codes)
-//            comboBox.selectedItem = variant?.code ?: "*"
-//            val dialog = DialogBuilder()
-//            comboBox.updateUI()
-//            comboBox.toolTipText = "Select CAOS variant or '*' if any variant"
-//
-//            // Add game interface name
-//            val gameInterface = JTextField()
-//            val gameInterfacePrompt = JLabel("Game interface name. (from machine.cfg)")
-//            gameInterface.add(gameInterfacePrompt)
-//            gameInterface.toolTipText = "Enter CAOS interface name as set in Machine.cfg for C3/DS"
-//            gameInterface.addChangeListener {
-//                val isEmpty = gameInterface.text.isEmpty()
-//                gameInterfacePrompt.isVisible = isEmpty
-//                dialog.okActionEnabled(!isEmpty)
-//            }
-//
-//            // Nickname
-//            val nickname = JTextField()
-//            val nicknamePrompt = JLabel("Display name")
-//            nickname.add(nicknamePrompt)
-//
-//            nickname.addChangeListener {
-//                val isEmpty = nickname.text.isEmpty()
-//                nicknamePrompt.isVisible = isEmpty
-//            }
-//            nickname.toolTipText = "Display name"
-//            nickname.minimumSize = Dimension(0, 200)
-//
-//            val layout = FormLayout(
-//                "right:pref, 3dlu, pref, pref, pref",
-//                "p,3dlu,p,3dlu,p"
-//            )
-//            layout.columnGroups = arrayOf(intArrayOf(1, 3, 4, 5))
-//            val builder = PanelBuilder(layout)
-//            builder.setDefaultDialogBorder()
-//            val cc = CellConstraints()
-//            builder.addLabel("Variant", cc.xy(1, 1))
-//            builder.add(comboBox, cc.xyw(2, 1, 3))
-//            builder.addLabel("Game Interface Name", cc.xy(1, 3))
-//            builder.add(gameInterface, cc.xyw(2, 3, 3))
-//            builder.addLabel("Display Name", cc.xy(1, 5))
-//            builder.add(nickname, cc.xyw(2, 5, 3))
-//            dialog.setNorthPanel(builder.panel)
-//
-//            val okay = dialog.addOkAction()
-//            okay.setText("Add Interface")
-//            if (dialog.showAndGet()) {
-//                val code = (comboBox.selectedItem as String).nullIfEmpty()
-//                val gameInterfaceName = gameInterface.text.trim().nullIfEmpty()
-//                    ?: return null
-//                val displayName = nickname.text.trim().nullIfEmpty()
-//                return GameInterfaceName(
-//                    code,
-//                    gameInterfaceName,
-//                    displayName
-//                )
-//            }
-//            return null
             return CreateInjectorDialog(project, variant)
                 .showAndGetInterface()
         }

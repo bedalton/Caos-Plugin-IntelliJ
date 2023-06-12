@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compile
 import bedalton.creatures.agents.pray.compiler.PrayCompileOptions
 import bedalton.creatures.agents.pray.compiler.PrayCompilerTask
 import bedalton.creatures.agents.pray.compiler.compilePrayAndWrite
+import bedalton.creatures.agents.pray.compiler.compilePrayFileToBytes
 import bedalton.creatures.agents.pray.compiler.pray.PrayParseValidationFailException
 import com.bedalton.log.logProgress
 import com.bedalton.common.util.className
@@ -16,6 +17,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifica
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.closeWithOkExitCode
+import com.bedalton.common.util.PathUtil
 import com.bedalton.vfs.LocalFileSystem
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -23,9 +25,9 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
-import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiDocumentManager
 import icons.CaosScriptIcons
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -120,6 +122,7 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("C
                 }
                 return null
             }
+
             val fileOpts = PrayCompilerTask(
                 inputFile = ioFile.path,
                 outputDirectory = ioFile.parent,
@@ -155,10 +158,9 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("C
                     }
                 }
                 e.printStackTrace()
+                return null
             }
-            return null
         }
-
 
         private fun compile(
             project: Project,

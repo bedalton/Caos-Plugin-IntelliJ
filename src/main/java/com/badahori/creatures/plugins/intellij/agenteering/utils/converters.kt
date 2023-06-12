@@ -3,7 +3,14 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
+import com.bedalton.common.util.className
+import com.bedalton.io.bytes.decodeBase64
+import com.bedalton.io.bytes.toBase64
 import com.intellij.util.xmlb.Converter
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.nio.charset.Charset
 
 
 internal class CaosVariantConverter : Converter<CaosVariant?>() {
@@ -72,27 +79,51 @@ internal class StringListConverter : Converter<List<String>>() {
 
 internal class GameInterfaceConverter : Converter<GameInterfaceName?>() {
     override fun toString(values: GameInterfaceName): String {
-        return values.serialize()
+        return values.toJSON().toByteArray(Charsets.UTF_8).toBase64()
     }
 
     override fun fromString(value: String): GameInterfaceName? {
-        return GameInterfaceName.fromString(value)
+        val decoded = try {
+            decodeBase64(value).decodeToString()
+        } catch (_: Exception) {
+            value
+        }
+        return GameInterfaceName.fromString(decoded)
+            ?: GameInterfaceName.fromString(value)
     }
 }
 
-internal class GameInterfaceListConverter : Converter<List<GameInterfaceName>>() {
+internal object GameInterfaceListConverter : Converter<List<GameInterfaceName>>() {
+
+
+    private const val DELIMITER_VALUES_DELIMITER = "|||"
+    private const val DELIMITER = ":++__;;:!!:;;__++:"
+
     override fun toString(values: List<GameInterfaceName>): String {
-        var delimiter = DELIMITER
-        val serialized = values.mapNotNull { it?.serialize() }
-        while (serialized.any { it.contains(delimiter) }) {
-            delimiter = "#_" + delimiter + "_#"
-        }
-        return delimiter + DELIMITER_VALUES_DELIMITER + serialized.joinToString(delimiter)
+        val rawJSON = GameInterfaceName.json.encodeToString<Array<GameInterfaceName>>(values.toTypedArray())
+        return rawJSON.encodeToByteArray().toBase64()
     }
 
     override fun fromString(rawSerialized: String): List<GameInterfaceName> {
-        val delimiterValuesSplit = rawSerialized.split(DELIMITER_VALUES_DELIMITER, limit = 2)
+        LOGGER.info("Deserialize game interfaces with data string:\n$rawSerialized")
+        val decoded = try {
+            decodeBase64(rawSerialized).decodeToString()
+        } catch (_: Exception) {
+            rawSerialized
+        }
+        if (decoded.startsWith('[') && decoded.contains('{') && decoded.endsWith(']')) {
+            try {
+                return GameInterfaceName.json.decodeFromString<Array<GameInterfaceName>>(decoded).toList()
+                    .also{
+                        LOGGER.info("Interfaces: $it")
+                    }
+            } catch (e: Exception) {
+                LOGGER.info("Failed to deserialize array of game interfaces: ${e.className}: ${e.message}")
+            }
+        }
+        val delimiterValuesSplit = decoded.split(DELIMITER_VALUES_DELIMITER, limit = 2)
         if (delimiterValuesSplit.size < 2) {
+            LOGGER.info("Bad Raw Serialized CAOS INJECTOR game name Data: <$decoded>")
             return emptyList()
         }
         if (delimiterValuesSplit[0].isBlank()) {
@@ -103,10 +134,5 @@ internal class GameInterfaceListConverter : Converter<List<GameInterfaceName>>()
             .mapNotNull {
                 GameInterfaceName.fromString(it)
             }
-    }
-
-    companion object {
-        private const val DELIMITER_VALUES_DELIMITER = "|||"
-        private const val DELIMITER = ":++__;;:!!:;;__++:"
     }
 }
