@@ -3,13 +3,15 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector
 import com.bedalton.common.util.className
 import com.bedalton.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.JectScriptType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.action.ScriptBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptsQuickCollapseToLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle.message
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.getScripts
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.collectElementsOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.navigation.NavigationItem
@@ -22,12 +24,17 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
+import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.security.PrivilegedActionException
 
 internal object FileInjectorUtil {
+
+    private var collapse: Boolean? = null
 
     internal fun inject(
         project: Project,
@@ -41,123 +48,91 @@ internal object FileInjectorUtil {
             return connection.injectWithJect(project, caosFile, flags)
         }
 
+        val variant = caosFile.variant
+
+        // Get scripts as structs to combine read actions
         val fileScripts = runReadAction {
-            caosFile.getScripts()
+            ScriptBundle(variant, caosFile.getScripts())
         }
 
-        val canInjectSingleScript = runReadAction {
-            caosFile.collectElementsOfType(CaosScriptCaos2Command::class.java)
-                .none { it.commandName.equalsIgnoreCase("Link") }
-        }
-
-
-
-        val scriptBlocks = mutableMapOf<JectScriptType, List<CaosScriptScriptElement>>()
+        val scriptBlocks = mutableMapOf<JectScriptType, List<CaosScriptStruct>>()
         if (flags hasFlag Injector.REMOVAL_SCRIPT_FLAG) {
-            val scripts = fileScripts.filterIsInstance<CaosScriptRemovalScript>()
-            if (canInjectSingleScript && flags == Injector.REMOVAL_SCRIPT_FLAG && scripts.size == 1) {
-                return injectSingle(project, connection, caosFile.name, scripts[0])
-            }
-            scriptBlocks[JectScriptType.REMOVAL] = scripts
+            scriptBlocks[JectScriptType.REMOVAL] = fileScripts.removalScripts
         }
         if (flags hasFlag Injector.EVENT_SCRIPT_FLAG) {
-            val scripts = fileScripts.filterIsInstance<CaosScriptEventScript>()
-            if (canInjectSingleScript && flags == Injector.EVENT_SCRIPT_FLAG && scripts.size == 1) {
-                return injectSingleEventScript(project, connection, caosFile.name, scripts.first())
-
-            }
-            scriptBlocks[JectScriptType.EVENT] = scripts
+            scriptBlocks[JectScriptType.EVENT] = fileScripts.eventScripts
         }
 
         if (flags hasFlag Injector.INSTALL_SCRIPT_FLAG) {
-            val scripts = fileScripts.filterIsInstance<CaosScriptMacroLike>()
-            if (canInjectSingleScript && flags == Injector.INSTALL_SCRIPT_FLAG && scripts.size == 1) {
-                return injectSingle(project, connection, caosFile.name, scripts[0])
-            }
-            scriptBlocks[JectScriptType.INSTALL] = scripts
+            scriptBlocks[JectScriptType.INSTALL] = fileScripts.installScripts
         }
 
-        return injectScriptBlocks(project, connection, caosFile.name, totalFiles, scriptBlocks)
+        return injectScripts(project, variant, connection, caosFile.name, totalFiles, scriptBlocks)
     }
 
-    private fun injectSingle(
+    fun injectScripts(
         project: Project,
-        connection: CaosConnection,
-        fileName: String,
-        script: CaosScriptScriptElement,
-    ): InjectionStatus {
-        val pointer = runReadAction {
-            SmartPointerManager.createPointer(script)
-        }
-        val response = connection.inject(project, fileName, script.getDescriptor(), formatCaos(script.codeBlock) ?: "")
-        return if (response is InjectionStatus.Bad && response.error.contains("{@}")) {
-            val positions = runReadAction {
-                findPossiblePsiElementOffsets(pointer, response.error)
-            }
-            response.copy(positions = positions)
-        } else {
-            response
-        }
-    }
-
-    private fun injectSingleEventScript(
-        project: Project,
-        connection: CaosConnection,
-        fileName: String,
-        eventScript: CaosScriptEventScript,
-    ): InjectionStatus {
-        val pointer = SmartPointerManager.createPointer(eventScript as PsiElement)
-
-        val response = connection.injectEventScript(
-            project,
-            fileName,
-            eventScript.family,
-            eventScript.genus,
-            eventScript.species,
-            eventScript.eventNumber,
-            formatCaos(eventScript.codeBlock) ?: ""
-        )
-        return if (response is InjectionStatus.Bad && response.error.contains("{@}")) {
-            response.copy(positions = findPossiblePsiElementOffsets(pointer, response.error))
-        } else {
-            response
-        }
-    }
-
-    internal fun inject(
-        project: Project,
-        connection: CaosConnection,
-        fileName: String,
-        totalFiles: Int,
-        scripts: Map<JectScriptType, List<CaosScriptScriptElement>>,
-    ): InjectionStatus {
-        val scriptBlocks = mutableMapOf<JectScriptType, List<CaosScriptScriptElement>>()
-        scripts[JectScriptType.REMOVAL]?.apply {
-            scriptBlocks[JectScriptType.REMOVAL] = this
-        }
-        scripts[JectScriptType.EVENT]?.apply {
-            scriptBlocks[JectScriptType.EVENT] = this
-        }
-        scripts[JectScriptType.INSTALL]?.apply {
-            scriptBlocks[JectScriptType.INSTALL] = this
-        }
-        return injectScriptBlocks(project, connection, fileName, totalFiles, scriptBlocks)
-    }
-
-    private fun injectScriptBlocks(
-        project: Project,
+        variant: CaosVariant?,
         connection: CaosConnection,
         fileName: String?,
         totalFiles: Int,
-        scriptBlocks: Map<JectScriptType, List<CaosScriptScriptElement>>,
+        scriptBlocks: Map<JectScriptType, List<CaosScriptStruct>>,
+        collapse: Boolean = this.collapse == true
     ): InjectionStatus {
         val title = if (fileName != null) {
             "Injecting $fileName scripts"
         } else {
             "Injecting scripts"
         }
+        val allScripts = scriptBlocks.values.flatten()
+        if (allScripts.any { !it.collapsedLengthIsValid }) {
+            val tooLong = allScripts.filter { !it.collapsedLengthIsValid }
+            CaosInjectorNotifications.showError(
+                project,
+                "Injection Error",
+                "Some CAOS scripts are too long to be injected through injector"
+            )
+            return InjectionStatus.MultiResponse(
+                tooLong.map {
+                    LOGGER.info("Script is too long: ${it.fileName}")
+                    InjectionStatus.BadConnection(
+                        it.fileName ?: "",
+                        it.descriptor,
+                        "CAOS script is too long to be injected through injector",
+                        variant ?: CaosVariant.UNKNOWN
+                    )
+                }
+            )
+        }
+
         val serial = randomString(16)
         val pending = InjectionStatus.Pending(fileName, null, serial)
+        if (!collapse && allScripts.any { it.collapsed }) {
+            CaosInjectorNotifications
+                .createErrorNotification(
+                    project,
+                    "Script Too Long",
+                    "Some scripts are too long for regular injection",
+                ).addAction(object : AnAction(
+                    "Collapse Whitespaces and Inject"
+                ) {
+                    override fun actionPerformed(e: AnActionEvent) {
+                        this@FileInjectorUtil.collapse = true
+                        val result = injectScripts(
+                            project = project,
+                            variant = variant,
+                            connection = connection,
+                            fileName = fileName,
+                            scriptBlocks = scriptBlocks,
+                            totalFiles = totalFiles,
+                            collapse = true
+                        )
+                        pending.setResult(result)
+                    }
+                })
+                .show()
+            return pending
+        }
         ProgressManager.getInstance().run(object : Task.Backgroundable(
             project,
             title,
@@ -166,14 +141,18 @@ internal object FileInjectorUtil {
 
             override fun run(indicator: ProgressIndicator) {
                 val result = try {
-                    injectScriptBlocks(
-                        project = project,
-                        connection = connection,
-                        fileName = fileName ?: "Editor",
-                        scriptBlocks = scriptBlocks,
-                        totalFiles = totalFiles,
-                        progressIndicator = indicator
-                    )
+                    runBlocking {
+                        injectScriptBlocks(
+                            project = project,
+                            variant = variant,
+                            connection = connection,
+                            fileName = fileName ?: "Editor",
+                            scriptBlocks = scriptBlocks,
+                            totalFiles = totalFiles,
+                            collapse = collapse,
+                            progressIndicator = indicator
+                        )
+                    }
                 } catch (e: ProcessCanceledException) {
                     InjectionStatus.BadConnection(
                         fileName ?: "Editor",
@@ -181,14 +160,23 @@ internal object FileInjectorUtil {
                         message("caos.injector.errors.injection-cancelled"),
                         connection.variant,
                     )
-                } catch (e: CaosInjectorExceptionWithStatus) {
-                    LOGGER.severe("Background inject failed with ${e.className}): ${e.message}")
-                    e.printStackTrace()
-                    e.injectionStatus ?: InjectionStatus.Bad(
-                        fileName ?: "<file>",
-                        null,
-                        e.message ?: message("caos.injector.errors.unhandled-exception")
-                    )
+                } catch (wrapped: Exception) {
+                    val e = if (wrapped is PrivilegedActionException) {
+                        wrapped.cause
+                    } else {
+                        wrapped
+                    }
+                    if (e is CaosInjectorExceptionWithStatus) {
+                        LOGGER.severe("Background inject failed with ${e.className}): ${e.message}")
+                        e.printStackTrace()
+                        e.injectionStatus ?: InjectionStatus.Bad(
+                            fileName ?: "<file>",
+                            null,
+                            e.message ?: message("caos.injector.errors.unhandled-exception")
+                        )
+                    } else {
+                        throw wrapped
+                    }
                 }
                 pending.setResult(result)
             }
@@ -198,10 +186,12 @@ internal object FileInjectorUtil {
 
     private fun injectScriptBlocks(
         project: Project,
+        variant: CaosVariant?,
         connection: CaosConnection,
         fileName: String,
-        scriptBlocks: Map<JectScriptType, List<CaosScriptScriptElement>>,
+        scriptBlocks: Map<JectScriptType, List<CaosScriptStruct>>,
         totalFiles: Int,
+        collapse: Boolean,
         progressIndicator: ProgressIndicator,
     ): InjectionStatus {
         val responses = mutableListOf<InjectionStatus>()
@@ -218,28 +208,16 @@ internal object FileInjectorUtil {
         val totalScriptsInjecting = scriptBlocks.values.sumOf { it.size }
         scriptTypesInOrder.map async@{ scriptType ->
             progressIndicator.checkCanceled()
-            val scripts = runReadAction read@{
-                scriptBlocks[scriptType]
-                    ?.nullIfEmpty()
-                    ?.mapNotNull {
-                        if (it.isValid) {
-                            SmartPointerManager.createPointer(it)
-                        } else {
-                            null
-                        }
-                    }
-                    ?: return@read null
-            } ?: return@async
+            val scripts = scriptBlocks[scriptType]
+                ?.nullIfEmpty()
+                ?: return@async
 
-            if (scripts.isEmpty()) {
-                return@async
-            }
             val totalScriptsInList = scripts.size
-            injectScriptList(project, connection, scripts) { _, injectionStatus, scriptPointer, indexInList ->
+            injectScriptList(project, connection, scripts) run@{ _, injectionStatus, scriptPointer, indexInList ->
                 progressIndicator.checkCanceled()
-                val descriptor = scriptPointer.element?.getDescriptor()
+                val descriptor = scriptPointer.descriptor
                     ?: scriptType.singular
-                val description = "${scriptType.singular} $indexInList/$totalScriptsInList from $fileName"
+                val description = "$descriptor $indexInList/$totalScriptsInList from $fileName"
                 progressIndicator.text = "Injecting $description"
                 val text2Tail = if (totalFiles > 1) {
                     " across $totalFiles files"
@@ -267,7 +245,7 @@ internal object FileInjectorUtil {
                     is InjectionStatus.Bad -> {
                         val message = injectionStatus.error
                         if (message.contains("{@}")) {
-                            psiErrorElementOffsets = findPossiblePsiElementOffsets(scriptPointer, message)
+                            psiErrorElementOffsets = findPossiblePsiElementOffsets(project, scriptPointer, message)
                         }
                         error = injectionStatus.copy(
                             positions = psiErrorElementOffsets.nullIfEmpty()
@@ -296,40 +274,34 @@ internal object FileInjectorUtil {
     private inline fun injectScriptList(
         project: Project,
         connection: CaosConnection,
-        scripts: Collection<SmartPsiElementPointer<CaosScriptScriptElement>>,
-        crossinline callback: (Project, InjectionStatus?, script: SmartPsiElementPointer<CaosScriptScriptElement>, index: Int) -> Unit,
+        scripts: Collection<CaosScriptStruct>,
+        crossinline callback: (Project, InjectionStatus?, script: CaosScriptStruct, index: Int) -> Unit,
     ): Boolean {
-        return runReadAction run@{
-            for ((index, script) in scripts.withIndex()) {
-                val ok = injectScript(
-                    project, connection, script, index, callback
-                )
-                if (!ok) {
-                    return@run false
-                }
+        for ((index, script) in scripts.withIndex()) {
+            val ok = injectScript(
+                project, connection, script, index, callback
+            )
+            if (!ok) {
+                return false
             }
-            return@run true
         }
+        return true
     }
 
     private inline fun injectScript(
         project: Project,
         connection: CaosConnection,
-        scriptPointer: SmartPsiElementPointer<CaosScriptScriptElement>,
+        script: CaosScriptStruct,
         index: Int,
-        crossinline callback: (Project, InjectionStatus?, script: SmartPsiElementPointer<CaosScriptScriptElement>, index: Int) -> Unit,
+        crossinline callback: (Project, InjectionStatus?, script: CaosScriptStruct, index: Int) -> Unit,
     ): Boolean {
-        val script = scriptPointer.element
-            ?: return false
-        val fileName = script.containingFile?.name ?: script.originalElement?.containingFile?.name ?: ""
-        val descriptor = script.getDescriptor()
-        val content = formatCaos(script.codeBlock)
-            .nullIfEmpty()
-            ?: return true
-        val result = if (script is CaosScriptEventScript) {
+        val fileName = script.fileName
+        val descriptor = script.descriptor
+        val content = script.text
+        val result = if (script is CaosScriptStruct.EventScript) {
             connection.injectEventScript(
                 project,
-                fileName,
+                fileName ?: descriptor ?: "Event Script",
                 family = script.family,
                 genus = script.genus,
                 species = script.species,
@@ -337,9 +309,9 @@ internal object FileInjectorUtil {
                 caos = content
             )
         } else {
-            connection.inject(project, fileName, descriptor, content)
+            connection.inject(project, fileName ?: descriptor ?: "Script", descriptor, content)
         }
-        callback(project, result, scriptPointer, index)
+        callback(project, result, script, index)
         return result is InjectionStatus.Ok
     }
 
@@ -363,6 +335,7 @@ internal fun onCaosResponse(
         is InjectionStatus.Ok -> {
             postOk(project, combine(response.toListOf()))
         }
+
         is InjectionStatus.BadConnection -> {
             postError(
                 project,
@@ -410,7 +383,7 @@ internal fun onCaosResponse(
 
 private fun combine(resultsIn: List<InjectionStatus>): String {
     val builder: StringBuilder = StringBuilder()
-    val results = resultsIn.flatMap { rawResult ->
+    val results: List<InjectionStatus> = resultsIn.flatMap { rawResult ->
         when (rawResult) {
             is InjectionStatus.MultiResponse -> rawResult.all
             is InjectionStatus.Pending -> rawResult.resultOrNull()?.let { result ->
@@ -469,7 +442,12 @@ internal fun postOk(project: Project, responseString: String) {
         "<pre>${responseString.escapeHTML()}</pre>"
     }
     invokeLater {
-        CaosInjectorNotifications.show(project, message("caos.injector.notification.title.success"), "\n" + message, NotificationType.INFORMATION)
+        CaosInjectorNotifications.show(
+            project,
+            message("caos.injector.notification.title.success"),
+            "\n" + message,
+            NotificationType.INFORMATION
+        )
     }
 }
 
@@ -499,7 +477,8 @@ internal fun postError(
             ""
         }
 
-        var notification = CaosInjectorNotifications.createErrorNotification(project, title, message.escapeHTML() + tail)
+        var notification =
+            CaosInjectorNotifications.createErrorNotification(project, title, message.escapeHTML() + tail)
 
         if (positions.isNotNullOrEmpty()) {
             for (position in positions) {
@@ -565,17 +544,6 @@ internal fun postWarning(project: Project, title: String, message: String) {
 }
 
 
-private fun CaosScriptScriptElement.getDescriptor(): String {
-    return when (this) {
-        is CaosScriptRemovalScript -> "Removal script"
-        is CaosScriptEventScript -> "SCRP $family $genus $species $eventNumber"
-        is CaosScriptInstallScript -> "Install script"
-        is CaosScriptMacro -> "Body script"
-        else -> "Code block"
-    }
-}
-
-
 internal val c1eElementsRegex =
     "tele|vrsn|xvec|yvec|say#|say\$|aim:|setv\\s+(?:clas|cls2|actv|attr|norn)|\\[[a-zA-Z0-9]*[a-zA-Z_\$\\-+#@!][^]]*]|var[0-9]|obv[0-9]|objp|doif\\s+(targ|norn|objp)\\s+(eq|ne)\\s+0|\\s+(?:bt|bf)|bbd:|dde:".toRegex(
         setOf(RegexOption.MULTILINE, RegexOption.IGNORE_CASE)
@@ -586,40 +554,19 @@ internal val c2eElementsRegex =
     )
 
 /**
- * Format the contents of a code block element
- */
-private fun formatCaos(codeBlock: CaosScriptCodeBlock?): String? {
-    if (codeBlock == null) {
-        return null
-    }
-    return runReadAction {
-        val blockText = codeBlock.text
-        if (blockText != null) {
-            formatCaos(codeBlock.variant, blockText)
-        } else {
-            null
-        }
-    }
-}
-
-/**
  * Format CAOS for injection
  */
-private fun formatCaos(variant: CaosVariant?, codeBlock: String?): String? {
+internal fun formatCaos(variant: CaosVariant?, codeBlock: String?, collapse: Boolean): String {
     if (codeBlock.isNullOrBlank()) {
-        return if (variant?.isNotOld != true)
-            codeBlock?.trim()
-        else
-            codeBlock
+        return ""
     }
-    // Check if C1e
-    val isC1e = isC1e(variant, codeBlock).orTrue()
-    return if (isC1e) {
+    // Collapse if needed
+    return if (collapse) {
         // if C1e, flatten and remove comments
-        CaosScriptsQuickCollapseToLine.collapse(true, codeBlock)
+        CaosScriptsQuickCollapseToLine.collapse(variant?.isOld == true, codeBlock.trim())
     } else {
         // C2e, return just how it is
-        codeBlock
+        codeBlock.trim()
     }
 }
 
@@ -755,16 +702,46 @@ private fun getWineFallbackPath(root: File, gameInterfaceName: WineInjectorInter
 }
 
 private fun findPossiblePsiElementOffsets(
-    scriptPointer: SmartPsiElementPointer<out PsiElement>,
+    project: Project,
+    scriptPointer: CaosScriptStruct,
     error: String,
-): List<SmartPsiElementPointer<out PsiElement>> {
+): List<SmartPsiElementPointer<out PsiElement>> = runReadAction run@{
 
-    val script = scriptPointer.element as? CaosScriptScriptElement
-        ?: return emptyList()
 
-    val text = script.text
-        .nullIfEmpty()
-        ?: return listOf(scriptPointer)
+    // Get VirtualFile for script stub
+    val file = scriptPointer.path?.let { path ->
+        val file = File(path)
+        VfsUtil.findFileByIoFile(file, true)
+    } ?: return@run emptyList()
+
+    val psiFile = file.getPsiFile(project)
+        ?: return@run emptyList()
+
+    val withoutSpaces = scriptPointer.originalText.replace(" ", "")
+    val allScripts = (if (scriptPointer is CaosScriptStruct.EventScript) {
+        val eventScripts = psiFile.collectElementsOfType(CaosScriptEventScript::class.java)
+            .filter {
+                it.family == scriptPointer.family &&
+                        it.genus == scriptPointer.genus &&
+                        it.species == scriptPointer.species
+            }
+        if (eventScripts.size > 1) {
+            eventScripts.filter { it.text.replace(" ", "") == withoutSpaces }
+        } else {
+            eventScripts
+        }
+    } else {
+        psiFile.collectElementsOfType(CaosScriptScriptElement::class.java)
+            .filter { it !is CaosScriptEventScript }
+            .filter { it.text.replace(" ", "") == withoutSpaces }
+    }).filter {
+        val range = it.textRange
+        range == scriptPointer.range ||
+                range.contains(scriptPointer.range.startOffset) ||
+                range.contains(scriptPointer.range.endOffset) ||
+                scriptPointer.range.contains(range.startOffset) ||
+                scriptPointer.range.contains(range.endOffset)
+    }
 
     val pattern = ".*(\\.\\.\\.|\\[)(.*)\\{@\\}(.*)(\\.\\.\\.|\\]).*"
         .toRegex(RegexOption.MULTILINE)
@@ -774,19 +751,24 @@ private fun findPossiblePsiElementOffsets(
         ?.groupValues
         ?.drop(1)
         ?.map { it.trim().replace(WHITESPACE, "\\\\s+") }
-        ?: return listOf(scriptPointer)
+        ?: return@run allScripts.map { SmartPointerManager.createPointer(it) }
+
     val prefix = if (matchParts[0].first() == '[') "^" else ".*?"
     val suffix = if (matchParts[3].last() == ']') "$" else ".*?"
     var regex = ("$prefix(${Regex.escape(matchParts[1])})\\s+(${Regex.escape(matchParts[2])})$suffix")
         .toRegex()
-    var out = findPossiblePsiElementOffsets(script, text, regex)
+    var out = allScripts.flatMap { script ->
+        findPossiblePsiElementOffsets(script, script.text, regex)
+    }
 
     if (out.isEmpty()) {
         regex = ("$prefix(${Regex.escape(matchParts[1])})\\s*(${Regex.escape(matchParts[2])})$suffix")
             .toRegex()
-        out = findPossiblePsiElementOffsets(script, text, regex)
+        out = allScripts.flatMap { script ->
+            findPossiblePsiElementOffsets(script, script.text, regex)
+        }
     }
-    return out
+    return@run out
 }
 
 private fun findPossiblePsiElementOffsets(

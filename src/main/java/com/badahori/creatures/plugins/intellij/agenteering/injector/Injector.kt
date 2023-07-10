@@ -9,8 +9,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.messa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle.message
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
@@ -122,7 +120,7 @@ object Injector {
         variant: CaosVariant,
         gameInterfaceName: GameInterfaceName,
         fileName: String,
-        scripts: Map<JectScriptType, List<CaosScriptScriptElement>>,
+        scripts: Map<JectScriptType, List<CaosScriptStruct>>,
     ) {
         if (!isValidVariant(project, variant, gameInterfaceName))
             return
@@ -133,8 +131,9 @@ object Injector {
         }
         val response = injectPrivate(project, variant, gameInterfaceName, fileName) { connection ->
             try {
-                FileInjectorUtil.inject(
+                FileInjectorUtil.injectScripts(
                     project,
+                    variant,
                     connection,
                     "editor",
                     1,
