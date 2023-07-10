@@ -15,9 +15,6 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManagerListener
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressIndicatorProvider
-import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
@@ -86,21 +83,7 @@ class CaosProjectStartupActivity : StartupActivity {
                         if (!file.isValid || file.extension?.lowercase() !in validExtensions)
                             return@map null
                         BreedPartKey.fromFileName(file.name)
-
                     }
-                try {
-//                    for (key in keys) {
-//                        val sprites =
-//                            BreedSpriteIndex.findMatching(project, key, GlobalSearchScope.projectScope(project))
-//                        for (sprite in sprites) {
-//                            if (sprite.isValid) {
-//                                SpriteAttPathPropertyPusher.writeToStorage(sprite, null)
-//                            }
-//                        }
-//                    }
-                } catch (e: Exception) {
-                    return@invokeLater
-                }
             }
         }
     }
@@ -225,8 +208,6 @@ class CaosProjectStartupActivity : StartupActivity {
     }
 
     companion object {
-        //private val LOGGER = Logger.getLogger("#" + CaosProjectStartupActivity::class.java)
-
         private val ATTACH_SOURCES_IF_FILE_TYPE_LIST = listOf("cos", "cob", "agent", "agents")
     }
 }
