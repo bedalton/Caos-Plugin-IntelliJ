@@ -107,3 +107,4 @@ Guides/images/raw
 /Guides/.idea
 /Guides/**/*.afdesign
 jflex-*.jar
+.idea/codeStyles/Project.xml
