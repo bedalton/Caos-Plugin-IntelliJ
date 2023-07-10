@@ -1,17 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import bedalton.creatures.agents.pray.data.BlockWithTags
-import bedalton.creatures.agents.pray.data.DataBlock
-import bedalton.creatures.agents.pray.data.PrayBlock
-import bedalton.creatures.agents.pray.parser.parsePrayAgentBlocks
+import com.bedalton.creatures.agents.pray.data.BlockWithTags
+import com.bedalton.creatures.agents.pray.data.DataBlock
+import com.bedalton.creatures.agents.pray.data.PrayBlock
+import com.bedalton.creatures.agents.pray.parser.parsePrayAgentBlocks
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
-import bedalton.creatures.agents.pray.data.PrayDataBlockDecompressionException
-import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotification
+import com.bedalton.creatures.agents.pray.data.PrayDataBlockDecompressionException
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.bedalton.common.util.className
 import com.intellij.ide.projectView.PresentationData

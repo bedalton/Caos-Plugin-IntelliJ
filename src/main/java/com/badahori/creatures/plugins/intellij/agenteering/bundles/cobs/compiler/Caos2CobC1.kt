@@ -86,7 +86,7 @@ data class Caos2CobC1(
             writeUInt32(image?.height ?: 0)
             writeUInt16(image?.width ?: 0)
             image?.flipY()?.let { thumbnail ->
-                bedalton.creatures.sprite.compilers.SprCompiler.writeCompiledImage(
+                com.bedalton.creatures.sprite.compilers.SprCompiler.writeCompiledImage(
                     thumbnail.toBMP32IfRequired(),
                     false,
                     this

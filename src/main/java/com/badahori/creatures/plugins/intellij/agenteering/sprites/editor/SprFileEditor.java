@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor;
 
-import bedalton.creatures.sprite.parsers.PhotoAlbum;
+import com.bedalton.creatures.sprite.parsers.PhotoAlbum;
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFileHolder;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader;
 import com.bedalton.io.bytes.ByteStreamReader;

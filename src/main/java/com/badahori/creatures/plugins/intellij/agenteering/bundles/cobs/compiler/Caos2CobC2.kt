@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import bedalton.creatures.sprite.compilers.S16Compiler
-import bedalton.creatures.sprite.util.ColorEncoding
+import com.bedalton.creatures.sprite.compilers.S16Compiler
+import com.bedalton.creatures.sprite.util.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeNullTerminatedString

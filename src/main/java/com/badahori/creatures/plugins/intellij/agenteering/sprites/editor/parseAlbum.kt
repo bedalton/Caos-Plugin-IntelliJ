@@ -1,11 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import com.bedalton.io.bytes.*
-import bedalton.creatures.sprite.parsers.PhotoAlbum
-import bedalton.creatures.sprite.parsers.SpriteParser.parsePhotoAlbum
+import com.bedalton.creatures.sprite.parsers.PhotoAlbum
+import com.bedalton.creatures.sprite.parsers.SpriteParser.parsePhotoAlbum
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFileHolder
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.parse
-import com.bedalton.log.Log
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.runBlocking

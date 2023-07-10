@@ -1,11 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.spr
 
-import com.bedalton.io.bytes.*
-import bedalton.creatures.sprite.parsers.SprSpriteFile
-import bedalton.creatures.sprite.parsers.readSprFrame
-import bedalton.creatures.sprite.util.ColorPalette
+import com.bedalton.io.bytes.MemoryByteStreamReader
+import com.bedalton.creatures.sprite.parsers.readSprFrame
+import com.bedalton.creatures.sprite.util.ColorPalette
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteCompiler
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import korlibs.image.awt.toAwt
 import org.apache.commons.imaging.palette.SimplePalette

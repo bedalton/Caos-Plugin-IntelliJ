@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import bedalton.creatures.sprite.parsers.PhotoAlbum
+import com.bedalton.creatures.sprite.parsers.PhotoAlbum
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.intellij.ide.projectView.TreeStructureProvider

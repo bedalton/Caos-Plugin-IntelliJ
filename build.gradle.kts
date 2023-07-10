@@ -28,12 +28,20 @@ val ideaVersionStart: String by project
 val psiViewerVersion: String by project
 val javaVersion: String by project
 
+// Kotlin / Kotlinx
 val kotlinxCoroutinesVersion: String by project
+val kotlinxSerializationVersion: String by project
+
+// Other
 val korImagesVersion: String by project
+
+// Creatures
 val creaturesAgentUtilVersion: String by project
 val creaturesSpriteUtilVersion: String by project
 val creaturesCommonCliVersion: String by project
 val creaturesCommonVersion: String by project
+
+// Common Libs
 val commonCoreVersion: String by project
 val localFilesVersion: String by project
 val byteUtilVersion: String by project
@@ -48,53 +56,28 @@ repositories {
 
 dependencies {
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1") {
-        excludeKotlin()
-    }
-
+    //Kotlin / Kotlinx
+    implementationExcludingKotlin("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")
 
-    implementation("org.apache.commons:commons-imaging:1.0-alpha2") {
+    // Other Libs
+    implementationExcludingKotlin("com.soywiz.korlibs.korim:korim:$korImagesVersion")
+    implementationExcludingKotlin("org.apache.commons:commons-imaging:1.0-alpha2")
+    testImplementation("junit", "junit", "4.13") {
         excludeKotlin()
     }
 
-    testImplementation("junit", "junit", "4.12") {
-        excludeKotlin()
-    }
+    // Creatures libs
+    implementationExcludingKotlin("com.bedalton.creatures:agent-util:$creaturesAgentUtilVersion")
+    implementationExcludingKotlin("com.bedalton.creatures:common-sprite:$creaturesSpriteUtilVersion")
+    implementationExcludingKotlin("com.bedalton.creatures:creatures-common:$creaturesCommonVersion")
 
-    implementation("bedalton.creatures:agent-util:$creaturesAgentUtilVersion") {
-        excludeKotlin()
-    }
+    // Common Libs
+    implementationExcludingKotlin("com.bedalton:common-core:$commonCoreVersion")
+    implementationExcludingKotlin("com.bedalton:local-files:$localFilesVersion")
+    implementationExcludingKotlin("com.bedalton:common-byte:$byteUtilVersion")
+    implementationExcludingKotlin("com.bedalton:common-log:$commonLogVersion")
 
-    implementation("bedalton.creatures:common-sprite:$creaturesSpriteUtilVersion") {
-        excludeKotlin()
-    }
-
-    implementation("com.soywiz.korlibs.korim:korim:$korImagesVersion") {
-        excludeKotlin()
-    }
-
-    implementation("com.bedalton:common-core:$commonCoreVersion") {
-        excludeKotlin()
-    }
-
-    implementation("bedalton.creatures:creatures-common:$creaturesCommonVersion") {
-        excludeKotlin()
-    }
-
-    implementation("com.bedalton:local-files:$localFilesVersion") {
-        excludeKotlin()
-    }
-
-    implementation("com.bedalton:common-byte:$byteUtilVersion") {
-        excludeKotlin()
-    }
-
-    implementation("com.bedalton:common-log:$commonLogVersion") {
-        excludeKotlin()
-    }
-
-    testImplementation("junit:junit:4.13.2")
 
 
 }
@@ -192,6 +175,12 @@ tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml
 
 }
 
+
+fun DependencyHandler.implementationExcludingKotlin(dependencyNotation: String) {
+    implementation(dependencyNotation) {
+        excludeKotlin()
+    }
+}
 
 fun ExternalModuleDependency.excludeKotlin() {
     exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")

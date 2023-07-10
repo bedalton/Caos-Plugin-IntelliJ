@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support
 
-import bedalton.creatures.agents.pray.compiler.caos2pray.Caos2PrayShortTags
+import com.bedalton.creatures.agents.pray.compiler.caos2pray.Caos2PrayShortTags
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.util.TextRange
 

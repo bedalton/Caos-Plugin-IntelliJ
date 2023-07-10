@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
-import bedalton.creatures.sprite.parsers.BlkParser
+import com.bedalton.creatures.sprite.parsers.BlkParser
 import com.bedalton.common.structs.Pointer
 import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.className

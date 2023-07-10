@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions
 
-import bedalton.creatures.agents.pray.parser.parsePrayAgentToFiles
-import bedalton.creatures.agents.util.RelativeFileSystem
+import com.bedalton.creatures.agents.pray.parser.parsePrayAgentToFiles
+import com.bedalton.creatures.agents.util.RelativeFileSystem
 import com.bedalton.common.structs.Pointer
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileType
@@ -30,8 +30,6 @@ import com.intellij.openapi.util.io.FileTooBigException
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import icons.CaosScriptIcons
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.nio.file.Paths

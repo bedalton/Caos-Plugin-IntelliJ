@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose;
 
-import bedalton.creatures.common.structs.BreedKey;
+import com.bedalton.creatures.common.structs.BreedKey;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorPanel;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttFileEditorProvider;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.PartBreedsProvider;

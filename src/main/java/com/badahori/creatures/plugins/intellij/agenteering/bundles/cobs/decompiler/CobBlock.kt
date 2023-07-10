@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
-import bedalton.creatures.sprite.parsers.S16SpriteFile
+import com.bedalton.creatures.sprite.parsers.S16SpriteFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler.CobBlock.AgentBlock
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant

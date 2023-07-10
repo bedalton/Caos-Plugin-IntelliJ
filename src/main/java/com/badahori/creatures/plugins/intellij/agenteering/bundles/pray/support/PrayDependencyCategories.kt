@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support
 
-import bedalton.creatures.agents.pray.compiler.pray.bestDependencyCategoryForFile
+import com.bedalton.creatures.agents.pray.compiler.pray.bestDependencyCategoryForFile
 
 internal object PrayDependencyCategories {
 

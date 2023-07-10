@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.fixes
 
-import bedalton.creatures.agents.pray.compiler.pray.bestDependencyCategoryForFile
+import com.bedalton.creatures.agents.pray.compiler.pray.bestDependencyCategoryForFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.PRAY
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileType
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayAgentBlock

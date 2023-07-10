@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler;
 
-import bedalton.creatures.agents.pray.compiler.PrayCompileOptions;
-import bedalton.creatures.agents.pray.compiler.PrayCompileOptionsImpl;
+import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions;
+import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptionsImpl;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import org.jetbrains.annotations.Nullable;

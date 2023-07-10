@@ -4,9 +4,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite
 
 import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.toListOf
-import bedalton.creatures.sprite.parsers.*
-import bedalton.creatures.sprite.util.SpriteType
-import bedalton.creatures.sprite.util.SpriteType.*
+import com.bedalton.creatures.sprite.parsers.*
+import com.bedalton.creatures.sprite.util.SpriteType
+import com.bedalton.creatures.sprite.util.SpriteType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal

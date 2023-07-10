@@ -3,7 +3,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
 
-import bedalton.creatures.agents.pray.compiler.PrayCompileOptions
+import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions
 import com.badahori.creatures.plugins.intellij.agenteering.att.actions.getAnyPossibleSprite
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileType
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
@@ -26,7 +26,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfac
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
-import com.bedalton.log.Log
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.Disposable

@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
 import com.bedalton.io.bytes.*
-import bedalton.creatures.sprite.parsers.parseS16FrameAtCurrentPosition
-import bedalton.creatures.sprite.util.ColorEncoding
+import com.bedalton.creatures.sprite.parsers.parseS16FrameAtCurrentPosition
+import com.bedalton.creatures.sprite.util.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack

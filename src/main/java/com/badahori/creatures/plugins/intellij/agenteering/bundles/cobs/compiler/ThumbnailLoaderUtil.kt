@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import bedalton.creatures.sprite.parsers.SpriteParser
+import com.bedalton.creatures.sprite.parsers.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser.VALID_SPRITE_EXTENSIONS
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getAllBytes

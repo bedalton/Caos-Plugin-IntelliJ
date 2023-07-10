@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.indices
 
-import bedalton.creatures.common.structs.BreedKey
-import bedalton.creatures.common.structs.GameVariant
+import com.bedalton.creatures.common.structs.BreedKey
+import com.bedalton.creatures.common.structs.GameVariant
 import com.bedalton.common.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant

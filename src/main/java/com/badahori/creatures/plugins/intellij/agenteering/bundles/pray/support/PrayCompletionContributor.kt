@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.support
 
-import bedalton.creatures.agents.pray.compiler.pray.CATEGORIES
+import com.bedalton.creatures.agents.pray.compiler.pray.CATEGORIES
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayAgentBlock
@@ -8,7 +8,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayGroupKw
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.Caos2CompletionProvider
-import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.CaosScriptCompletionProvider
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.InsertInsideQuoteHandler
 import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.quoter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant

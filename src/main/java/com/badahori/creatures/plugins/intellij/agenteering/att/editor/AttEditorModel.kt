@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
-import bedalton.creatures.common.structs.BreedKey
+import com.bedalton.creatures.common.structs.BreedKey
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorImpl.BreedSelectionChangeListener
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttAutoFill.paddedData

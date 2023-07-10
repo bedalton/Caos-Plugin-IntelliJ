@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
 import com.bedalton.io.bytes.*
-import bedalton.creatures.sprite.util.ColorPalette
+import com.bedalton.creatures.sprite.util.ColorPalette
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
 import korlibs.image.awt.toAwt
@@ -47,7 +47,7 @@ internal suspend fun ByteStreamReaderEx.readC1Cob(fileName: String?): CobBlock.A
     }
 
     val image = if (pictureWidth > 0 && pictureHeight > 0) {
-        bedalton.creatures.sprite.parsers.readSprFrame(
+        com.bedalton.creatures.sprite.parsers.readSprFrame(
             this,
             position().toLong(),
             pictureWidth,
