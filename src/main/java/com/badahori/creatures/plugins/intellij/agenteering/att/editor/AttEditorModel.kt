@@ -5,6 +5,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 import com.bedalton.creatures.common.structs.BreedKey
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorImpl.BreedSelectionChangeListener
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttAutoFill.paddedData
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
@@ -225,6 +226,13 @@ internal class AttEditorModel(
         return attFile.getUserData(AttEditorPanel.REQUESTED_POSE_KEY)
     }
 
+
+    internal fun getRequestedVisibility(): Map<Char, PoseRenderer.PartVisibility>? {
+        if (!attFile.isValid) {
+            return null
+        }
+        return attFile.getUserData(AttEditorPanel.REQUESTED_VISIBILITY_KEY)
+    }
 
     fun setPart(part: Char) {
         if (this.mPart == part) {

@@ -796,6 +796,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
             }
             final BodyPartFiles file = (BodyPartFiles) fileObject;
             file.getBodyDataFile().putUserData(AttEditorPanel.REQUESTED_POSE_KEY, pose);
+            file.getBodyDataFile().putUserData(AttEditorPanel.REQUESTED_VISIBILITY_KEY, visibilityMap);
             final PsiFile psiFile = PsiManager.getInstance(project).findFile(file.getBodyDataFile());
             if (psiFile == null) {
                 final DialogBuilder builder = new DialogBuilder();

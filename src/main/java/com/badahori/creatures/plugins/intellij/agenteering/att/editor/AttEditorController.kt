@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.bedalton.creatures.common.structs.BreedKey
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
@@ -182,6 +183,10 @@ internal class AttEditorController(
         return model.getRequestedPose()
     }
 
+    override fun getRequestedVisibility(): Map<Char, PoseRenderer.PartVisibility>? {
+        return model.getRequestedVisibility()
+    }
+
     /**
      * Gets the breed part key for this file
      */
@@ -318,6 +323,7 @@ internal interface AttEditorHandler: OnChangePoint, HasSelectedCell {
     fun setPose(pose: Pose?)
     fun getPose(): Pose?
     fun getRequestedPose(): Pose?
+    fun getRequestedVisibility(): Map<Char, PoseRenderer.PartVisibility>?
     fun getBreedPartKey(): BreedPartKey?
     fun reloadFiles()
 }

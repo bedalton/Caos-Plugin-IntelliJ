@@ -44,6 +44,8 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     //    private static final Logger LOGGER = Logger.getLogger("#AttEditorPanel");
     public static final Key<Pose> ATT_FILE_POSE_KEY = Key.create("creatures.att.POSE_DATA");
     public static final Key<Pose> REQUESTED_POSE_KEY = Key.create("creatures.att.REQUESTED_POSE");
+    public static final Key<Map<Character, PartVisibility>> REQUESTED_VISIBILITY_KEY = Key.create("creatures.att.REQUESTED_VISIBILITY");
+
     private static final boolean EAGER_LOAD_POSE_EDITOR = true;
     private final AttSpriteCellList spriteCellList = new AttSpriteCellList(Collections.emptyList(), 4.0, 300, 300, true);
     private final Project project;
@@ -550,6 +552,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         poseEditor.setAtt(controller.getPart(), controller.getSpriteFile(), controller.getAttData());
 
         loadRequestedPose();
+        loadRequestedVisibility();
     }
 
 
@@ -955,7 +958,18 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         poseEditor.isShown();
         poseEditor.init();
         loadRequestedPose();
+        loadRequestedVisibility();
         poseEditor.redrawAll();
+    }
+
+    private void loadRequestedVisibility() {
+        final Map<Character, PartVisibility> requestedVisibility = controller.getRequestedVisibility();
+        if (requestedVisibility == null) {
+            return;
+        }
+        for (Map.Entry<Character, PartVisibility> entry : requestedVisibility.entrySet()) {
+            poseEditor.togglePartVisibility(entry.getKey(), entry.getValue());
+        }
     }
 
     private void loadRequestedPose() {
