@@ -4572,10 +4572,7 @@ c_kw_r_r_r_r_r_r_r
 	;
 c_kw_r_r_r_r_r_r_r_scoped
 	::=	K_FRMT
-	|	prefix_kw_new_col K_COMP <<isNewVariant 'true'>>
-	|	prefix_kw_new_col K_SIMP <<isNewVariant 'true'>>
-	|	prefix_kw_new_col K_VHCL <<isNewVariant 'true'>>
-	|	prefix_kw_pat_col K_DULL <<isVariant 'SM.INSTANCE'>>
+	|	prefix_kw_new_col <<isNewVariant 'true'>> (K_COMP  | K_SIMP | K_VHCL | K_DULL)
 
 	{
 		pin(".*")=3
@@ -4597,7 +4594,7 @@ c_kw_r_r_r_r_r_r_r_scoped
 	}
 	;
 c_kw_r_r_r_r_r_r_r_scoped2
-	::=	prefix_kw_pat_col K_FIXD <<isNewVariant 'false'>><<isVariant 'C3.INSTANCE' 'CV.INSTANCE' 'DS.INSTANCE'>>
+	::=	prefix_kw_pat_col K_FIXD <<isNewVariant 'false'>> <<isVariant 'C3.INSTANCE' 'CV.INSTANCE' 'DS.INSTANCE'>>
 	{
 		pin(".*")=4
 		implements = [
@@ -4701,7 +4698,7 @@ c_kw_r_r_r_r_r
 	}
 	;
 c_kw_r_r_r_r_r_scoped
-	::=	prefix_kw_new_col K_CREA  <<isNewVariant 'true'>>
+	::=	prefix_kw_new_col <<isNewVariant 'true'>> K_CREA
 	{
 		pin(".*")=3
 		implements = [
@@ -4815,7 +4812,7 @@ c_kw_t_r_r_r
 	;
 
 c_kw_t_r_r_r_scoped
-	::=	prefix_kw_new_col K_COMP <<isOldVariant>>
+	::=	prefix_kw_new_col <<isOldVariant>> K_COMP
 	{
 		pin(".*")=3
 		implements = [
@@ -4859,7 +4856,7 @@ c_kw_t_r_r
 	}
 	;
 c_kw_t_r_r_scoped
-	::=	prefix_kw_new_col K_VHCL <<isOldVariant>>
+	::=	prefix_kw_new_col <<isOldVariant>> K_VHCL
 	{
 		pin(".*")=3
 		implements = [
