@@ -87,7 +87,7 @@ class CaosDefColorSettingsPage : ColorSettingsPage {
         private val XMLDESCRIPTORS: HashMap<String, TextAttributesKey> = hashMapOf(
                 "command" to CaosDefSyntaxHighlighter.COMMAND,
                 "commandLink" to CaosDefSyntaxHighlighter.DOC_COMMENT_WORD_LINK,
-                "typesLink" to CaosDefSyntaxHighlighter.DOC_COMMENT_TYPE_LINK,
+                "typeLink" to CaosDefSyntaxHighlighter.DOC_COMMENT_TYPE_LINK,
                 "variableName" to CaosDefSyntaxHighlighter.VARIABLE_NAME,
                 "variableType" to CaosDefSyntaxHighlighter.VARIABLE_TYPE,
                 "commentVariableType" to CaosDefSyntaxHighlighter.DOC_COMMENT_VARIABLE_TYPE,
