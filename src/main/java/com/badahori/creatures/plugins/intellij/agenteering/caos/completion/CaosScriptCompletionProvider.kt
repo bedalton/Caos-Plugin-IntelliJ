@@ -81,6 +81,8 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
             return
         }
 
+        SubroutineCompletionHandler.completeSubroutineNamesForNewSubroutine(resultSet, element)
+
         CatalogueCompletionContributor.getCatalogueCompletions(resultSet, element)
 
         val caos2Block = nonEmpty.getParentOfType(CaosScriptCaos2Block::class.java)
