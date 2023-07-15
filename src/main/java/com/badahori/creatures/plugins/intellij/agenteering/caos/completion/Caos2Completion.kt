@@ -26,7 +26,6 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.TokenType
-import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.math.max
 import kotlin.math.min
@@ -544,6 +543,7 @@ internal object Caos2CompletionProvider {
             val builder = LookupElementBuilder
                 .createWithSmartPointer(lookupString, element)
                 .withLookupStrings(listOf(file.name, childPath))
+                .withInsertHandler(ReplaceStringContentsWithValueInsertHandler)
                 .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE)
             resultSet.addElement(builder)
         }

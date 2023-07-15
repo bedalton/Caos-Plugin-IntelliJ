@@ -2,9 +2,12 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEqualityExpressionPrime
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringText
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
-import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getParentOfType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.intellij.codeInsight.completion.CompletionUtilCore
+import com.intellij.codeInsight.completion.CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
@@ -25,6 +28,80 @@ object SpaceAfterInsertHandler : InsertHandler<LookupElement> {
 object ReplaceTextWithValueInsertHandler : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, lookupEl: LookupElement) {
         context.document.replaceString(context.startOffset, context.tailOffset, lookupEl.lookupString)
+    }
+}
+
+object ReplaceContentsWithValueInsertHandler : InsertHandler<LookupElement> {
+    override fun handleInsert(context: InsertionContext, lookupEl: LookupElement) {
+        val element = lookupEl.psiElement
+        val lookupString = lookupEl.lookupString
+        if (element != null) {
+            val stringLike = element.getSelfOrParentOfType(CaosScriptStringLike::class.java)?.let {
+                if (it.firstChild is CaosScriptStringText) {
+                    it.firstChild
+                } else {
+                    it
+                }
+            } ?: element
+            val text = element.text
+            context.document.replaceString(element.startOffset, element.endOffset, lookupString)
+        } else {
+            context.document.replaceString(context.startOffset, context.tailOffset, lookupString)
+        }
+    }
+}
+
+object ReplaceStringContentsWithValueInsertHandler : InsertHandler<LookupElement> {
+
+    private val DUMMY_IDENTIFIER_WITH_TRAILING_SPACE = "$DUMMY_IDENTIFIER_TRIMMED ?".toRegex()
+    override fun handleInsert(context: InsertionContext, lookupEl: LookupElement) {
+        val element = lookupEl.psiElement
+        val lookupString = lookupEl.lookupString
+        if (element == null) {
+            LOGGER.info("ReplaceStringInsertHandler: Element is null")
+            context.document.replaceString(context.startOffset, context.tailOffset, lookupString)
+            return
+        }
+        LOGGER.info("ReplaceStringInsertHandler: Element: ${element.tokenType}; Text: ${element.text}")
+        val stringLike = element.getSelfOrParentOfType(CaosScriptStringLike::class.java)?.let {
+            if (it.firstChild is CaosScriptStringText) {
+                it.firstChild
+            } else {
+                it
+            }
+        } ?: element
+
+
+        var start = stringLike.startOffset
+        val text = stringLike.text.replace(DUMMY_IDENTIFIER_WITH_TRAILING_SPACE, "")
+
+        LOGGER.info("ReplaceStringInsertHandler: StringLikeElement: ${stringLike.tokenType}; Text: <${stringLike.text}>; TrueText: <$text>; LookupString: <${lookupString}>")
+
+        val firstChar = text.firstOrNull()
+        val lastChar = if (text.length > 1) {
+            text.last()
+        } else {
+            null
+        }
+        if (firstChar == '"') {
+            start += 1
+        } else if (firstChar == '\'') {
+            start += 1
+        }
+
+        val endMod = if (lastChar == '"') {
+            -1
+        } else if (lastChar == '\'' && firstChar == '\'') {
+            -1
+        } else {
+            0
+        }
+
+        context.document.replaceString(start, context.tailOffset, lookupString)
+        val nextStart = start + lookupString.length
+        val tail = stringLike.text.split(DUMMY_IDENTIFIER_WITH_TRAILING_SPACE).getOrNull(1)
+            ?: return
+        context.document.replaceString(nextStart, nextStart + tail.length + endMod, "")
     }
 }
 

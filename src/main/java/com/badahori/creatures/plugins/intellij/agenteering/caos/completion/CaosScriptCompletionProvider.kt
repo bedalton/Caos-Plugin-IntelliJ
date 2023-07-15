@@ -6,12 +6,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.psiDirectory
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptStringLiteralIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayCommand.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.commandStringUpper
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
@@ -36,13 +33,11 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiErrorElement
 import com.intellij.psi.PsiWhiteSpace
-import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.GlobalSearchScopes
 import com.intellij.psi.util.PsiTreeUtil
@@ -474,6 +469,8 @@ private fun addStringCompletions(
                 insertHandler = InsertToknBeforeToken()
             }
         }
+    } else {
+        ReplaceStringContentsWithValueInsertHandler
     }
     val quoter = if (variant.isOld) {
         { text: String ->
@@ -703,16 +700,12 @@ private fun addFileNameCompletionsForFileTypes(
 
             // Get location string for autocomplete tail-text
             val location = relativePath(file.parent)?.let { " in $it" } ?: "..."
-            var builder = LookupElementBuilder
+            LookupElementBuilder
                 .createWithSmartPointer(quoter(completionText), element)
                 .withLookupString(completionText)
                 .withPresentableText(file.name)
+                .withInsertHandler(insertHandler ?: ReplaceStringContentsWithValueInsertHandler)
                 .withTailText(location, true)
-
-            if (insertHandler != null) {
-                builder = builder.withInsertHandler(insertHandler)
-            }
-            builder
                 .withAutoCompletionPolicy(AutoCompletionPolicy.NEVER_AUTOCOMPLETE)
         }
 
