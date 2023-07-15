@@ -34,6 +34,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
@@ -385,7 +386,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         });
 
         final String openRelated = "Open Related Part";
-        inputMap.put(KeyStroke.getKeyStroke("alt shift pressed O"), openRelated);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK), openRelated);
         actionMap.put(openRelated, ActionHelper.action(poseEditor::openRelatedWithDialog));
 
         // Init key combinations to work with body parts
@@ -407,12 +408,12 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
                 partName = "Part " + Character.toUpperCase(part);
             }
             initPartIncrementKeyListener(inputMap, actionMap, partName, part);
-            initPartVisibilityKeyListener(inputMap, actionMap, partName, part, PartVisibility.HIDDEN, "alt");
-            initPartVisibilityKeyListener(inputMap, actionMap, partName, part, PartVisibility.GHOST, "alt shift");
+            initPartVisibilityKeyListener(inputMap, actionMap, partName, part, PartVisibility.HIDDEN, KeyEvent.ALT_DOWN_MASK);
+            initPartVisibilityKeyListener(inputMap, actionMap, partName, part, PartVisibility.GHOST, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
             initOpenRelatedPartKeyListener(inputMap, actionMap, partName, part);
         }
-        initPartVisibilityKeyListener(inputMap, actionMap, "all parts", 'x', PartVisibility.HIDDEN, "alt");
-        initPartVisibilityKeyListener(inputMap, actionMap, "all parts", 'x', PartVisibility.GHOST, "alt shift");
+        initPartVisibilityKeyListener(inputMap, actionMap, "all parts", 'x', PartVisibility.HIDDEN, KeyEvent.ALT_DOWN_MASK);
+        initPartVisibilityKeyListener(inputMap, actionMap, "all parts", 'x', PartVisibility.GHOST, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
     }
 
     private void initOpenRelatedPartKeyListener(InputMap inputMap, ActionMap actionMap, String partName, char part) {
@@ -422,6 +423,9 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         actionMap.put(label, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (e.getModifiers() != 0) {
+                    return;
+                }
                 if (part == controller.getPart()) {
                     return;
                 }
@@ -432,8 +436,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
 
     private void initPartIncrementKeyListener(final InputMap inputMap, final ActionMap actionMap, final String partName, final char part) {
         final String label = "Cycle " + partName + " pose";
-        final String keyboardCombo = "shift pressed " + Character.toUpperCase(part);
-        inputMap.put(KeyStroke.getKeyStroke(keyboardCombo), label);
+        inputMap.put(KeyStroke.getKeyStroke(Character.toUpperCase(part), KeyEvent.SHIFT_DOWN_MASK), label);
         actionMap.put(label, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -452,7 +455,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
             final String partName,
             final char part,
             final PartVisibility visibility,
-            final String modifierKey
+            final int modifierKey
     ) {
         String label;
         switch (visibility) {
@@ -468,8 +471,8 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
             default:
                 throw new IndexOutOfBoundsException("Visibility " + visibility.name().toLowerCase() + " not handled in keyboard shortcuts");
         }
-        final String keyCombo = modifierKey + " pressed " + Character.toUpperCase(part);
-        inputMap.put(KeyStroke.getKeyStroke(keyCombo), label);
+//        final String keyCombo = modifierKey + " pressed " + Character.toLowerCase(part);
+        inputMap.put(KeyStroke.getKeyStroke(Character.toUpperCase(part), modifierKey), label);
         if (part == 'x') {
             actionMap.put(label, new AbstractAction() {
                 @Override
