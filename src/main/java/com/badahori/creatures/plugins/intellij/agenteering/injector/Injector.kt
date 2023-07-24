@@ -298,6 +298,9 @@ object Injector {
             is CorruptInjectorInterface -> {
                 throw CaosConnectionException(message("caos.injector.interface-data-invalid"))
             }
+            is NoneInjectorInterface -> {
+                throw CaosConnectionException(message("caos.injector.interface-data-invalid"))
+            }
         }
     }
 

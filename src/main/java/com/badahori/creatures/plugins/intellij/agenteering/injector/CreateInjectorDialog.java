@@ -707,7 +707,14 @@ public class CreateInjectorDialog extends DialogBuilder {
         final TextFieldWithBrowseButton prefix = createSelectFolderField(
                 "Wine Root",
                 "The root folder of the wine prefix. Sometimes at ~/.wine",
-                getDefaultWineDirectory(state, home)
+                getDefaultWineDirectory(state, home),
+                (event, newText) -> {
+                    final String homeText = newText != null && newText.trim().length() > 0
+                            ? newText
+                            : (((TextFieldWithBrowseButton)winePrefix).getText());
+                    setDefaultWineGameDirectory(homeText);
+                    return null;
+                }
         );
 
         final Runnable onChange = () -> {
@@ -778,7 +785,7 @@ public class CreateInjectorDialog extends DialogBuilder {
         gameDirectoryField.setText(winePath);
     }
 
-    private File getDefaultWineDirectory(final CaosApplicationSettingsService state, final File home) {
+    private File getDefaultWineDirectory(final CaosInjectorApplicationSettingsService state, final File home) {
         String lastWineDirectory = state.getLastWineDirectory();
         File wineDir = lastWineDirectory != null ? new File(lastWineDirectory) : new File(home, ".wine");
         return wineDir.exists() ? wineDir : home;
@@ -786,7 +793,7 @@ public class CreateInjectorDialog extends DialogBuilder {
 
 
     private File getDefaultWineBinaryDirectory(final File home) {
-        final CaosApplicationSettingsService state = CaosApplicationSettingsService.getInstance();
+        final CaosInjectorApplicationSettingsService state = CaosInjectorApplicationSettingsService.getInstance();
         String lastWineDirectory = state.getWinePath();
         if (lastWineDirectory == null) {
             lastWineDirectory = WineHelper.getDefault(false, true);
@@ -843,9 +850,20 @@ public class CreateInjectorDialog extends DialogBuilder {
     }
 
     private TextFieldWithBrowseButton createSelectFolderField(
-            final String label, final String description,
+            final String label,
+            final String description,
             @Nullable
             File defaultFolder
+    ) {
+        return createSelectFolderField(label, description, defaultFolder, null);
+    }
+
+    private TextFieldWithBrowseButton createSelectFolderField(
+            final String label,
+            final String description,
+            @Nullable
+            File defaultFolder,
+            @Nullable final Function2<Integer, String, Unit> handler
     ) {
         File file = (defaultFolder != null && defaultFolder.exists()) ? defaultFolder : null;
         if (file != null && !file.exists()) {
@@ -865,6 +883,10 @@ public class CreateInjectorDialog extends DialogBuilder {
                         false
                 )
         );
+        if (handler != null) {
+            final DocumentChangeListener listener = new com.badahori.creatures.plugins.intellij.agenteering.utils.DocumentChangeListener(handler);
+            field.getTextField().getDocument().addDocumentListener(listener);
+        }
         if (file != null) {
             field.setText(file.getPath());
         }
@@ -872,9 +894,24 @@ public class CreateInjectorDialog extends DialogBuilder {
     }
 
     private TextFieldWithBrowseButton createSelectFileField(
-            final String label, final String description,
+            final String label,
+            final String description,
             @Nullable
             File defaultFileOrStartingFolder
+    ) {
+        return createSelectFileField(
+                label,
+                description,
+                defaultFileOrStartingFolder,
+                null
+        );
+    }
+
+    private TextFieldWithBrowseButton createSelectFileField(
+            final String label, final String description,
+            @Nullable
+            File defaultFileOrStartingFolder,
+            @Nullable kotlin.jvm.functions.Function2<Integer, String, Unit> handler
     ) {
         File file = null;
         if (defaultFileOrStartingFolder != null) {
@@ -902,6 +939,10 @@ public class CreateInjectorDialog extends DialogBuilder {
                         false
                 )
         );
+        if (handler != null) {
+            final DocumentChangeListener listener = new com.badahori.creatures.plugins.intellij.agenteering.utils.DocumentChangeListener(handler);
+            field.getTextField().getDocument().addDocumentListener(listener);
+        }
         if (file != null) {
             field.setText(file.getPath());
         }

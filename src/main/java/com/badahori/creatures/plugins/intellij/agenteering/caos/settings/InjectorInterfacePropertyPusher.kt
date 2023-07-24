@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfac
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CorruptInjectorInterface
+import com.badahori.creatures.plugins.intellij.agenteering.injector.NoneInjectorInterface
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.openapi.fileTypes.LanguageFileType
@@ -17,7 +18,7 @@ import com.intellij.openapi.vfs.newvfs.FileAttribute
 
 internal class InjectorInterfacePropertyPusher private constructor() : FilePropertyPusher<GameInterfaceName?> {
 
-    override fun getDefaultValue(): GameInterfaceName = CorruptInjectorInterface("")
+    override fun getDefaultValue(): GameInterfaceName = NoneInjectorInterface
 
     override fun getFileDataKey(): Key<GameInterfaceName?> {
         return INJECTOR_INTERFACE_USER_DATA_KEY
@@ -78,12 +79,19 @@ internal class InjectorInterfacePropertyPusher private constructor() : FilePrope
             stream.close()
             val key = out.toString().nullIfEmpty()
                 ?: return null
-            return CaosApplicationSettingsService.getInstance().gameInterfaceForKey(variant, key)
+            return CaosInjectorApplicationSettingsService.getInstance().gameInterfaceForKey(variant, key)
         }
 
         internal fun writeToStorage(file: VirtualFile, gameInterfaceName: GameInterfaceName?) {
             if (file !is VirtualFileWithId)
                 return
+
+            if (gameInterfaceName == NoneInjectorInterface) {
+                return
+            }
+            if (gameInterfaceName is CorruptInjectorInterface) {
+                return
+            }
             file.putUserData(INJECTOR_INTERFACE_USER_DATA_KEY, gameInterfaceName)
             val stream = INJECTOR_ATTRIBUTE.writeAttribute(file)
             val name = gameInterfaceName?.id ?: ""

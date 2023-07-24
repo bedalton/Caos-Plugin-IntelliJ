@@ -93,7 +93,7 @@ sealed class GameInterfaceName {
     abstract fun withCode(code: String): GameInterfaceName
 
     companion object {
-        private val BASIC_REGEX = "([^:]+\\s*):\\s*([^\\[]+)\\s*(?:\\[\\s*([^\\]]+)]\\s*)?".toRegex()
+        private val BASIC_REGEX = "([^:]+\\s*):\\s*([^\\[]+)\\s*(?:\\[\\s*([^]]+)]\\s*)?".toRegex()
         private const val TYPE_DELIMITER = "__;;;;;;;;;;__"
         private const val GAME_NAME_PATH_DELIMITER = "<__;;x;;;;;;x;;__>"
         internal const val ADDITIONAL_DATA_DELIMITER = "##__xx__##"
@@ -133,6 +133,7 @@ sealed class GameInterfaceName {
                 PostInjectorInterface.KIND -> PostInjectorInterface.fromString(serial)
                 TCPInjectorInterface.KIND -> TCPInjectorInterface.fromString(serial)
                 CorruptInjectorInterface.KIND -> CorruptInjectorInterface(serial)
+                NoneInjectorInterface.KIND -> NoneInjectorInterface
                 else -> null
             }
         }
@@ -360,10 +361,6 @@ data class WineInjectorInterface(
                 wineExecutable = null
             )
         }
-
-        fun ensureWineExec() {
-
-        }
     }
 }
 
@@ -479,7 +476,6 @@ data class PostInjectorInterface(
 
         internal const val KIND = "post"
         internal const val defaultURL = "127.0.0.1"
-        internal const val DEFAULT_PORT = 62351
 
         fun fromString(serial: String): GameInterfaceName? {
             val (code, gameName, rawPath, nickname) = defaultComponents(serial)
@@ -609,6 +605,44 @@ internal fun List<GameInterfaceName>.forKey(variant: CaosVariant?, serial: Strin
         .firstOrNull { it.isVariant(variant) }
     // Nothing matches variant, so return "closest" match
         ?: interfaces.firstOrNull()
+}
+
+/**
+ * Interface for internet POST based injectors that pass CAOS in the POST body
+ */
+@Serializable
+object NoneInjectorInterface: GameInterfaceName() {
+    const val KIND = "\$\$NONE\$\$"
+
+    override val code: String get() = "!"
+
+    override val id: String get() = "\$\$NONE\$\$"
+
+    override val gameName: String?
+        get() = null
+    override val path: String?
+        get() = null
+    override val kind: String
+        get() = KIND
+    override val nickname: String?
+        get() = null
+
+    override fun withCode(code: String): GameInterfaceName {
+        return this
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as NoneInjectorInterface
+
+        return id == other.id
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
 }
 
 /**
