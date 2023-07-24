@@ -51,6 +51,10 @@ class AttFilesByVariantIndex : ScalarIndexExtension<CaosVariant>() {
             key: CaosVariant,
             searchScope: GlobalSearchScope? = null,
         ): Collection<VirtualFile> {
+
+            if (project.isDisposed) {
+                return emptyList()
+            }
             val scope = GlobalSearchScope.projectScope(project).let {
                 if (searchScope != null) it.intersectWith(searchScope) else it
             }
@@ -110,7 +114,13 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
                     progressIndicator?.checkCanceled()
                     BreedPartKey.isGenericMatch(fudgedKey, other)
                 }
-                .flatMap { aKey -> FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope) }
+                .flatMap { aKey ->
+                    if (project.isDisposed) {
+                        return emptyList()
+                    }
+                    progressIndicator?.checkCanceled()
+                    FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope)
+                }
                 .let { files ->
                     progressIndicator?.checkCanceled()
                     fudgedKey.part
@@ -129,6 +139,9 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
          * Get all keys stored in this index
          */
         fun getAllKeys(project: Project): Collection<BreedPartKey> {
+            if (project.isDisposed) {
+                return emptyList()
+            }
             return FileBasedIndex.getInstance().getAllKeys(NAME, project)
         }
 
@@ -137,8 +150,15 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
          * Possibly very, very slow
          */
         fun getAllKeys(project: Project, scope: GlobalSearchScope): Collection<BreedPartKey> {
+
+            if (project.isDisposed) {
+                return emptyList()
+            }
             return FileBasedIndex.getInstance().getAllKeys(NAME, project)
                 .filter { aKey ->
+                    if (project.isDisposed) {
+                        return emptyList()
+                    }
                     FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope)
                         .any { file -> scope.accept(file) }
                 }

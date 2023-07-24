@@ -27,44 +27,48 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
     override fun dependsOnFileContent(): Boolean = false
 
     companion object {
-        val NAME = ID.create<FileNameInfo,Void>("com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex")
+        val NAME = ID.create<FileNameInfo, Void>(
+            "com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex"
+        )
         private val INPUT_FILTER = InputFilter { true }
 
         fun findWithExtension(
-            project:Project,
-            extension:String,
+            project: Project,
+            extension: String,
             searchScope: GlobalSearchScope? = null
-        ) : Collection<VirtualFile> {
+        ): Collection<VirtualFile> {
             val key = FileNameInfo(null, null, extension)
             return findMatching(project, key, searchScope)
         }
 
         fun findWithoutExtension(
-            project:Project,
-            nameWithoutExtension:String,
+            project: Project,
+            nameWithoutExtension: String,
             searchScope: GlobalSearchScope? = null
-        ) : Collection<VirtualFile> {
+        ): Collection<VirtualFile> {
             val key = FileNameInfo(null, nameWithoutExtension, null)
             return findMatching(project, key, searchScope)
         }
 
         fun findWithFileName(
-            project:Project,
-            fileName:String,
+            project: Project,
+            fileName: String,
             searchScope: GlobalSearchScope? = null
-        ) : Collection<VirtualFile> {
+        ): Collection<VirtualFile> {
             val key = FileNameInfo(fileName, null, null)
             return findMatching(project, key, searchScope)
         }
 
 
-
         fun findWithFileNameAndExtensions(
-            project:Project,
-            fileNameWithoutExtension:String,
+            project: Project,
+            fileNameWithoutExtension: String,
             extensions: Set<String>,
             searchScope: GlobalSearchScope? = null
-        ) : Collection<VirtualFile> {
+        ): Collection<VirtualFile> {
+            if (project.isDisposed) {
+                return emptyList()
+            }
             if (extensions.isEmpty()) {
                 return emptyList()
             }
@@ -75,12 +79,22 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
         }
 
         fun keys(project: Project): Set<FileNameInfo> {
+            if (project.isDisposed) {
+                return emptySet()
+            }
             return FileBasedIndex.getInstance()
                 .getAllKeys(NAME, project)
                 .toSet()
         }
 
-        private fun findMatching(project: Project, key: FileNameInfo, scope: GlobalSearchScope? = null): List<VirtualFile> {
+        private fun findMatching(
+            project: Project,
+            key: FileNameInfo,
+            scope: GlobalSearchScope? = null
+        ): List<VirtualFile> {
+            if (project.isDisposed) {
+                return emptyList()
+            }
             return FileBasedIndex.getInstance()
                 .getAllKeys(NAME, project)
                 .toSet()
@@ -88,7 +102,11 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
                     Descriptor.isEqual(it, key)
                 }
                 .flatMap {
-                    FileBasedIndex.getInstance().getContainingFiles(NAME, it, scope ?:  GlobalSearchScope.everythingScope(project))
+                    if (project.isDisposed) {
+                        return emptyList()
+                    }
+                    FileBasedIndex.getInstance()
+                        .getContainingFiles(NAME, it, scope ?: GlobalSearchScope.everythingScope(project))
                 }
         }
 
@@ -96,9 +114,9 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
 }
 
 data class FileNameInfo(
-    val fileName:String?,
-    val nameWithoutExtension:String?,
-    val extension:String?
+    val fileName: String?,
+    val nameWithoutExtension: String?,
+    val extension: String?
 ) {
 //    override fun toString(): String {
 //        return fileName ?: nameWithoutExtension?.let { "$it.*"} ?: extension?.let { "*.$it" } ?: "<empty>"

@@ -73,7 +73,9 @@ internal class CaosFileTreeChangedListener(
         pointer = null
         currentVariant = null
         variantChangedListener = null
-        PsiManager.getInstance(theProject).removePsiTreeChangeListener(this)
+        if (!theProject.isDisposed) {
+            PsiManager.getInstance(theProject).removePsiTreeChangeListener(this)
+        }
     }
 
     private fun onChange(child: PsiElement?) {

@@ -946,7 +946,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
 
     public void refresh() {
 
-        if (project.isDisposed()) {
+        if (project.isDisposed() || project.isOpen()) {
 //            dispose();
             return;
         }

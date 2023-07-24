@@ -63,8 +63,11 @@ internal fun openDocs(project: Project, variant: CaosVariant): Boolean {
 internal fun CaosScriptFile.addCaos2ChangeListener(listener: ((isCaos2: String?) -> Unit)?): DisposablePsiTreChangeListener? {
     if (!this.isValid)
         return null
-    val pointer = SmartPointerManager.createPointer(this)
     val project = this.project
+    if (project.isDisposed) {
+        return null
+    }
+    val pointer = SmartPointerManager.createPointer(this)
     return CaosFileCaos2ChangedListener(project, pointer, listener)
 }
 
@@ -128,7 +131,9 @@ private class CaosFileCaos2ChangedListener(
         pointer = null
         caos2 = null
         isCaos2ChangeHandler = null
-        PsiManager.getInstance(theProject).removePsiTreeChangeListener(this)
+        if (!theProject.isDisposed) {
+            PsiManager.getInstance(theProject).removePsiTreeChangeListener(this)
+        }
     }
 
     private fun onChange(child: PsiElement?) {

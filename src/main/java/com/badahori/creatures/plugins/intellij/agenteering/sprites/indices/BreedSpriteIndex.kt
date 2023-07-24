@@ -61,12 +61,19 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
             searchScope: GlobalSearchScope? = null,
             progressIndicator: ProgressIndicator?
         ): Collection<VirtualFile> {
+
+            if (project.isDisposed) {
+                return emptyList()
+            }
             val scope = GlobalSearchScope.everythingScope(project).let {
                 if (searchScope != null) it.intersectWith(searchScope) else it
             }
             val variantKeys = keys(project)
                 .filter { it.variant == null || it.variant == variant || (it.variant.isC3DS && variant.isC3DS) }
             return variantKeys.flatMap { aKey ->
+                if (project.isDisposed) {
+                    return emptyList()
+                }
                 progressIndicator?.checkCanceled()
                 FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope)
             }
@@ -80,6 +87,9 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
             progressIndicator: ProgressIndicator? = null
         ): Collection<VirtualFile> {
             progressIndicator?.checkCanceled()
+            if (project.isDisposed) {
+                return emptyList()
+            }
             val scope = GlobalSearchScope.everythingScope(project).let {
                 if (searchScope != null) it.intersectWith(searchScope) else it
             }
@@ -98,6 +108,9 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
 //                LOGGER.severe("Failed to find the same number of new files as old. Expected: ${old.size}; Actual: ${new.size}")
 //                return old
 //            }
+            if (project.isDisposed) {
+                return emptyList()
+            }
             return FileBasedIndex.getInstance().getContainingFiles(NAME, fudgedKey, scope).let { files ->
                 progressIndicator?.checkCanceled()
                 fudgedKey.part
@@ -117,15 +130,26 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
 
         @JvmStatic
         fun allFiles(project: Project, searchScope: GlobalSearchScope? = null): List<VirtualFile> {
+            if (project.isDisposed) {
+                return emptyList()
+            }
             val scope = GlobalSearchScope.everythingScope(project).let {
                 if (searchScope != null) it.intersectWith(searchScope) else it
             }
             return FileBasedIndex.getInstance().getAllKeys(NAME, project)
-                .flatMap { aKey -> FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope) }.toList()
+                .flatMap { aKey ->
+                    if (project.isDisposed) {
+                        return emptyList()
+                    }
+                    FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope)
+                }.toList()
         }
 
         @JvmStatic
         fun keys(project: Project): Collection<BreedPartKey> {
+            if (project.isDisposed) {
+                return emptyList()
+            }
             return FileBasedIndex.getInstance().getAllKeys(NAME, project)
         }
 
@@ -137,6 +161,11 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
             searchScope: GlobalSearchScope? = null,
             progressIndicator: ProgressIndicator? = null
         ): Collection<VirtualFile> {
+
+            if (project.isDisposed) {
+                return emptyList()
+            }
+
             val scope = GlobalSearchScope.projectScope(project).let {
                 if (searchScope != null) it.intersectWith(searchScope) else it
             }

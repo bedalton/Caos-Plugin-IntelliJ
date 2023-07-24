@@ -144,6 +144,10 @@ class ClassifierToAgentNameIndex : FileBasedIndexExtension<String, String>() {
         private fun getAgentNamesEx(project: Project, classifier: String, scope: GlobalSearchScope? = null): List<String> {
             return ReadAction.compute<List<String>, Exception> {
                 try {
+                    if (project.isDisposed) {
+                        return@compute emptyList()
+                    }
+
                     var projectScope = GlobalSearchScope.projectScope(project)
                     if (scope != null) {
                         projectScope = projectScope.intersectWith(scope)

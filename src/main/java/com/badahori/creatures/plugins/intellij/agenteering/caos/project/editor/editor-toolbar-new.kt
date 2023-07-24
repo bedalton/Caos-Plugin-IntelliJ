@@ -589,6 +589,9 @@ private fun interruptedInitializer(
         }
 
         override fun propertyChanged(event: PsiTreeChangeEvent) {
+            if (project.isDisposed) {
+                return
+            }
             val file = pointer.element
             if (file == null || !file.isValid) {
                 PsiManager.getInstance(project).removePsiTreeChangeListener(this)
@@ -606,6 +609,9 @@ private fun interruptedInitializer(
         }
 
         override fun dispose() {
+            if (project.isDisposed) {
+                return
+            }
             PsiManager.getInstance(project).removePsiTreeChangeListener(this)
         }
     }

@@ -135,6 +135,9 @@ class CaosProjectStartupActivity : StartupActivity {
     }
 
     private fun registerFileSaveHandler() {
+        if (ApplicationManager.getApplication().isDisposed) {
+            return
+        }
         ApplicationManager.getApplication().messageBus.connect()
             .subscribe(AppTopics.FILE_DOCUMENT_SYNC, object : FileDocumentManagerListener {
                 override fun beforeDocumentSaving(document: Document) {
