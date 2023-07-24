@@ -3,7 +3,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector;
 import com.bedalton.common.util.OS;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService;
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInjectorApplicationSettingsService;
+import com.badahori.creatures.plugins.intellij.agenteering.utils.DocumentChangeListener;
+
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
@@ -11,6 +13,8 @@ import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import kotlin.Pair;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -117,6 +121,9 @@ public class CreateInjectorDialog extends DialogBuilder {
 
     @NotNull
     private CaosVariant getSelectedVariant() {
+        if (variant == null) {
+            return CaosVariant.UNKNOWN.INSTANCE;
+        }
         final String variantText = (String) variant.getSelectedItem();
         if (variantText == null) {
             return CaosVariant.UNKNOWN.INSTANCE;

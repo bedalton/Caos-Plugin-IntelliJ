@@ -16,7 +16,7 @@ internal interface DisposablePsiTreChangeListener: PsiTreeChangeListener, Dispos
 
 internal class CaosFileTreeChangedListener(
     file: CaosScriptFile,
-    var runInWriteAction: Boolean = true,
+    private var runInWriteAction: Boolean = true,
     private var variantChangedListener: OnVariantChangeListener?
 ) : DisposablePsiTreChangeListener {
 
@@ -105,7 +105,7 @@ internal class CaosFileTreeChangedListener(
             } else {
                 variantChangedListener?.let { it(newVariant) }
             }
-        } catch (e: PsiInvalidElementAccessException) {
+        } catch (_: PsiInvalidElementAccessException) {
 
         }
     }

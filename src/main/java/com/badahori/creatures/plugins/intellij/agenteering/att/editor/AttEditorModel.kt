@@ -125,7 +125,6 @@ internal class AttEditorModel(
             return data
         }
 
-    private var md5: String? = null
     private var document: Document? = null
 
     val attLines: List<AttFileLine> get() = attData.lines
@@ -243,7 +242,9 @@ internal class AttEditorModel(
 
     fun getBreedPartKey(): BreedPartKey? {
         return fromFileName(attFile.nameWithoutExtension, variant)
-            ?: BreedPartKey(variant, part = attFile.nameWithoutExtension.getOrNull(0)?.lowercaseChar())
+        attFile.nameWithoutExtension.getOrNull(0)?.lowercaseChar()?.let { part ->
+            BreedPartKey(variant, part = part)
+        }
     }
 
     fun getImages(): List<BufferedImage?> {
@@ -363,11 +364,6 @@ internal class AttEditorModel(
         if (!attFile.isValid) {
             return
         }
-        val newMD5 = MD5.fromString(text)
-        if (md5 != null && md5 == newMD5) {
-//            return
-        }
-        md5 = newMD5
 
         // Check if new data, equals old data
         // Return if it does

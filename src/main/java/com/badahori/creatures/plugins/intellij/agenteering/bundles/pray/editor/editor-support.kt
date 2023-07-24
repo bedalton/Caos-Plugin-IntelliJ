@@ -1,13 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.editor
 
+
 import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions
 import com.bedalton.common.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.intellij.ProjectTopics
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
+import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
@@ -15,8 +16,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ModuleRootEvent
-import com.intellij.openapi.roots.ModuleRootListener
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
@@ -38,14 +37,6 @@ import javax.swing.JPanel
 class PrayEditorToolbar(val project: Project) : EditorNotifications.Provider<EditorNotificationPanel>() {
 
     override fun getKey(): Key<EditorNotificationPanel> = KEY
-
-    init {
-        project.messageBus.connect().subscribe(ProjectTopics.PROJECT_ROOTS, object : ModuleRootListener {
-            override fun rootsChanged(event: ModuleRootEvent) {
-                //notifications.updateAllNotifications()
-            }
-        })
-    }
 
     override fun createNotificationPanel(
         virtualFile: VirtualFile,

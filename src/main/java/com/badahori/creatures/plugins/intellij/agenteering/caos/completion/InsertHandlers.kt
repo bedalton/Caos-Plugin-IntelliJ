@@ -6,7 +6,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringText
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.intellij.codeInsight.completion.CompletionUtilCore
 import com.intellij.codeInsight.completion.CompletionUtilCore.DUMMY_IDENTIFIER_TRIMMED
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
@@ -25,40 +24,14 @@ object SpaceAfterInsertHandler : InsertHandler<LookupElement> {
     }
 }
 
-object ReplaceTextWithValueInsertHandler : InsertHandler<LookupElement> {
-    override fun handleInsert(context: InsertionContext, lookupEl: LookupElement) {
-        context.document.replaceString(context.startOffset, context.tailOffset, lookupEl.lookupString)
-    }
-}
-
-object ReplaceContentsWithValueInsertHandler : InsertHandler<LookupElement> {
-    override fun handleInsert(context: InsertionContext, lookupEl: LookupElement) {
-        val element = lookupEl.psiElement
-        val lookupString = lookupEl.lookupString
-        if (element != null) {
-            val stringLike = element.getSelfOrParentOfType(CaosScriptStringLike::class.java)?.let {
-                if (it.firstChild is CaosScriptStringText) {
-                    it.firstChild
-                } else {
-                    it
-                }
-            } ?: element
-            val text = element.text
-            context.document.replaceString(element.startOffset, element.endOffset, lookupString)
-        } else {
-            context.document.replaceString(context.startOffset, context.tailOffset, lookupString)
-        }
-    }
-}
-
 object ReplaceStringContentsWithValueInsertHandler : InsertHandler<LookupElement> {
 
     private val DUMMY_IDENTIFIER_WITH_TRAILING_SPACE = "$DUMMY_IDENTIFIER_TRIMMED ?".toRegex()
     override fun handleInsert(context: InsertionContext, lookupEl: LookupElement) {
         val element = lookupEl.psiElement
+            ?: context.editor.element
         val lookupString = lookupEl.lookupString
         if (element == null) {
-            LOGGER.info("ReplaceStringInsertHandler: Element is null")
             context.document.replaceString(context.startOffset, context.tailOffset, lookupString)
             return
         }
@@ -143,12 +116,6 @@ class InsertToknBeforeToken(private val afterInsert: InsertHandler<LookupElement
     }
 }
 
-class ReplaceUntilWithValueInsertHandler(private val length: Int) : InsertHandler<LookupElement> {
-    override fun handleInsert(context: InsertionContext, lookupEl: LookupElement) {
-        context.document.replaceString(context.startOffset, context.startOffset + length, lookupEl.lookupString)
-    }
-}
-
 class InsertInsideQuoteHandler(private val openQuote: Char, private val closeQuote: Char) : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, lookupElement: LookupElement) {
         var elementText: String = lookupElement.psiElement
@@ -159,16 +126,15 @@ class InsertInsideQuoteHandler(private val openQuote: Char, private val closeQuo
             return
         val hasOpenQuote = elementText[0] == openQuote
         val hasCloseQuote = elementText.last() == closeQuote
-        if (hasOpenQuote && hasCloseQuote)
+        if (hasOpenQuote && hasCloseQuote) {
             return
+        }
         val replaceWith = if (!hasOpenQuote && !hasCloseQuote) {
             "$openQuote$insertionText$closeQuote"
         } else if (!hasOpenQuote) {
             "$openQuote$insertionText"
-        } else if (!hasCloseQuote) {
-            "$insertionText$closeQuote"
         } else {
-            insertionText
+            "$insertionText$closeQuote"
         }
         val editor = context.editor
         EditorUtil.replaceText(editor, TextRange.create(context.startOffset, context.selectionEndOffset), replaceWith, true)
@@ -191,7 +157,7 @@ object EqualSignInsertHandler : InsertHandler<LookupElement> {
             else
                 " = "
             EditorUtil.insertText(context, text, true)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
 
         }
     }

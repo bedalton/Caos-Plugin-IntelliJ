@@ -15,7 +15,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.Disposable
 import com.badahori.creatures.plugins.intellij.agenteering.injector.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
-import com.intellij.ProjectTopics
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
@@ -30,8 +29,6 @@ import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ModuleRootEvent
-import com.intellij.openapi.roots.ModuleRootListener
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
@@ -59,17 +56,13 @@ import javax.swing.*
  * An editor notification provider
  * Though not its original purpose, the notification provider functions as a persistent toolbar
  */
-class CaosScriptEditorToolbar(val project: Project)
-    : EditorNotifications.Provider<EditorNotificationPanel>(), DumbAware, Disposable {
+class CaosScriptEditorToolbar(
+    val project: Project
+) : EditorNotifications.Provider<EditorNotificationPanel>(), DumbAware, Disposable {
 
     override fun getKey(): Key<EditorNotificationPanel> = KEY
 
     init {
-        project.messageBus.connect().subscribe(ProjectTopics.PROJECT_ROOTS, object : ModuleRootListener {
-            override fun rootsChanged(event: ModuleRootEvent) {
-                //notifications.updateAllNotifications()
-            }
-        })
     }
 
     override fun createNotificationPanel(
@@ -144,22 +137,11 @@ internal fun createCaosScriptHeaderComponent(
         return null
     }
 
-//    if (DumbService.isDumb(project)) {
-//        DumbService.getInstance(project).runWhenSmart {
-//            if (project.isDisposed) {
-//                return@runWhenSmart
-//            }
-//            runReadAction {
-//                populate(project, fileEditor, virtualFile, pointer, toolbar)
-//            }
-//        }
-//    } else {
-        invokeLater {
-            runReadAction {
-                populate(project, fileEditor, virtualFile, pointer, toolbar)
-            }
+    invokeLater {
+        runReadAction {
+            populate(project, fileEditor, virtualFile, pointer, toolbar)
         }
-//    }
+    }
     return toolbar
 }
 
@@ -175,12 +157,6 @@ private fun populate(
     if (project.isDisposed) {
         return
     }
-//    val initialVariant = caosFile.variant
-//    val initialLastInterfaceName = try {
-//        caosFile.lastInjector
-//    } catch (e: Exception) {
-//        null
-//    }
 
     // Variants
     val variantPanel = JPanel()
@@ -233,7 +209,9 @@ private fun populate(
         virtualFile.path,
         ActionToolbar.NAVBAR_MINIMUM_BUTTON_SIZE
     )
-    var injectorList: List<GameInterfaceName> = CaosApplicationSettingsService.getInstance().gameInterfaceNames
+    var injectorList: List<GameInterfaceName> = CaosInjectorApplicationSettingsService
+        .getInstance()
+        .allGameInterfaceNames
     val updateInjectors: (variant: CaosVariant?, GameInterfaceName?) -> Unit = update@{ variant, newGameInterface ->
 
         val newActions: List<AnAction> = InjectorActionGroup
@@ -250,8 +228,8 @@ private fun populate(
         injectorModel.removeAllElements()
         injectorModel.addAll(newActions.toList())
         val newSelection = injectorActions.firstOrNull { it.gameInterfaceName == targetInterface }
-                ?: injectorActions.firstOrNull { it.gameInterfaceName.variant == variant }
-                ?: injectorActions.firstOrNull { it.gameInterfaceName.isVariant(variant) }
+            ?: injectorActions.firstOrNull { it.gameInterfaceName.variant == variant }
+            ?: injectorActions.firstOrNull { it.gameInterfaceName.isVariant(variant) }
         lastInjector = newSelection
 
         naturalInjectorSelect.value = false
@@ -279,7 +257,7 @@ private fun populate(
         virtualFile.path,
         ActionToolbar.NAVBAR_MINIMUM_BUTTON_SIZE
     )
-//    compilePanel.add(JLabel("Compile:"), gbc)
+
     compilePanel.add(compileButton, gbc)
     compilePanel.add(JSeparator(SwingConstants.VERTICAL), gbc)
 
@@ -335,21 +313,9 @@ private fun populate(
         DaemonCodeAnalyzer.getInstance(project).restart(file)
     }
 
-//    // Listener for when variant changes in CAOS due to code markup
-//    pointer.element?.let { caosFile ->
-//        val listener = caosFile.addVariantChangeListener { variant ->
-//            assignVariant(variant)
-//            variantSelect.selectedItem = (variant?.code ?: "")
-//            compilePanel.isVisible = compilePanel.isVisible && variant != null
-//        }
-//        PsiManager.getInstance(project).addPsiTreeChangeListener(listener)
-//    } ?: return
-
-
-
     val moduleVariant = pointer.element?.module?.variant
     val showVariantSelect = try {
-            (moduleVariant == null ||
+        (moduleVariant == null ||
             moduleVariant == CaosVariant.UNKNOWN ||
             moduleVariant.isC3DS) &&
             pointer.element?.virtualFile !is CaosVirtualFile
@@ -357,11 +323,12 @@ private fun populate(
         false
     }
 
-    if (showVariantSelect)
-    if (moduleVariant?.isC3DS == true) {
-        variantSelect.removeAllItems()
-        variantSelect.addItem("C3")
-        variantSelect.addItem("DS")
+    if (showVariantSelect) {
+        if (moduleVariant?.isC3DS == true) {
+            variantSelect.removeAllItems()
+            variantSelect.addItem("C3")
+            variantSelect.addItem("DS")
+        }
     }
 
 
@@ -373,11 +340,6 @@ private fun populate(
                 compileButton.isVisible = isCaos2 != null
                 compileButton.revalidate()
                 compilePanel.revalidate()
-//                if (showVariantSelect) {
-//                    variantSelect.isEditable = isCaos2 == null
-//                    variantSelect.isEnabled = isCaos2 == null
-//                    variantSelect.revalidate()
-//                }
             } ?: return@run
             PsiManager.getInstance(project).addPsiTreeChangeListener(caos2Listener)
 
@@ -433,8 +395,7 @@ private fun populate(
                 }
                 ?: newActions.firstOrNull {
                     (it as? CaosInjectorAction)?.gameInterfaceName?.variant == initialVariant
-                }
-                ?: newActions.firstOrNull {
+                } ?: newActions.firstOrNull {
                     (it as? CaosInjectorAction)?.gameInterfaceName?.isVariant(initialVariant) == true
                 }
             naturalInjectorSelect.value = false
@@ -632,18 +593,6 @@ fun setWhenReady(
     if (project.isDisposed) {
         return
     }
-
-//    if (DumbService.isDumb(project)) {
-//        DumbService.getInstance(project).runWhenSmart {
-//            if (project.isDisposed) {
-//                return@runWhenSmart
-//            }
-//            runWriteAction {
-//                setWhenReady(project, pointer, setVariant, setInitialInjector)
-//            }
-//        }
-//        return
-//    }
 
     val file = pointer.element
         ?: return
