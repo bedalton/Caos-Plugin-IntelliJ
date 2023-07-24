@@ -94,6 +94,7 @@ data class Caos2CobC1(
             }
             writeSfcString(agentName)
             writeNullByte()
+            writeNullByte()
         }
     }
 
