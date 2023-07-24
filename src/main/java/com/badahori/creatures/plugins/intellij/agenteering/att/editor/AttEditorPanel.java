@@ -8,7 +8,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseR
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsComponent;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles;
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
@@ -122,7 +121,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         initDisplay(controller.getVariant());
         poseEditor.setRootPath(controller.getRootPath());
         updateUI();
-        CaosProjectSettingsComponent.addSettingsChangedListener(this::onChange);
+        CaosProjectSettingsService.addSettingsChangedListener(project, this::onChange);
     }
 
     private void initListeners() {
@@ -131,7 +130,8 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         initKeyListeners();
 
         // Add scale dropdown listener
-        scale.setSelectedIndex(CaosProjectSettingsService.getInstance(project).getState().getAttScale());
+        final CaosProjectSettingsService.CaosProjectSettings state = CaosProjectSettingsService.getInstance(project).getState();
+        scale.setSelectedIndex(state != null ? state.getAttScale() : 6);
         scale.addItemListener((e) -> setScale(scale.getSelectedIndex()));
 
         // Add listener for PART dropdown
@@ -1214,7 +1214,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         return attToolbar;
     }
 
-    private void onChange(CaosProjectSettingsComponent.State old, CaosProjectSettingsComponent.State settings) {
+    private void onChange(CaosProjectSettingsService.CaosProjectSettings old, CaosProjectSettingsService.CaosProjectSettings settings) {
         updateCells();
     }
 }

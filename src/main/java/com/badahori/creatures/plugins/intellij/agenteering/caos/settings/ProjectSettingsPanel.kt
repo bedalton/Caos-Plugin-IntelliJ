@@ -3,7 +3,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsImpl.CaosApplicationSettingsState
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService.CaosApplicationSettings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService.CaosProjectSettings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInjectorApplicationSettingsService.CaosWineSettings
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CreateInjectorDialog
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -38,6 +40,13 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
         CaosApplicationSettingsService.getInstance()
     }
 
+    private val wineSettingsService: CaosInjectorApplicationSettingsService? by lazy {
+        if (project.isDisposed) {
+            return@lazy null
+        }
+        CaosInjectorApplicationSettingsService.getInstance()
+    }
+
     override fun reset() {
         panel.reset()
     }
@@ -46,12 +55,16 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
         return panel.getPreferredFocusComponent()
     }
 
-    private val applicationSettings: CaosApplicationSettingsState? by lazy {
+    private val applicationSettings: CaosApplicationSettings? by lazy {
         applicationSettingsService?.state
     }
 
-    private val projectSettings: CaosProjectSettingsComponent.State? by lazy {
+    private val projectSettings: CaosProjectSettings? by lazy {
        projectSettingsService?.state
+    }
+
+    private val wineSettings: CaosWineSettings? by lazy {
+        wineSettingsService?.state
     }
 
     override fun createComponent(): JComponent? {
@@ -61,29 +74,47 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
             ?: return null
         val projectSettings = projectSettings
             ?: return null
-        val panel = ProjectSettingsPanel(project, applicationSettings, projectSettings)
+        val wineSettings = wineSettings
+            ?: return null
+        val panel = ProjectSettingsPanel(
+            project,
+            applicationSettings,
+            projectSettings,
+            wineSettings
+        )
         this.panel = panel
         return panel.panel
     }
 
     override fun isModified(): Boolean {
-        if (this::panel.isInitialized)
+        if (this::panel.isInitialized) {
             return panel.modified() && this.panel.interfaceNamesAreValid
+        }
         return false
     }
 
     override fun apply() {
-        if (!this::panel.isInitialized)
+        if (!this::panel.isInitialized) {
             return
+        }
+        // Application Settings
         val applicationService = applicationSettingsService
             ?: return
         val updatedApplicationSettings = panel.applyApplicationSettings()
         applicationService.loadState(updatedApplicationSettings)
+
+        // Project Settings
         val projectService = projectSettingsService
             ?: return
         val updatedProjectSettings = panel.applyProjectSettings()
         projectService.loadState(updatedProjectSettings)
         ProjectView.getInstance(project).refresh()
+
+        // Wine Settings
+        val wineService = wineSettingsService
+            ?: return
+        val updatedWineSettings = panel.applyWineSettings()
+        wineService.loadState(updatedWineSettings)
     }
 
     override fun getDisplayName(): String {
@@ -94,20 +125,21 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
 
 private class ProjectSettingsPanel(
     private val project: Project,
-    private var applicationSettings: CaosApplicationSettingsState,
-    private var projectSettings: CaosProjectSettingsComponent.State
+    private var applicationSettings: CaosApplicationSettings,
+    private var projectSettings: CaosProjectSettings,
+    private var wineSettings: CaosWineSettings
     ) {
 
     private val originalCombineAttNodes = applicationSettings.combineAttNodes
     private val originalReplicateAttToDuplicateSprite = applicationSettings.replicateAttsToDuplicateSprites != false
     private val originalIgnoredFilesText = projectSettings.ignoredFilenames.joinToString("\n")
-    private val originalGameInterfaceNames: List<GameInterfaceName> = applicationSettings.gameInterfaceNames
+    private val originalGameInterfaceNames: List<GameInterfaceName> = wineSettings.gameInterfaceNames
     private val originalGameInterfaceNamesSerialized = originalGameInterfaceNames.serialized()
     private val originalDefaultVariant: String = projectSettings.defaultVariant?.code ?: ""
     private val originalIsAutoPoseEnabled: Boolean = applicationSettings.isAutoPoseEnabled
     private val originalTrimBlk: Boolean? = projectSettings.trimBLKs
-    private val originalWine32Path: String? = applicationSettings.wine32Path
-    private val originalWine64Path: String? = applicationSettings.wine64Path
+    private val originalWine32Path: String? = wineSettings.wine32Path
+    private val originalWine64Path: String? = wineSettings.wine64Path
 
     private var mInterfaceNamesAreValid = true
     val interfaceNamesAreValid get() = mInterfaceNamesAreValid
@@ -224,33 +256,44 @@ private class ProjectSettingsPanel(
         return defaultVariant
     }
 
+    @Suppress("RedundantIf")
     fun modified(): Boolean {
-        if (defaultVariant.selectedItem != projectSettings.defaultVariant)
+        if (defaultVariant.selectedItem != projectSettings.defaultVariant) {
             return true
+        }
+
         if (combineAttNodes.isSelected != applicationSettings.combineAttNodes) {
             return true
         }
+
         if (ignoredFileNames.text != projectSettings.ignoredFilenames.joinToString("\n")) {
             return true
         }
+
         if (gameInterfaceListModel.serialized().equalIgnoringOrder(originalGameInterfaceNamesSerialized)) {
             return true
         }
+
         if (autoPoseCheckbox.isSelected != applicationSettings.isAutoPoseEnabled) {
             return true
         }
+
         if (replicateAttToDuplicateSprites.isSelected != applicationSettings.replicateAttsToDuplicateSprites) {
             return true
         }
+
         if (trimBlkCheckbox.isSelected != projectSettings.trimBLKs) {
             return true
         }
+
         if (wine32PathTextField.text != originalWine32Path) {
             return true
         }
+
         if (wine64PathTextField.text != originalWine64Path) {
             return true
         }
+
         return false
     }
 
@@ -258,7 +301,7 @@ private class ProjectSettingsPanel(
     /**
      * Apply the current panel's settings to the settings object
      */
-    fun applyProjectSettings(): CaosProjectSettingsComponent.State {
+    fun applyProjectSettings(): CaosProjectSettings {
         val newSettings = projectSettings.copy(
             defaultVariant = CaosVariant.fromVal(defaultVariant.selectedItem as? String).nullIfUnknown(),
             ignoredFilenames = getIgnoredFileNames(),
@@ -271,18 +314,25 @@ private class ProjectSettingsPanel(
     /**
      * Apply the current panel's settings to the settings object
      */
-    fun applyApplicationSettings(): CaosApplicationSettingsState {
-        val gameInterfaceNames = getGameInterfaceNames()
+    fun applyApplicationSettings(): CaosApplicationSettings {
         val newSettings = applicationSettings.copy(
             combineAttNodes = this@ProjectSettingsPanel.combineAttNodes.isSelected,
-            gameInterfaceNames = gameInterfaceNames,
             isAutoPoseEnabled = autoPoseCheckbox.isSelected,
-            replicateAttsToDuplicateSprites = this@ProjectSettingsPanel.replicateAttToDuplicateSprites.isSelected,
-            wine64Path = this@ProjectSettingsPanel.wine64PathTextField.text,
-            wine32Path = this@ProjectSettingsPanel.wine32PathTextField.text,
+            replicateAttsToDuplicateSprites = this@ProjectSettingsPanel.replicateAttToDuplicateSprites.isSelected
         )
         applicationSettings = newSettings
         return newSettings
+    }
+
+    fun applyWineSettings(): CaosWineSettings {
+        val gameInterfaceNames = getGameInterfaceNames()
+        val newWineSettings = wineSettings.copy(
+            gameInterfaceNames = gameInterfaceNames,
+            wine64Path = this@ProjectSettingsPanel.wine64PathTextField.text,
+            wine32Path = this@ProjectSettingsPanel.wine32PathTextField.text,
+        )
+        wineSettings = newWineSettings
+        return newWineSettings
     }
 
     private fun getIgnoredFileNames(): List<String> {
@@ -474,7 +524,7 @@ private class GameInterfaceCell(
                 isVisible = false
                 return null
             }
-            val state = CaosProjectSettingsService.getInstance(project).state
+            val state = CaosProjectSettingsService.getInstance(project).stateNonNull
             val projectVariant = state.defaultVariant
                 ?: state.lastVariant
                 ?: project.inferVariantHard()

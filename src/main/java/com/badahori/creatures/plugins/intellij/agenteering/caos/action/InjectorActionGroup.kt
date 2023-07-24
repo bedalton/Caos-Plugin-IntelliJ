@@ -3,7 +3,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 import com.bedalton.common.util.OS
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosConstants
@@ -65,7 +64,7 @@ class InjectorActionGroup(file: CaosScriptFile) : ActionGroup(
 
     companion object {
         fun getGameInterfaceNames(variant: CaosVariant?): List<GameInterfaceName> {
-            val projectGameInterfaces = CaosApplicationSettingsService.getInstance().gameInterfaceNames(variant)
+            val projectGameInterfaces = CaosInjectorApplicationSettingsService.getInstance().gameInterfaceNames(variant)
             val variantInterfaces = getDefaultInjectors(variant)
             return (projectGameInterfaces + variantInterfaces)
                 .distinctBy { it.id }
@@ -192,13 +191,13 @@ internal class AddGameInterfaceAction(private val project: Project, private val 
             override fun undo() {
                 if (project.isDisposed)
                     return
-                CaosApplicationSettingsService.getInstance().removeGameInterfaceName(newInterface)
+                CaosInjectorApplicationSettingsService.getInstance().removeGameInterfaceName(newInterface)
             }
 
             override fun redo() {
                 if (project.isDisposed)
                     return
-                CaosApplicationSettingsService.getInstance().addGameInterfaceName(newInterface)
+                CaosInjectorApplicationSettingsService.getInstance().addGameInterfaceName(newInterface)
             }
         }
         WriteCommandAction.writeCommandAction(project)

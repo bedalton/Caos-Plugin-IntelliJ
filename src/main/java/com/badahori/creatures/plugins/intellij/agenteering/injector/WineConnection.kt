@@ -6,10 +6,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.messa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInjectorApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CLIInjectFlag.*
-import com.badahori.creatures.plugins.intellij.agenteering.injector.InjectorHelper.escape
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
@@ -18,7 +16,6 @@ import com.bedalton.io.bytes.decodeToWindowsCP1252
 import com.bedalton.log.Log
 import com.bedalton.log.eIf
 import com.bedalton.log.iIf
-import com.intellij.execution.target.value.DeferredTargetValue
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import korlibs.io.util.escape
@@ -436,7 +433,7 @@ internal class WineConnection(
                     cont.resume(null)
                     return@create
                 }
-                val settings = CaosApplicationSettingsService.getInstance()
+                val settings = CaosInjectorApplicationSettingsService.getInstance()
                 settings.gameInterfaceNames = settings.gameInterfaceNames.replaceAllInstances(
                     data.copy(wineExecutable = path)
                 ) { it == data }
@@ -684,7 +681,7 @@ object WineHelper {
     @JvmStatic
     fun getDefault(isWin32: Boolean, nullIfNotExists: Boolean): String? {
 
-        val applicationSettings = CaosApplicationSettingsService
+        val applicationSettings = CaosInjectorApplicationSettingsService
             .getInstance()
        var executable = if (isWin32) {
             applicationSettings.wine32Path ?: applicationSettings.winePath

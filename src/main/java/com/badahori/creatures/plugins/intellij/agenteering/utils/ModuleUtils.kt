@@ -4,7 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfac
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleSettingsService
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInjectorApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceForKey
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
@@ -110,7 +110,7 @@ internal fun CaosModuleSettingsService.lastGameInterface(): GameInterfaceName? {
         ?: return null
     val key = state.lastGameInterfaceName
         ?: return null
-    return CaosApplicationSettingsService.getInstance().gameInterfaceForKey(variant, key)
+    return CaosInjectorApplicationSettingsService.getInstance().gameInterfaceForKey(variant, key)
 }
 
 internal fun CaosModuleSettingsService.lastGameInterface(gameInterfaceName: GameInterfaceName) {

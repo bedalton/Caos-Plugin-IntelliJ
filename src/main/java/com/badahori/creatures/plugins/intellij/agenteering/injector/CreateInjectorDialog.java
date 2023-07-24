@@ -386,7 +386,7 @@ public class CreateInjectorDialog extends DialogBuilder {
             case WINE:
                 final String prefixPathNotNull = Objects.requireNonNull(prefixPath);
                 if ((new File(prefixPathNotNull)).exists()) {
-                    CaosApplicationSettingsService.getInstance().setLastWineDirectory(prefixPathNotNull);
+                    CaosInjectorApplicationSettingsService.getInstance().setLastWineDirectory(prefixPathNotNull);
                 }
                 gameInterface = new WineInjectorInterface(
                         code,
@@ -695,7 +695,7 @@ public class CreateInjectorDialog extends DialogBuilder {
      * @param home the user's home directory / default directory if no wine folders automatically found
      */
     private void initializeWinePrefixField(final File home) {
-        final CaosApplicationSettingsService state = CaosApplicationSettingsService.getInstance();
+        final CaosInjectorApplicationSettingsService state = CaosInjectorApplicationSettingsService.getInstance();
         // Initialize WINE directory
         final TextFieldWithBrowseButton prefix = createSelectFolderField(
                 "Wine Root",

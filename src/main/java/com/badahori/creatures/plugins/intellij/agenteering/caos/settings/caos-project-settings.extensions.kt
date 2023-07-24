@@ -2,19 +2,17 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
-import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
-import com.badahori.creatures.plugins.intellij.agenteering.injector.forKey
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariantExplicitOrImplicit
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosConstants
+import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInjectorInterface
+import com.badahori.creatures.plugins.intellij.agenteering.injector.forKey
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getFilesWithExtension
 import com.intellij.ide.scratch.ScratchUtil
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
@@ -22,20 +20,19 @@ import com.intellij.openapi.util.UserDataHolder
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.GlobalSearchScopes.directoryScope
-import java.util.*
 
 
 val Project.settings: CaosProjectSettingsService get() = CaosProjectSettingsService.getInstance(this)
 
 
-val CaosProjectSettingsService.ignoredFiles: List<String> get() = state.ignoredFilenames
+val CaosProjectSettingsService.ignoredFiles: List<String> get() = stateNonNull.ignoredFilenames
 
 
 /**
  * Sets the project wide default variant
  */
 fun CaosProjectSettingsService.setDefaultVariant(variant: CaosVariant?) {
-    val state = state
+    val state = stateNonNull
     if (state.defaultVariant == variant)
         return
     loadState(
@@ -369,7 +366,7 @@ private fun variantInScopeFinal(
 fun CaosProjectSettingsService.addIgnoredFile(fileName: String) {
     if (fileName.isBlank())
         return
-    val state = state
+    val state = stateNonNull
     if (state.ignoredFilenames.contains(fileName)) {
         return
     }
@@ -386,7 +383,7 @@ fun CaosProjectSettingsService.addIgnoredFile(fileName: String) {
 fun CaosProjectSettingsService.removeIgnoredFile(fileName: String) {
     if (fileName.isBlank())
         return
-    val state = state
+    val state = stateNonNull
     if (!state.ignoredFilenames.contains(fileName)) {
         return
     }
@@ -398,8 +395,8 @@ fun CaosProjectSettingsService.removeIgnoredFile(fileName: String) {
 /**
  * Adds a game interface name used to communicate with a running instance of Creatures on the OS
  */
-fun CaosApplicationSettingsService.addGameInterfaceName(interfaceName: GameInterfaceName) {
-    val state = state
+fun CaosInjectorApplicationSettingsService.addGameInterfaceName(interfaceName: GameInterfaceName) {
+    val state = stateNonNull
     loadState(
         state.copy(
             gameInterfaceNames = (state.gameInterfaceNames + interfaceName)
@@ -413,8 +410,8 @@ fun CaosApplicationSettingsService.addGameInterfaceName(interfaceName: GameInter
  * Removes a game interface name from the project
  * GAME interface names are used to communicate with running Creatures instances
  */
-fun CaosApplicationSettingsService.removeGameInterfaceName(interfaceName: GameInterfaceName) {
-    val state = state
+fun CaosInjectorApplicationSettingsService.removeGameInterfaceName(interfaceName: GameInterfaceName) {
+    val state = stateNonNull
     loadState(state.copy(
         gameInterfaceNames = state.gameInterfaceNames
             .filter { it != null && it != interfaceName }
@@ -424,9 +421,9 @@ fun CaosApplicationSettingsService.removeGameInterfaceName(interfaceName: GameIn
 /**
  * List all game interface names, formatted, with asterisks(*) expanded
  */
-val CaosApplicationSettingsService.gameInterfaceNames: List<GameInterfaceName>
+val CaosInjectorApplicationSettingsService.allGameInterfaceNames: List<GameInterfaceName>
     get() {
-        return state.gameInterfaceNames
+        return stateNonNull.gameInterfaceNames
             .filterNotNull()
             .flatMap { gameInterfaceName ->
                 if (gameInterfaceName.variant != CaosVariant.ANY) {
@@ -446,8 +443,8 @@ val CaosApplicationSettingsService.gameInterfaceNames: List<GameInterfaceName>
 /**
  * Gets game interface names for a variant after expanding asterisks(*)
  */
-fun CaosApplicationSettingsService.gameInterfaceNames(variant: CaosVariant?): List<GameInterfaceName> {
-    val interfaces = gameInterfaceNames.filterNotNull()
+fun CaosInjectorApplicationSettingsService.gameInterfaceNames(variant: CaosVariant?): List<GameInterfaceName> {
+    val interfaces = allGameInterfaceNames.filterNotNull()
     if (variant.nullIfUnknown() == null) {
         return interfaces
     }
@@ -460,8 +457,8 @@ fun CaosApplicationSettingsService.gameInterfaceNames(variant: CaosVariant?): Li
  */
 private val CaosVariant.lastInterfacePrefix get() = "$code=="
 
-fun CaosProjectSettingsService.lastInterface(variant: CaosVariant, interfaceName: GameInterfaceName) {
-    val state = state
+fun CaosInjectorApplicationSettingsService.lastInterface(variant: CaosVariant, interfaceName: GameInterfaceName) {
+    val state = stateNonNull
     val prefix = variant.lastInterfacePrefix
     loadState(
         state.copy(
@@ -472,31 +469,28 @@ fun CaosProjectSettingsService.lastInterface(variant: CaosVariant, interfaceName
     )
 }
 
-fun CaosApplicationSettingsService.gameInterfaceForKey(key: String): GameInterfaceName? {
+fun CaosInjectorApplicationSettingsService.gameInterfaceForKey(key: String): GameInterfaceName? {
     return gameInterfaceNames.forKey(null, key)
 }
 
-fun CaosApplicationSettingsService.gameInterfaceForKey(variant: CaosVariant?, key: String): GameInterfaceName? {
+fun CaosInjectorApplicationSettingsService.gameInterfaceForKey(variant: CaosVariant?, key: String): GameInterfaceName? {
     return gameInterfaceNames.forKey(variant, key)
 }
 
-fun CaosProjectSettingsService.lastInterface(variant: CaosVariant?): GameInterfaceName? {
+fun CaosInjectorApplicationSettingsService.lastInterface(variant: CaosVariant?): GameInterfaceName? {
     if (variant == null)
         return null
     val prefix = variant.lastInterfacePrefix
-    return state.lastGameInterfaceNames
+    return stateNonNull.lastGameInterfaceNames
         .mapNotNull map@{ entry ->
             if (!entry.startsWith(prefix))
                 return@map null
             val key = entry.substring(prefix.length)
-            CaosApplicationSettingsService.getInstance().gameInterfaceNames.forKey(variant, key)
+            allGameInterfaceNames.forKey(variant, key)
         }
         .firstOrNull()
 }
 
-interface CaosProjectSettingsChangeListener : EventListener {
-    fun onChange(oldState: CaosProjectSettingsComponent.State, newState: CaosProjectSettingsComponent.State)
-}
 
 /**
  * Gets/Sets whether to check a file for valid CAOS before injecting
@@ -504,10 +498,12 @@ interface CaosProjectSettingsChangeListener : EventListener {
  * described
  */
 var CaosProjectSettingsService.injectionCheckDisabled: Boolean
-    get() = state.injectionCheckDisabled
+    get() = stateNonNull.injectionCheckDisabled
     set(value) {
-        if (state.injectionCheckDisabled == value)
+        val state = stateNonNull
+        if (state.injectionCheckDisabled == value) {
             return
+        }
         loadState(
             state.copy().apply {
                 disableInjectionCheck(value)
@@ -520,17 +516,17 @@ var CaosProjectSettingsService.injectionCheckDisabled: Boolean
  * Used for things like the front facing ATTs with C1e -> C2e conversions
  */
 var CaosApplicationSettingsService.replicateAttToDuplicateSprites: Boolean?
-    get() = state.replicateAttsToDuplicateSprites
+    get() = state?.replicateAttsToDuplicateSprites
     set(value) {
-        if (value == state.replicateAttsToDuplicateSprites)
+        if (value == state?.replicateAttsToDuplicateSprites)
             return
         loadState(
-            state.copy(
+            getState().copy(
                 replicateAttsToDuplicateSprites = value != false
             )
         )
     }
 
 
-private val VARIANT_VALID_FOR = 40_000
+private const val VARIANT_VALID_FOR = 40_000
 private val VARIANT_WITH_EXPIRY = Key<Pair<Long, CaosVariant?>>("bedalton.creatures.VARIANT_WITH_EXPIRY")

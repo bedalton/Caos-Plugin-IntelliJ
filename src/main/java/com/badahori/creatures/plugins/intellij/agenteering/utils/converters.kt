@@ -2,16 +2,23 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService.CaosApplicationSettings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService.CaosProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.bedalton.common.util.className
 import com.bedalton.io.bytes.decodeBase64
 import com.bedalton.io.bytes.toBase64
+import com.intellij.util.io.decodeBase64
 import com.intellij.util.xmlb.Converter
-import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.DeserializationStrategy
+import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.nio.charset.Charset
 
+private val json = Json {
+    ignoreUnknownKeys = true
+}
 
 internal class CaosVariantConverter : Converter<CaosVariant?>() {
     override fun toString(value: CaosVariant): String {
@@ -23,21 +30,52 @@ internal class CaosVariantConverter : Converter<CaosVariant?>() {
     }
 }
 
+internal class ProjectSettingsConverter: JsonToXMLStringConverter<CaosProjectSettings>() {
+    override val serializer: SerializationStrategy<CaosProjectSettings>
+        get() = CaosProjectSettings.serializer()
+    override val deserializer: DeserializationStrategy<CaosProjectSettings>
+        get() = CaosProjectSettings.serializer()
+
+}
+
+
+internal class ApplicationSettingsConverter: JsonToXMLStringConverter<CaosApplicationSettings>() {
+    override val deserializer: DeserializationStrategy<CaosApplicationSettings>
+        get() = CaosApplicationSettings.serializer()
+    override val serializer: SerializationStrategy<CaosApplicationSettings>
+        get() = CaosApplicationSettings.serializer()
+}
+
 
 internal class StringListConverter : Converter<List<String>>() {
     override fun toString(values: List<String>): String {
-        var delimiterEscape = DELIMITER_ESCAPE
-
-        // Delimiter escape is variable in case a value in the list contains the escape sequence
-        while (values.any { it.contains(delimiterEscape) }) {
-            delimiterEscape = "xx@$delimiterEscape@xx"
-        }
-        // Format for key is {delimiter marker} {delimiter} {delimiter_escape} {Delimiter_marker}
-        val delimiterKey = DELIMITER_DELIMITER + DELIMITER + delimiterEscape + DELIMITER_DELIMITER
-        return delimiterKey + values.joinToString(DELIMITER) { it.replace(DELIMITER, delimiterEscape) }
+        val rawJSON = GameInterfaceName.json.encodeToString<Array<String>>(values.toTypedArray())
+        return rawJSON.encodeToByteArray().toBase64()
     }
 
-    override fun fromString(value: String): List<String> {
+    override fun fromString(value: String): List<String>? {
+        val decoded = try {
+            value.trim().decodeBase64().decodeToString()
+        } catch (e: Exception) {
+            value.trim()
+        }
+
+        if (decoded.startsWith('[') && decoded.endsWith(']')) {
+            return try {
+                json.decodeFromString<List<String>>(decoded).toList()
+            } catch (e: Exception) {
+                LOGGER.severe("Failed to deserialize JSON string; ${e.className}:${e.message}")
+                null
+            }
+        }
+        return try {
+            fromStringOld(decoded)
+        } catch (e: Exception) {
+            fromStringOld(value)
+        }
+    }
+
+    private fun fromStringOld(value: String): List<String> {
 
         // Get delimiter components
         val components: List<String?> = if (value.startsWith(DELIMITER_DELIMITER)) {
@@ -99,7 +137,7 @@ internal object GameInterfaceListConverter : Converter<List<GameInterfaceName>>(
     private const val DELIMITER_VALUES_DELIMITER = "|||"
     private const val DELIMITER = ":++__;;:!!:;;__++:"
 
-    override fun toString(values: List<GameInterfaceName>): String {
+    override fun toString(values: List<GameInterfaceName>): String? {
         val rawJSON = GameInterfaceName.json.encodeToString<Array<GameInterfaceName>>(values.toTypedArray())
         return rawJSON.encodeToByteArray().toBase64()
     }
@@ -135,4 +173,55 @@ internal object GameInterfaceListConverter : Converter<List<GameInterfaceName>>(
                 GameInterfaceName.fromString(it)
             }
     }
+}
+
+
+
+abstract class JsonToXMLStringConverter<T>: Converter<T>() {
+
+    abstract val serializer: SerializationStrategy<T>
+    abstract val deserializer: DeserializationStrategy<T>
+
+    override fun fromString(value: String): T? {
+        LOGGER.info("Deserializing with ${this.className};\n${value}")
+        val raw = value
+            .trim()
+            .nullIfEmpty()
+            ?: return null
+        val jsonString: String = when {
+            raw.startsWith('{') && raw.endsWith('}') -> raw
+            raw.startsWith('[') && raw.endsWith(']') -> raw
+            else -> try {
+                value.decodeBase64().decodeToString()
+            } catch (e: Exception) {
+                LOGGER.severe("Failed to decode BASE64 encoded string. Proceeding as plain text; ${e.className}:${e.message}\n${e.stackTraceToString()}")
+                return null
+            }
+        }
+        return try {
+            LOGGER.info("Deserializing with ${this.className} With JSON;\n${jsonString}")
+            json.decodeFromString(deserializer, jsonString)
+        } catch (e: Exception) {
+            LOGGER.severe("Failed to decode json using ${deserializer.className}\n${e.className}:${e.message}\n${e.stackTraceToString()}")
+            null
+        }
+    }
+
+    override fun toString(value: T & Any): String? {
+        return try {
+            json.encodeToString(serializer, value)
+                .also {
+                    LOGGER.info("Serializing with ${this.className} With JSON;\n$it")
+                }
+                .encodeToByteArray()
+                .toBase64()
+                .also {
+                    LOGGER.info("Deserializing with ${this.className} With BASE64;\n$it")
+                }
+        } catch (e: Exception) {
+            LOGGER.severe("Failed to encode ${value.className} to JSON -> BASE64 encoded string.\n${e.className}:${e.message}\n${e.stackTraceToString()}")
+            null
+        }
+    }
+
 }

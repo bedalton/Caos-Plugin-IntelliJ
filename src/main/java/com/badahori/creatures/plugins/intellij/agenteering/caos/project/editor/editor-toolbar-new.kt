@@ -406,9 +406,10 @@ private fun populate(
         variantPanel.isVisible = false
     }
 
-    CaosApplicationSettingsImpl.addSettingsChangedListener(fileEditor) { _, settings ->
-        if ((settings.gameInterfaceNames + injectorList).distinct().isEmpty())
+    CaosInjectorApplicationSettingsService.addSettingsChangedListener(fileEditor) { _, settings ->
+        if ((settings.gameInterfaceNames + injectorList).distinct().isEmpty()) {
             return@addSettingsChangedListener
+        }
         injectorList = settings.gameInterfaceNames
         naturalInjectorSelect.value = false
         updateInjectors(pointer.element?.variant, null)

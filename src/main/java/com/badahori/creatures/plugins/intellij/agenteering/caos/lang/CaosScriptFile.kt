@@ -86,7 +86,6 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                             ?.nullIfUnknown()
                 }
                 ?: this.directory?.cachedVariantExplicitOrImplicit
-                ?: null
         }
 
     override fun setVariant(variant: CaosVariant?, explicit: Boolean) {
@@ -149,7 +148,8 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
                 ?: InjectorInterfacePropertyPusher
                     .readFromStorage(virtualFile ?: myFile, variant)
                 ?: module?.settings?.lastGameInterface()
-                ?: project.settings.lastInterface(variant)
+                ?: CaosInjectorApplicationSettingsService.getInstance()
+                    .lastInterface(variant)
         }
         set(gameInterface) {
             putUserData(INJECTOR_INTERFACE_USER_DATA_KEY, gameInterface)
@@ -158,7 +158,7 @@ class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myF
             if (gameInterface != null) {
                 module?.settings?.lastGameInterface(gameInterface)
                 variant.nullIfUnknown()?.let { variant ->
-                    project.settings.lastInterface(variant, gameInterface)
+                    CaosInjectorApplicationSettingsService.getInstance().lastInterface(variant, gameInterface)
                 }
             }
         }
