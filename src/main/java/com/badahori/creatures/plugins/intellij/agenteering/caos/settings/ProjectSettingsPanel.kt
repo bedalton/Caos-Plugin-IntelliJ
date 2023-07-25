@@ -26,6 +26,10 @@ import javax.swing.*
 
 class CaosProjectSettingsConfigurable(private val project: Project) : Configurable {
 
+    override fun getHelpTopic(): String {
+        return "Settings for creatures CAOS, agent and breed editing"
+    }
+
     private lateinit var panel: ProjectSettingsPanel
 
     private val projectSettingsService: CaosProjectSettingsService? by lazy {
