@@ -132,7 +132,7 @@ intellij {
     version.set(ideaVersionStart)
     updateSinceUntilBuild.set(false)
     sandboxDir.set("/Users/daniel/Projects/AppsAndDevelopment/Intellij Plugins/Plugin Sandbox")
-    plugins.set(listOf("PsiViewer:$psiViewerVersion"))//, "com.mallowigi.idea:10.0"))
+//    plugins.set(listOf("PsiViewer:$psiViewerVersion"))//, "com.mallowigi.idea:10.0"))
 
 }
 
