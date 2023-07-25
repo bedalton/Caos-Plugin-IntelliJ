@@ -38,7 +38,7 @@ class AttFilesByVariantIndex : ScalarIndexExtension<CaosVariant>() {
             ID.create("com.badahori.creatures.plugins.intellij.agenteering.att.AttByVariantIndex")
 
         // Update this index's version number, NOT const "VERSION"
-        private const val THIS_VERSION = 1
+        private const val THIS_VERSION = 2
 
         // DO NOT ALTER "VERSION" DIRECTLY
         const val VERSION = THIS_VERSION + BreedPartKey.VERSION + BreedKeyIndexer.VERSION + BreedPartDescriptor.VERSION
