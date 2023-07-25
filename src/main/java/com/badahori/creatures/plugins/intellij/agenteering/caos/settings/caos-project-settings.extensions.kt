@@ -516,12 +516,12 @@ var CaosProjectSettingsService.injectionCheckDisabled: Boolean
  * Used for things like the front facing ATTs with C1e -> C2e conversions
  */
 var CaosApplicationSettingsService.replicateAttToDuplicateSprites: Boolean?
-    get() = state?.replicateAttsToDuplicateSprites
+    get() = state.replicateAttsToDuplicateSprites
     set(value) {
-        if (value == state?.replicateAttsToDuplicateSprites)
+        if (value == state.replicateAttsToDuplicateSprites)
             return
         loadState(
-            getState().copy(
+            state.copy(
                 replicateAttsToDuplicateSprites = value != false
             )
         )

@@ -2,14 +2,12 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService.CaosApplicationSettings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ApplicationSettingsConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.RoamingType
 import com.intellij.openapi.components.Storage
 import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.annotations.Attribute
@@ -22,13 +20,10 @@ import java.util.*
  */
 @com.intellij.openapi.components.State(
     name = "caos-application-settings",
-    storages = [Storage(
-        value = "CAOS.xml",
-        roamingType = RoamingType.DEFAULT
-    )],
+    storages = [Storage("caos_v2.xml")],
 )
 class CaosApplicationSettingsService :
-    PersistentStateComponent<CaosApplicationSettings>,
+    PersistentStateComponent<CaosApplicationSettingsService.CaosApplicationSettings>,
     HasIgnoredCatalogueTags {
 
     @Serializable
@@ -65,26 +60,26 @@ class CaosApplicationSettingsService :
 
 
     var combineAttNodes: Boolean
-        get() = getState().combineAttNodes
+        get() = myState.combineAttNodes
         set(value) {
-            if (value == getState().combineAttNodes) {
+            if (value == myState.combineAttNodes) {
                 return
             }
             loadState(
-                getState().copy(
+                myState.copy(
                     combineAttNodes = value
                 )
             )
         }
 
     var replicateAttsToDuplicateSprites: Boolean?
-        get() = getState().replicateAttsToDuplicateSprites
+        get() = myState.replicateAttsToDuplicateSprites
         set(value) {
-            if (value == getState().replicateAttsToDuplicateSprites) {
+            if (value == myState.replicateAttsToDuplicateSprites) {
                 return
             }
             loadState(
-                getState().copy(
+                myState.copy(
                     replicateAttsToDuplicateSprites = value != false
                 )
             )
@@ -92,23 +87,23 @@ class CaosApplicationSettingsService :
 
 
     var isAutoPoseEnabled: Boolean
-        get() = getState().isAutoPoseEnabled
+        get() = myState.isAutoPoseEnabled
         set(value) {
-            if (getState().isAutoPoseEnabled == value) {
+            if (myState.isAutoPoseEnabled == value) {
                 return
             }
-            loadState(getState().copy(isAutoPoseEnabled = value))
+            loadState(myState.copy(isAutoPoseEnabled = value))
         }
 
     override var ignoredCatalogueTags: List<String>
-        get() = getState().ignoredCatalogueTags
+        get() = myState.ignoredCatalogueTags
         set(ignoredTags) {
             val distinct = ignoredTags.distinct()
-            if (getState().ignoredCatalogueTags.containsAll(distinct) && distinct.containsAll(getState().ignoredCatalogueTags)) {
+            if (myState.ignoredCatalogueTags.containsAll(distinct) && distinct.containsAll(myState.ignoredCatalogueTags)) {
                 return
             }
             loadState(
-                getState().copy(
+                myState.copy(
                     ignoredCatalogueTags = ignoredTags.distinct()
                 )
             )
@@ -131,7 +126,7 @@ class CaosApplicationSettingsService :
             ApplicationManager.getApplication().messageBus.syncPublisher(TOPIC).onChange(oldState, newState)
         }
 
-        val TOPIC = Topic.create(
+        private val TOPIC = Topic.create(
             "CAOSApplicationSettingsChangedListener",
             CaosApplicationSettingsChangeListener::class.java
         )
@@ -200,23 +195,10 @@ class CaosApplicationSettingsService :
 
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as CaosApplicationSettingsService
-
-        return myState == other.myState
-    }
-
-    override fun hashCode(): Int {
-        return myState?.hashCode() ?: 0
-    }
-
 }
 
 
 interface CaosApplicationSettingsChangeListener : EventListener {
-    fun onChange(oldState: CaosApplicationSettings?, newState: CaosApplicationSettings)
+    fun onChange(oldState: CaosApplicationSettingsService.CaosApplicationSettings?, newState: CaosApplicationSettingsService.CaosApplicationSettings)
 }
 
