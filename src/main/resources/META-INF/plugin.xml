@@ -305,7 +305,7 @@
                              instance="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsConfigurable"
                              id="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsConfigurable"
                              displayName="CAOS &amp; Agenteering"
-                             nonDefaultProject="true"
+                             nonDefaultProject="false"
         />
 
         <projectService
@@ -816,6 +816,7 @@
                 serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexServiceImpl"/>
 
         <stubElementTypeHolder
+                externalIdPrefix="CaosScript_"
                 class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes"/>
 
         <stubIndex
