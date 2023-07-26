@@ -82,6 +82,7 @@ class BreedTreeProvider : TreeStructureProvider {
             try {
                 BreedNode(
                     project,
+                    parentNode.possibleVirtualFile,
                     key,
                     children,
                     viewSettings

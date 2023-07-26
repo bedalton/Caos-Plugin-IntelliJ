@@ -6,11 +6,16 @@ import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.likeAny
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualDirectory
+import com.bedalton.common.util.className
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ViewSettings
+import com.intellij.ide.projectView.impl.nodes.BasePsiNode
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -19,10 +24,11 @@ import icons.CaosScriptIcons
 
 internal class BreedNode(
     private val notNullProject: Project,
+    val parent: VirtualFile?,
     key: BreedPartKey,
     private val files: List<AbstractTreeNode<*>>,
     viewSettings: ViewSettings?,
-) : ProjectViewNode<BreedPartKey>(notNullProject, key.copyWithPart('*'), viewSettings) {
+) : VirtualFileBasedNode<CaosVirtualDirectory>(notNullProject, CaosVirtualDirectory(parent, key.code!!, files.files), viewSettings) {
 
     private val key = key.copyWithPart(null)
 
@@ -176,4 +182,21 @@ internal val AbstractTreeNode<*>.nameExtended: String? get() {
         else -> null
     }
         ?: name?.nullIfEmpty()
+}
+
+private val Collection<AbstractTreeNode<*>>.files: List<VirtualFile> get() {
+    return mapNotNull { node ->
+        node.possibleVirtualFile
+    }
+}
+
+internal val AbstractTreeNode<*>.possibleVirtualFile: VirtualFile? get() {
+    return when (this) {
+        is BasePsiNode -> virtualFile
+        is VirtualFileBasedNode -> virtualFile
+        else -> {
+            LOGGER.info("Node is ${className}")
+            null
+        }
+    }
 }
