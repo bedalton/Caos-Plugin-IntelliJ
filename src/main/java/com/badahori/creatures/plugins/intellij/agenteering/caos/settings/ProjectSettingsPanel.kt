@@ -56,6 +56,7 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
     }
 
     override fun getPreferredFocusedComponent(): JComponent {
+        createComponent()
         return panel.getPreferredFocusComponent()
     }
 
@@ -64,7 +65,7 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
     }
 
     private val projectSettings: CaosProjectSettings? by lazy {
-       projectSettingsService?.state
+        projectSettingsService?.state
     }
 
     private val wineSettings: CaosWineSettings? by lazy {
@@ -132,7 +133,7 @@ private class ProjectSettingsPanel(
     private var applicationSettings: CaosApplicationSettings,
     private var projectSettings: CaosProjectSettings,
     private var wineSettings: CaosWineSettings
-    ) {
+) {
 
     private val originalCombineAttNodes = applicationSettings.combineAttNodes
     private val originalReplicateAttToDuplicateSprite = applicationSettings.replicateAttsToDuplicateSprites != false
@@ -243,7 +244,12 @@ private class ProjectSettingsPanel(
         FormBuilder.createFormBuilder()
             .addLabeledComponent(JLabel("Default Variant"), defaultVariant, 1, false)
             .addLabeledComponent(JLabel("Replicate ATTs to Duplicate Images"), replicateAttToDuplicateSprites, 1, false)
-            .addLabeledComponent(JLabel("Combine related ATT file nodes under a single node. i.e. \"*04a\""), combineAttNodes, 1, false)
+            .addLabeledComponent(
+                JLabel("Combine related ATT file nodes under a single node. i.e. \"*04a\""),
+                combineAttNodes,
+                1,
+                false
+            )
             .addLabeledComponent(JLabel("Trim BLK right and bottom"), trimBlkCheckbox, 1, false)
             .addLabeledComponent(JLabel("Ignored File Names"), ignoredFileNames, 1, true)
             .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNames, 1, true)
@@ -274,7 +280,7 @@ private class ProjectSettingsPanel(
             return true
         }
 
-        if (gameInterfaceListModel.serialized().equalIgnoringOrder(originalGameInterfaceNamesSerialized)) {
+        if (!gameInterfaceListModel.serialized().equalIgnoringOrder(originalGameInterfaceNamesSerialized)) {
             return true
         }
 
@@ -377,13 +383,13 @@ private class GameInterfaceCell(
     private val list: GameInterfaceNamesList,
     private val hasOwnInterface: Boolean,
     private val onChange: GameInterfaceNamesList.(index: Int, new: GameInterfaceName?) -> Unit,
-): JPanel(), Disposable {
+) : JPanel(), Disposable {
 
     constructor(
         project: Project,
         list: GameInterfaceNamesList,
         onChange: GameInterfaceNamesList.(index: Int, new: GameInterfaceName?) -> Unit,
-    ): this(project, list, true, onChange)
+    ) : this(project, list, true, onChange)
 
     private val label = JLabel("")
     private val edit by lazy {
@@ -400,6 +406,7 @@ private class GameInterfaceCell(
     private var index: Int = -1
 
     private var disposeEditor: (() -> Unit)? = null
+
     init {
         initUI()
     }
@@ -425,7 +432,7 @@ private class GameInterfaceCell(
             add(Box.createHorizontalStrut(7))
             add(copy)
         } else {
-            background = Color(0,0,0, 0)
+            background = Color(0, 0, 0, 0)
         }
 
         // Add space before edge

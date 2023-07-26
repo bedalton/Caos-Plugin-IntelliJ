@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosVariantConv
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ProjectSettingsConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
+import com.fasterxml.jackson.databind.annotation.JsonAppend.Attr
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
@@ -227,19 +228,29 @@ class CaosProjectSettingsService(
         val lastVariant: CaosVariant? = null,
         @Attribute(converter = CaosVariantConverter::class)
         val defaultVariant: CaosVariant? = null,
+        @Attribute
         val indent: Boolean = true,
+        @Attribute
         val showLabels: Boolean = true,
+        @Attribute
         val ditherSPR: Boolean = false,
+        @Attribute
         val attScale: Int = 6,
+        @Attribute
         var showPoseView: Boolean = true,
         @Attribute(converter = StringListConverter::class)
         val ignoredFilenames: List<String> = listOf(),
+        @Attribute
         val defaultPoseString: String = PoseEditorSupport.DEFAULT_POSE_STRING,
+        @Attribute
         val defaultPoseStringVersion: Int? = null,
+        @Attribute
         val useJectByDefault: Boolean = false,
+        @Attribute
         val trimBLKs: Boolean? = null,
         @Attribute(converter = StringListConverter::class)
         val ignoredCatalogueTags: List<String> = emptyList(),
+        @Attribute
         val stateVersion: Int? = null
     ) {
 

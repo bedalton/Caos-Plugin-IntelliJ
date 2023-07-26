@@ -28,10 +28,13 @@ class CaosApplicationSettingsService :
 
     @Serializable
     data class CaosApplicationSettings(
+        @Attribute
         val isAutoPoseEnabled: Boolean = false,
+        @Attribute
         val combineAttNodes: Boolean = false,
+        @Attribute
         val replicateAttsToDuplicateSprites: Boolean? = null,
-        @Attribute(converter = StringListConverter::class)
+        @Attribute
         val ignoredCatalogueTags: List<String> = emptyList()
     )
 

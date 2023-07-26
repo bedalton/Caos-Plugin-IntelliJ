@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInject
 import com.badahori.creatures.plugins.intellij.agenteering.utils.GameInterfaceListConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.JsonToXMLStringConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
+import com.fasterxml.jackson.databind.annotation.JsonAppend.Attr
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
@@ -126,9 +127,13 @@ class CaosInjectorApplicationSettingsService :
         val gameInterfaceNames: List<GameInterfaceName> = listOf(),
         @Attribute(converter = StringListConverter::class)
         val lastGameInterfaceNames: List<String> = listOf(),
+        @Attribute
         val lastWineDirectory: String? = null,
+        @Attribute
         val winePath: String? = null,
+        @Attribute
         val wine32Path: String? = null,
+        @Attribute
         val wine64Path: String? = null,
     )
 
