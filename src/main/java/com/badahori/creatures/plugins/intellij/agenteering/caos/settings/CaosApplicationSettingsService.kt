@@ -20,7 +20,7 @@ import java.util.*
  */
 @com.intellij.openapi.components.State(
     name = "caos-application-settings",
-    storages = [Storage("caos_v2.xml")],
+    storages = [Storage("CAOS.xml")],
 )
 class CaosApplicationSettingsService :
     PersistentStateComponent<CaosApplicationSettingsService.CaosApplicationSettings>,
