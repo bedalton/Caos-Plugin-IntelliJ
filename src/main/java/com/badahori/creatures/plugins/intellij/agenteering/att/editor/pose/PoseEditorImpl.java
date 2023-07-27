@@ -52,7 +52,6 @@ import java.util.stream.Collectors;
 import static com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.BreedDataUtil.findBreeds;
 import static com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.BreedDataUtil.findMatchingBreedInList;
 import static com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseCalculator.HeadPoseData;
-import static com.badahori.creatures.plugins.intellij.agenteering.utils.ActionHelper.action;
 
 public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsProvider {
     private static final Logger LOGGER = Logger.getLogger("#PoseEditor");
@@ -941,7 +940,9 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         final Object raw = box.getSelectedItem();
         final List<BodyPartFiles> files;
         if (raw != null) {
-            @SuppressWarnings("unchecked") final Triple<String, BreedPartKey, List<BodyPartFiles>> selected = (Triple<String, BreedPartKey, List<BodyPartFiles>>) raw;
+            @SuppressWarnings("unchecked")
+            final Triple<String, BreedPartKey, List<BodyPartFiles>> selected =
+                    (Triple<String, BreedPartKey, List<BodyPartFiles>>) raw;
             files = selected.getThird();
         } else {
             files = Lists.newArrayList();
@@ -1199,7 +1200,10 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         return mask;
     }
 
-    public void applyVisibilityMask(@Nullable final Map<Character, PartVisibility> from, @NotNull final Map<Character, PartVisibility> into) {
+    public void applyVisibilityMask(
+            @Nullable final Map<Character, PartVisibility> from,
+            @NotNull final Map<Character, PartVisibility> into
+    ) {
         if (from == null) {
             return;
         }
@@ -1468,7 +1472,10 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         // Set the cell renderer for the Att file list
         menu.setRenderer(new BreedFileCellRenderer());
         final Object temp = menu.getSelectedItem();
-        @SuppressWarnings("unchecked") final Triple<String, BreedPartKey, List<BodyPartFiles>> selected = temp instanceof Triple ? (Triple<String, BreedPartKey, List<BodyPartFiles>>) temp : null;
+        @SuppressWarnings("unchecked")
+        final Triple<String, BreedPartKey, List<BodyPartFiles>> selected = temp instanceof Triple
+                ? (Triple<String, BreedPartKey, List<BodyPartFiles>>) temp
+                : null;
 
         // Filter list of body part files for breeds applicable to this list of parts
         final List<Triple<String, BreedPartKey, List<BodyPartFiles>>> items = findBreeds(files, baseBreed, partChars);
@@ -2662,7 +2669,12 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
     @Override
     public void setFiles(
             @NotNull final List<BodyPartFiles> files) {
-        this.files = files;
+        this.files = files
+                .stream()
+                .filter((f) ->
+                        f.getBodyDataFile().isValid() && f.getSpriteFile().isValid()
+                )
+                .collect(Collectors.toList());
         PoseEditorImpl.this.variant = (variant == CaosVariant.DS.INSTANCE) ? CaosVariant.C3.INSTANCE : variant;
         final boolean variantChanged = this.variantChanged;
         if (variantChanged) {

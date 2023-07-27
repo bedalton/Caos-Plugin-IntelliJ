@@ -51,6 +51,9 @@ fun VirtualFile.getPsiFile(project: Project): PsiFile? {
     if (project.isDisposed) {
         return null
     }
+    if (!this.isValid) {
+        return null
+    }
     val file = PsiManager.getInstance(project).findFile(this)
     if (file.isInvalid) {
         return null
@@ -60,6 +63,7 @@ fun VirtualFile.getPsiFile(project: Project): PsiFile? {
 
 
 private const val PLUGIN_ID = "com.badahori.creatures.plugins.intellij.agenteering"
+
 val PLUGIN: IdeaPluginDescriptor?
     get() {
         val pluginId = PluginId.getId(PLUGIN_ID)

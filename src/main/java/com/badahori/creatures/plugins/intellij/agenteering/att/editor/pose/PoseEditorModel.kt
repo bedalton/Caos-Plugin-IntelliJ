@@ -119,7 +119,7 @@ class PoseEditorModel(
             }
 
             spriteSet = sprites
-            poseEditor.setFiles(mappedParts.values.filterNotNull())
+            poseEditor.setFiles(mappedParts.values.filterNotNull().filter{ it.spriteFile.isValid && it.bodyDataFile.isValid })
             @Suppress("SpellCheckingInspection")
             requestRender(*("abcdefghijklmnopq").toCharArray(), breedChanged = true)
             settingImmediate.set(0)
@@ -152,7 +152,7 @@ class PoseEditorModel(
             try {
                 val files = BodyPartsIndex.variantParts(project, variant, null)
                 if (files.isNotEmpty()) {
-                    poseEditor.setFiles(files)
+                    poseEditor.setFiles(files.filter { it.spriteFile.isValid && it.bodyDataFile.isValid })
                 }
                 updating.set(0)
             } catch (e: ProcessCanceledException) {
