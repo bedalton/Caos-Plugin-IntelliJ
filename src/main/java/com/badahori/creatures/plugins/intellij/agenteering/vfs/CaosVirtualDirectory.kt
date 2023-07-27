@@ -1,26 +1,38 @@
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
+import com.badahori.creatures.plugins.intellij.agenteering.utils.randomString
+import com.bedalton.common.util.className
 import com.bedalton.common.util.ensureEndsWith
+import com.intellij.ide.projectView.ProjectView
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileSystem
+import com.intellij.openapi.vfs.newvfs.impl.VirtualFileImpl
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.Date
 
 class CaosVirtualDirectory(
+    private val project: Project,
     parent: VirtualFile?,
     name: String,
     children: List<VirtualFile>
 ): VirtualFile(), ModificationTracker {
 
+    private var mModificationCount = 0L
     private val mName = name
     private val mParent: VirtualFile? = parent
 
     private val  mTimeStamp = Date().time
 
-    val children = children.associateBy { it.name }.toMutableMap()
+    internal var children = children.associateBy { it.name }.toMutableMap()
+
+    val isEmpty: Boolean get() = children.isEmpty()
 
     override fun getName(): String {
         return mName
@@ -35,7 +47,7 @@ class CaosVirtualDirectory(
     }
 
     override fun isWritable(): Boolean {
-        return false
+        return true
     }
 
     override fun isDirectory(): Boolean {
@@ -71,26 +83,107 @@ class CaosVirtualDirectory(
     }
 
     override fun refresh(asynchronous: Boolean, recursive: Boolean, postRunnable: Runnable?) {
-        return children.values.forEach { it.refresh(asynchronous, recursive, postRunnable) }
+        val keys = children.keys
+        val all = children.values
+        var changed = false
+        for (key in keys) {
+            val child = children[key]
+                ?: continue
+            if (child.parent != mParent) {
+                children.remove(key)
+                changed = true
+            }
+        }
+
+        if (changed) {
+            all.forEach { it.refresh(asynchronous, recursive, postRunnable) }
+            mParent?.refresh(true, true)
+            mModificationCount++
+        }
+    }
+
+    private fun refreshProjectView() {
+        if (project.isDisposed) {
+            return
+        }
+        invokeLater {
+            if (project.isDisposed) {
+                return@invokeLater
+            }
+            val view = ProjectView.getInstance(project)
+            view.refresh()
+        }
     }
 
     override fun getInputStream(): InputStream {
         throw IllegalStateException("CaosVirtualFolder does not have an input stream")
     }
 
+    override fun getModificationCount(): Long {
+        return mModificationCount
+    }
+
+    override fun delete(requestor: Any?) {
+        if (project.isDisposed) {
+            return
+        }
+        WriteCommandAction.runWriteCommandAction(
+            project,
+            "Delete Files",
+            "delete-files-" + randomString(8), {
+                deleteWithoutCommand(requestor)
+        })
+    }
+
+    private fun deleteWithoutCommand(requestor: Any?) {
+        for (child in children.values) {
+            if (child is CaosVirtualDirectory) {
+                child.deleteWithoutCommand(requestor)
+            } else {
+                child.delete(requestor)
+            }
+        }
+        children.clear()
+    }
+
     override fun move(requestor: Any?, newParent: VirtualFile) {
-        if (newParent is CaosVirtualFile) {
+        if (project.isDisposed) {
+            return
+        }
+        if (newParent is CaosVirtualFile || newParent is CaosVirtualDirectory) {
             throw IllegalStateException("Cannot move files into non-physical file")
         }
+
         val fileSystem = newParent.fileSystem as? LocalFileSystem
             ?: throw IllegalStateException("Cannot move files into non-local filesystem")
-        for (child in children.values) {
-            fileSystem.moveFile(requestor, child, newParent)
+
+        val children = children.values
+        for (child in children) {
+            if (child !is CaosVirtualDirectory) {
+                fileSystem.moveFile(requestor, child, newParent)
+            } else {
+                child.move(requestor, newParent)
+            }
+        }
+        for (child in children.filterIsInstance<CaosVirtualDirectory>()) {
+            if (child.isEmpty) {
+                child.delete(child)
+            } else {
+                LOGGER.severe("Virtual directory is not empty after move. Contains: ${child.children.values.joinToString { it.className + ": " + it.name }}")
+            }
         }
         try {
-            fileSystem.moveFile(requestor, this, newParent)
+            if (isEmpty) {
+                delete(requestor)
+            }
         } catch (_: Exception) {
-
         }
+        children.clear()
+        this.refresh(true, true)
+        mParent?.refresh(true, true)
+        newParent.refresh(true, true)
+        refreshProjectView()
+        fileSystem.refreshFiles(listOf(newParent, mParent, this) + children, true, true, null)
+        mModificationCount++
     }
 }

@@ -4,12 +4,11 @@ package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
+import com.bedalton.creatures.common.structs.BreedKey
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.likeAny
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualDirectory
 import com.bedalton.common.util.className
 import com.intellij.ide.projectView.PresentationData
@@ -25,12 +24,15 @@ import icons.CaosScriptIcons
 internal class BreedNode(
     private val notNullProject: Project,
     val parent: VirtualFile?,
-    key: BreedPartKey,
+    internal val key: BreedKey,
     private val files: List<AbstractTreeNode<*>>,
     viewSettings: ViewSettings?,
-) : VirtualFileBasedNode<CaosVirtualDirectory>(notNullProject, CaosVirtualDirectory(parent, key.code!!, files.files), viewSettings) {
+) : VirtualFileBasedNode<CaosVirtualDirectory>(
+    notNullProject,
+    CaosVirtualDirectory(notNullProject, parent, key.code!!, files.virtualFiles),
+    viewSettings
+) {
 
-    private val key = key.copyWithPart(null)
 
     private val hasSprites by lazy {
         spriteExtensions.isNotEmpty()
@@ -76,7 +78,7 @@ internal class BreedNode(
         val icon = if (hasAtts) {
             CaosScriptIcons.ATT_FILE_ICON
         } else {
-            when(spriteExtensions.firstOrNull()) {
+            when (spriteExtensions.firstOrNull()) {
                 "SPR" -> CaosScriptIcons.SPR_FILE_ICON
                 "S16" -> CaosScriptIcons.S16_FILE_ICON
                 "C16" -> CaosScriptIcons.C16_FILE_ICON
@@ -111,14 +113,15 @@ internal class BreedNode(
             throw Exception("Cannot create body data bundle without files")
         }
         val invalidFiles = files.filterNot { file ->
-            PathUtil.getExtension(file.nameExtended ?: "")?.uppercase()?.let { it likeAny spriteExtensions || it == "ATT" }
+            PathUtil.getExtension(file.nameExtended ?: "")?.uppercase()
+                ?.let { it likeAny spriteExtensions || it == "ATT" }
                 .orFalse()
         }
         if (invalidFiles.isNotEmpty()) {
             throw Exception("Invalid file(s) body files found. Expected ${spriteExtensions.joinToString(", ")} and ATT files only")
         }
         val valid = files.all { file ->
-            BreedPartKey.isGenericMatch(BreedPartKey.fromFileName(file.nameExtended ?: ""), key)
+            BreedKey.isGenericMatch(BreedKey.fromFileName(file.nameExtended ?: ""), key)
         }
         if (!valid) {
             throw Exception("Mismatched body data files found in bundle")
@@ -162,8 +165,6 @@ internal class AttFileNode(
         presentation.presentableText = att.name
     }
 
-
-
     override fun canNavigateToSource(): Boolean {
         return super.canNavigateToSource()
     }
@@ -175,28 +176,33 @@ internal class AttFileNode(
 }
 
 
-internal val AbstractTreeNode<*>.nameExtended: String? get() {
-    return when (val value = this.value) {
-        is PsiFile -> value.name.nullIfEmpty()
-        is VirtualFile -> value.name.nullIfEmpty()
-        else -> null
+internal val AbstractTreeNode<*>.nameExtended: String?
+    get() {
+        return when (val value = this.value) {
+            is PsiFile -> value.name.nullIfEmpty()
+            is VirtualFile -> value.name.nullIfEmpty()
+            is BreedNode -> value.children.firstOrNull()?.nameExtended
+            else -> null
+        } ?: name?.nullIfEmpty()
     }
-        ?: name?.nullIfEmpty()
-}
 
-private val Collection<AbstractTreeNode<*>>.files: List<VirtualFile> get() {
-    return mapNotNull { node ->
-        node.possibleVirtualFile
-    }
-}
-
-internal val AbstractTreeNode<*>.possibleVirtualFile: VirtualFile? get() {
-    return when (this) {
-        is BasePsiNode -> virtualFile
-        is VirtualFileBasedNode -> virtualFile
-        else -> {
-            LOGGER.info("Node is ${className}")
-            null
+internal val Collection<AbstractTreeNode<*>>.virtualFiles: List<VirtualFile>
+    get() {
+        return mapNotNull { node ->
+            node.possibleVirtualFile
         }
     }
-}
+
+internal val AbstractTreeNode<*>.possibleVirtualFile: VirtualFile?
+    get() {
+        return when (this) {
+            is BreedNodeBySlot -> parent
+            is BreedNode -> parent
+            is BasePsiNode -> virtualFile
+            is VirtualFileBasedNode -> virtualFile
+            else -> {
+                LOGGER.info("Node: ${className}.possibleVirtualFile was unhandled")
+                null
+            }
+        }
+    }

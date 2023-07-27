@@ -33,6 +33,8 @@ class CaosApplicationSettingsService :
         @Attribute
         val combineAttNodes: Boolean = false,
         @Attribute
+        val combineAttNodesBySlot: Boolean = false,
+        @Attribute
         val replicateAttsToDuplicateSprites: Boolean? = null,
         @Attribute
         val ignoredCatalogueTags: List<String> = emptyList()
@@ -69,6 +71,19 @@ class CaosApplicationSettingsService :
             loadState(
                 myState.copy(
                     combineAttNodes = value
+                )
+            )
+        }
+
+    var combineAttNodesBySlot: Boolean
+        get() = myState.combineAttNodesBySlot
+        set(value) {
+            if (value == myState.combineAttNodesBySlot) {
+                return
+            }
+            loadState(
+                myState.copy(
+                    combineAttNodesBySlot = value
                 )
             )
         }

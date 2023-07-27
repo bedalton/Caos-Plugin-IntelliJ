@@ -4,8 +4,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService.CaosApplicationSettings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService.CaosProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInjectorApplicationSettingsService.CaosWineSettings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService.CaosProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CreateInjectorDialog
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -136,6 +136,7 @@ private class ProjectSettingsPanel(
 ) {
 
     private val originalCombineAttNodes = applicationSettings.combineAttNodes
+    private val originalCombineAttNodesBySlot = applicationSettings.combineAttNodesBySlot
     private val originalReplicateAttToDuplicateSprite = applicationSettings.replicateAttsToDuplicateSprites != false
     private val originalIgnoredFilesText = projectSettings.ignoredFilenames.joinToString("\n")
     private val originalGameInterfaceNames: List<GameInterfaceName> = wineSettings.gameInterfaceNames
@@ -208,9 +209,34 @@ private class ProjectSettingsPanel(
     }
 
 
-    val combineAttNodes by lazy {
+    val combineAttNodes: JCheckBox by lazy {
         JCheckBox().apply {
             this.isSelected = originalCombineAttNodes
+        }.apply {
+            addActionListener {
+                if (this.isSelected) {
+                    if (!combineAttNodesBySlot.isEnabled) {
+                        combineAttNodesBySlot.isEnabled = true
+                    }
+                } else {
+                    combineAttNodesBySlot.isEnabled = false
+                }
+            }
+        }
+    }
+
+    val combineAttNodesBySlot: JCheckBox by lazy {
+        JCheckBox().apply {
+            this.isSelected = originalCombineAttNodesBySlot && originalCombineAttNodes
+        }.apply {
+            if (!originalCombineAttNodes) {
+                this.isEnabled = false
+            }
+            addActionListener {
+                if (this.isSelected && !combineAttNodes.isSelected) {
+                    combineAttNodes.isSelected = true
+                }
+            }
         }
     }
 
@@ -250,6 +276,12 @@ private class ProjectSettingsPanel(
                 1,
                 false
             )
+            .addLabeledComponent(
+                JLabel("Combine related ATT file nodes by slot. i.e. \"Norn A (M)\""),
+                combineAttNodesBySlot,
+                1,
+                false
+            )
             .addLabeledComponent(JLabel("Trim BLK right and bottom"), trimBlkCheckbox, 1, false)
             .addLabeledComponent(JLabel("Ignored File Names"), ignoredFileNames, 1, true)
             .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNames, 1, true)
@@ -272,7 +304,17 @@ private class ProjectSettingsPanel(
             return true
         }
 
-        if (combineAttNodes.isSelected != applicationSettings.combineAttNodes) {
+        val combineAttNodes = combineAttNodes.isSelected
+        if (combineAttNodes != applicationSettings.combineAttNodes) {
+            return true
+        }
+
+        val combineAttNodesBySlot = combineAttNodesBySlot.isSelected
+        if (combineAttNodesBySlot != applicationSettings.combineAttNodesBySlot) {
+            return true
+        } else if (!combineAttNodes && combineAttNodesBySlot) {
+            // combineAttNodesBySlot is true and unchanged,
+            // but combine ATT nodes is false, so byNode needs to be set to false
             return true
         }
 
@@ -325,8 +367,11 @@ private class ProjectSettingsPanel(
      * Apply the current panel's settings to the settings object
      */
     fun applyApplicationSettings(): CaosApplicationSettings {
+        val combineAttNodes = this@ProjectSettingsPanel.combineAttNodes.isSelected
+        val combineAttNodesBySlot = this@ProjectSettingsPanel.combineAttNodesBySlot.isSelected
         val newSettings = applicationSettings.copy(
-            combineAttNodes = this@ProjectSettingsPanel.combineAttNodes.isSelected,
+            combineAttNodes = combineAttNodes,
+            combineAttNodesBySlot = combineAttNodesBySlot && combineAttNodes,
             isAutoPoseEnabled = autoPoseCheckbox.isSelected,
             replicateAttsToDuplicateSprites = this@ProjectSettingsPanel.replicateAttToDuplicateSprites.isSelected
         )
@@ -361,6 +406,7 @@ private class ProjectSettingsPanel(
         gameInterfaceListModel.addAll(originalGameInterfaceNames)
         autoPoseCheckbox.isSelected = originalIsAutoPoseEnabled
         combineAttNodes.isSelected = originalCombineAttNodes
+        combineAttNodesBySlot.isSelected = originalCombineAttNodesBySlot
         replicateAttToDuplicateSprites.isSelected = originalReplicateAttToDuplicateSprite
         trimBlkCheckbox.isSelected = originalTrimBlk != false
         wine32PathTextField.text = originalWine32Path
@@ -432,6 +478,7 @@ private class GameInterfaceCell(
             add(Box.createHorizontalStrut(7))
             add(copy)
         } else {
+            @Suppress("UseJBColor")
             background = Color(0, 0, 0, 0)
         }
 
