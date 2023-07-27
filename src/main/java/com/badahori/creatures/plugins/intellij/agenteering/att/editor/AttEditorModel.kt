@@ -866,7 +866,6 @@ internal class AttEditorModel(
     }
 
     override fun dispose() {
-        LOGGER.info("Disposing Editor Model")
         if (disposed.getAndSet(true)) {
             return
         }

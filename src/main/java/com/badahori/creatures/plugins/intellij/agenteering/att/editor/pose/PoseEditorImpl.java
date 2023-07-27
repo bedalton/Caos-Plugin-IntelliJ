@@ -598,7 +598,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         openRelatedPopup = AttEditorSupport.initOpenRelatedPopup(availableRelatedParts, this, (selectedPart) -> {
-            LOGGER.info("Opening related part: "  + selectedPart);
             if (selectedPart != null) {
                 openRelated(selectedPart);
             }
@@ -1959,7 +1958,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
 
     @Override
     public void dispose() {
-        LOGGER.info("Dispose called in pose editor");
         poseChangeListeners.clear();
         breedSelectionChangeListeners.clear();
     }
@@ -2664,7 +2662,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
     @Override
     public void setFiles(
             @NotNull final List<BodyPartFiles> files) {
-        LOGGER.info("Setting files: " + files.size());
         this.files = files;
         PoseEditorImpl.this.variant = (variant == CaosVariant.DS.INSTANCE) ? CaosVariant.C3.INSTANCE : variant;
         final boolean variantChanged = this.variantChanged;
@@ -2686,8 +2683,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
     public interface PoseChangeListener {
         void onPoseChange(Pose pose);
     }
-
-
 
     public void addBreedSelectionChangeListener(final BreedSelectionChangeListener listener) {
         breedSelectionChangeListeners.add(listener);

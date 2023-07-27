@@ -598,7 +598,6 @@ object BodyPartsIndex {
                 ?.firstOrNull()
 
             if (bodyPart == null && part in 'a'..'l') {
-                LOGGER.warning("Body part is null for part $part")
                 return@mapNotNull null
             }
             part to bodyPart

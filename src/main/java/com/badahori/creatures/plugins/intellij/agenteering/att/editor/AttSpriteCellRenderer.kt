@@ -380,7 +380,6 @@ internal class AttSpriteCellList(
     fun focusCell(index: Int) {
         if (this.listItems.size > index) {
             invokeLater {
-                LOGGER.info("Focusing on cell by index")
                 val item = get(index)
                 item.requestFocus()
                 item.requestFocusInWindow()
@@ -393,7 +392,6 @@ internal class AttSpriteCellList(
             val focused = getCellForSelectedItem()
                 ?: return@invokeLater
 
-            LOGGER.info("Focusing on selected cell")
             focused.requestFocus()
             focused.requestFocusInWindow()
         }
@@ -405,12 +403,10 @@ internal class AttSpriteCellList(
     }
 
     private fun nextCell() {
-        LOGGER.info("ListView: next cell")
         getSelectedItem()?.focusNextCell()
     }
 
     private fun previousCell() {
-        LOGGER.info("ListView: Previous cell")
         getSelectedItem()?.focusPreviousCell()
     }
 

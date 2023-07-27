@@ -61,7 +61,6 @@ class CaosProjectSettingsService(
         if (!project.isDisposed) {
             onUpdate(project, oldState, state)
         }
-        LOGGER.info("Applying project service settings")
     }
 
     var lastVariant: CaosVariant?

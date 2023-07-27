@@ -124,7 +124,6 @@ private class CaosFileCaos2ChangedListener(
     }
 
     override fun dispose() {
-        LOGGER.info("Disposing CAOS2EditorFileChangedListener")
         val theProject = project
             ?: return
         project = null

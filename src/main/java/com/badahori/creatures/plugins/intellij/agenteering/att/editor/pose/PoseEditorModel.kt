@@ -230,7 +230,7 @@ class PoseEditorModel(
         }
         if (updatedSprites == null) {
             if (updating.get() == 0 && id == renderId.get()) {
-                LOGGER.severe("Failed to update sprite sets without reason")
+//                LOGGER.severe("Failed to update sprite sets without reason")
             }
             progressIndicator.cancel()
             mRendering = null

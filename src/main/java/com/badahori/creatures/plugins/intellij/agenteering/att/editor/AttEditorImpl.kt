@@ -83,7 +83,6 @@ internal class AttEditorImpl(
     }
 
     override fun dispose() {
-        LOGGER.info("Disposing ATT editor IMPL")
 //        this.controller.dispose()
     }
 

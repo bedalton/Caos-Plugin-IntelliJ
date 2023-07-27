@@ -116,9 +116,6 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
                 }
             }
 
-
-            LOGGER.info("Is CAOS2Block")
-
             // No more completions should be added
             return
         }
@@ -141,7 +138,6 @@ object CaosScriptCompletionProvider : CompletionProvider<CompletionParameters>()
         if (previous != "[" && previous != "\"" && previous.nullIfEmpty()?.let { !WHITESPACE_ONLY.matches(it) }
                 .orFalse()) {
             resultSet.stopHere()
-            LOGGER.info("Token is touching another token; Return")
             return
         }
 

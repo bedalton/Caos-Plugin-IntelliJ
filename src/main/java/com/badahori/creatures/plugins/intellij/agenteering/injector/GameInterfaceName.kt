@@ -200,9 +200,7 @@ sealed class GameInterfaceName {
         internal fun defaultComponents(data: String): DefaultComponents? {
             val parts = BASIC_REGEX.matchEntire(data)
                 ?.groupValues
-                ?: return null.also {
-                    LOGGER.info("Failed to parse Injector interface string:\n\tData: <$data>;\n\tRegex: ${BASIC_REGEX.pattern}")
-                }
+                ?: return null
             val code = parts[1]
                 .trim()
                 .nullIfEmpty()
@@ -568,8 +566,6 @@ internal fun List<GameInterfaceName>.forKey(variant: CaosVariant?, serial: Strin
     GameInterfaceName.fromString(serial)?.let {
         return it
     }
-
-    LOGGER.info("Getting for key $serial with list of ${size} interfaces\n\t${joinToString("\n\t"){it.toJSON()}}")
 
     // Get by new ID entries
     firstOrNull { it.id == serial }?.let {

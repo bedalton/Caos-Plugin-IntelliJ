@@ -143,7 +143,6 @@ internal object GameInterfaceListConverter : Converter<List<GameInterfaceName>>(
     }
 
     override fun fromString(rawSerialized: String): List<GameInterfaceName> {
-        LOGGER.info("Deserialize game interfaces with data string:\n$rawSerialized")
         val decoded = try {
             decodeBase64(rawSerialized).decodeToString()
         } catch (_: Exception) {
@@ -152,9 +151,6 @@ internal object GameInterfaceListConverter : Converter<List<GameInterfaceName>>(
         if (decoded.startsWith('[') && decoded.contains('{') && decoded.endsWith(']')) {
             try {
                 return GameInterfaceName.json.decodeFromString<Array<GameInterfaceName>>(decoded).toList()
-                    .also{
-                        LOGGER.info("Interfaces: $it")
-                    }
             } catch (e: Exception) {
                 LOGGER.info("Failed to deserialize array of game interfaces: ${e.className}: ${e.message}")
             }
@@ -183,7 +179,6 @@ abstract class JsonToXMLStringConverter<T>: Converter<T>() {
     abstract val deserializer: DeserializationStrategy<T>
 
     override fun fromString(value: String): T? {
-        LOGGER.info("Deserializing with ${this.className};\n${value}")
         val raw = value
             .trim()
             .nullIfEmpty()
@@ -199,7 +194,6 @@ abstract class JsonToXMLStringConverter<T>: Converter<T>() {
             }
         }
         return try {
-            LOGGER.info("Deserializing with ${this.className} With JSON;\n${jsonString}")
             json.decodeFromString(deserializer, jsonString)
         } catch (e: Exception) {
             LOGGER.severe("Failed to decode json using ${deserializer.className}\n${e.className}:${e.message}\n${e.stackTraceToString()}")
@@ -215,9 +209,6 @@ abstract class JsonToXMLStringConverter<T>: Converter<T>() {
                 }
                 .encodeToByteArray()
                 .toBase64()
-                .also {
-                    LOGGER.info("Deserializing with ${this.className} With BASE64;\n$it")
-                }
         } catch (e: Exception) {
             LOGGER.severe("Failed to encode ${value.className} to JSON -> BASE64 encoded string.\n${e.className}:${e.message}\n${e.stackTraceToString()}")
             null

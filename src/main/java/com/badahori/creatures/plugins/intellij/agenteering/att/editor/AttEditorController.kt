@@ -265,7 +265,6 @@ internal class AttEditorController(
     }
 
     override fun dispose() {
-        LOGGER.info("Disposing ATT Editor Controller")
 //        model.dispose()
 //        view.dispose()
     }

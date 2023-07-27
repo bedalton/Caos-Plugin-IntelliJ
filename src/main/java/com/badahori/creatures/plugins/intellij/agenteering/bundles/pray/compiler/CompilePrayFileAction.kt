@@ -87,7 +87,6 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("C
                 builder.closeWithOkExitCode()
             }
             return if (builder.showAndGet()) {
-                LOGGER.info("Got Compiler options")
                 options
             } else {
                 LOGGER.info("Failed to get compiler options")

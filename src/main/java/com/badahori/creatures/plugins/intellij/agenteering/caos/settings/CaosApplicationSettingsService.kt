@@ -57,8 +57,6 @@ class CaosApplicationSettingsService :
             // Notify listeners of update
             onUpdate(oldState, state)
         }
-
-        LOGGER.info("Applying application settings; $myState")
     }
 
 
