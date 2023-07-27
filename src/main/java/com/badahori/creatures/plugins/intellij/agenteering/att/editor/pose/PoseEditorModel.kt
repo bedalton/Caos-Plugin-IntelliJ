@@ -192,12 +192,14 @@ class PoseEditorModel(
         if (DumbService.isDumb(project)) {
             progressIndicator.checkCanceled()
             DumbService.getInstance(project).runWhenSmart {
-                progressIndicator.checkCanceled()
                 if (id < renderId.get()) {
-                    progressIndicator.cancel()
                     return@runWhenSmart
                 }
-                requestRender(*parts, breedChanged = breedChanged)
+                try {
+                    // Ignore process cancelled from dumb service as the exception
+                    // seemed to actually be uncaught
+                    requestRender(*parts, breedChanged = breedChanged)
+                } catch (_: Exception) {}
             }
             return false
         }
