@@ -20,10 +20,7 @@ internal fun rerunAnalyzer(element: PsiElement) {
         return
     }
 
-    runWriteAction {
-        FileContentUtilCore.reparseFiles(file.virtualFile)
-        DaemonCodeAnalyzer.getInstance(file.project).restart(file)
-    }
+    rerunAnalyzer(file)
 }
 
 internal fun rerunAnalyzer(file: PsiFile) {
