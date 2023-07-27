@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose;
 
-import com.bedalton.creatures.common.structs.BreedKey;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorPanel;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttFileEditorProvider;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.PartBreedsProvider;
@@ -12,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
+import com.bedalton.creatures.common.structs.BreedKey;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
@@ -41,7 +41,10 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
-import java.awt.event.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
@@ -2739,11 +2742,18 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
 
         VisibilityPopup(final Disposable parent, final PartVisibility visibility) {
             this.visibility = visibility;
+            if (project.isDisposed()) {
+                return;
+            }
+            try {
+                Disposer.register(parent, this);
+            } catch (final Exception ignored) {
+                dispose();
+                return;
+            }
+
             init();
             addMouseListeners();
-            if (!project.isDisposed()) {
-                Disposer.register(parent, this);
-            }
         }
 
         void updateItems() {
