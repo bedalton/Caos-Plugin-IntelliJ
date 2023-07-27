@@ -11,7 +11,7 @@ internal fun rerunAnalyzer(element: PsiElement) {
         return
     }
     if (!ApplicationManager.getApplication().isDispatchThread) {
-        LOGGER.info("Is not Dispatch thread")
+        LOGGER.severe("rerunAnalyzer failed. Is not Dispatch thread")
         return
     }
     val file = element.containingFile

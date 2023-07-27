@@ -107,7 +107,7 @@ object CaosBundleSourcesRegistrationUtil {
         libModel.commit()
         modifiableModel.commit()
         if (modifiableModel.isChanged) {
-            LOGGER.info("Modifiable Model is still marked as changed")
+            LOGGER.warning("Modifiable Model is still marked as changed")
         }
         return true
     }

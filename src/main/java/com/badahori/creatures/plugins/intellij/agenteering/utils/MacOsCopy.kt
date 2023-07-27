@@ -1,7 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.bedalton.common.util.className
+import com.bedalton.log.LOG_DEBUG
 import com.bedalton.log.Log
+import com.bedalton.log.iIf
 import java.io.File
 import java.io.IOException
 
@@ -14,7 +16,7 @@ internal fun ensureMacOsCopyLib(): Boolean {
         return it
     }
     if (!OsUtil.isMac) {
-        Log.i { "Do not setup NSPasteboard. OS is not macOS" }
+        Log.iIf(LOG_DEBUG) { "Do not setup NSPasteboard. OS is not macOS" }
         wasSuccessful = true
         return true
     }
@@ -25,7 +27,7 @@ internal fun ensureMacOsCopyLib(): Boolean {
             return false
         }
         System.load(libraryPath)
-        Log.i { "Did load NSClipboard bridge" }
+        Log.iIf(LOG_DEBUG) { "Did load NSClipboard bridge" }
         wasSuccessful = true
         return true
     } catch (e: IOException) {

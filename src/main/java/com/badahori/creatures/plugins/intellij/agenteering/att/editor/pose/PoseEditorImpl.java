@@ -1068,7 +1068,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         }
         drawImmediately = true;
         if (project == null || project.isDisposed()) {
-            LOGGER.info("Cannot redraw. Project is disposed");
+            LOGGER.severe("Cannot redraw. Project is disposed");
             return;
         }
         if (files == null || files.isEmpty()) {
@@ -1150,7 +1150,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         }
         final Object third = ((Triple<?, ?, ?>) item).getThird();
         if (!(third instanceof List)) {
-            LOGGER.info("Third parameter is not a list but was: " + (third != null ? third.getClass().getSimpleName() : "null"));
+            LOGGER.severe("Third parameter is not a list but was: " + (third != null ? third.getClass().getSimpleName() : "null"));
             return EMPTY_BODY_PARTS_LIST;
         }
         //noinspection unchecked

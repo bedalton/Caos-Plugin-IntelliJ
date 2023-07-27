@@ -3,7 +3,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService.CaosApplicationSettings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService.CaosProjectSettings
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.bedalton.common.util.className
@@ -152,12 +151,12 @@ internal object GameInterfaceListConverter : Converter<List<GameInterfaceName>>(
             try {
                 return GameInterfaceName.json.decodeFromString<Array<GameInterfaceName>>(decoded).toList()
             } catch (e: Exception) {
-                LOGGER.info("Failed to deserialize array of game interfaces: ${e.className}: ${e.message}")
+                LOGGER.severe("Failed to deserialize array of game interfaces: ${e.className}: ${e.message}")
             }
         }
         val delimiterValuesSplit = decoded.split(DELIMITER_VALUES_DELIMITER, limit = 2)
         if (delimiterValuesSplit.size < 2) {
-            LOGGER.info("Bad Raw Serialized CAOS INJECTOR game name Data: <$decoded>")
+            LOGGER.severe("Bad Raw Serialized CAOS INJECTOR game name Data: <$decoded>")
             return emptyList()
         }
         if (delimiterValuesSplit[0].isBlank()) {

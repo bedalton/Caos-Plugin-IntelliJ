@@ -3,7 +3,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 import com.badahori.creatures.plugins.intellij.agenteering.utils.DisposablePopupMenu
 import com.badahori.creatures.plugins.intellij.agenteering.utils.action
 import com.badahori.creatures.plugins.intellij.agenteering.utils.addClickListener
+import com.bedalton.log.LOG_DEBUG
 import com.bedalton.log.Log
+import com.bedalton.log.iIf
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.ui.JBMenuItem
 import java.awt.KeyboardFocusManager
@@ -14,7 +16,7 @@ object AttEditorSupport {
 
     @JvmStatic
     fun initOpenRelatedPopup(relatedFileParts: List<Char>, disposable: Disposable? = null, onSelect: (part: Char?) -> Unit): JPopupMenu? {
-        Log.i { "Opening dialog to show related; With ${relatedFileParts.size}" }
+        Log.iIf(LOG_DEBUG) { "Opening dialog to show related; With ${relatedFileParts.size}" }
 
         if (relatedFileParts.isEmpty()) {
             Log.w { "getRelatedPartWithDialog was passed an empty list of related parts" }
