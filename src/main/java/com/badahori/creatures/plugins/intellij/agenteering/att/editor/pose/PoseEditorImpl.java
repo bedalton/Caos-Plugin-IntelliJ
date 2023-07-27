@@ -257,6 +257,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         setPose(part, newPose);
     }
 
+    @SuppressWarnings("unused")
     public Integer getPartPose(final char part, final int facingDirection) {
         final int offset;
         switch (facingDirection) {
@@ -812,7 +813,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         });
     }
 
-    public boolean openRelated(final char part) {
+    public void openRelated(final char part) {
         final int itemCount = openRelated.getItemCount();
         for (int i = 0; i < itemCount; i++) {
             final BodyPartFiles item = openRelated.getItemAt(i);
@@ -829,10 +830,9 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
             }
             if (itemPart == part) {
                 openRelated.setSelectedIndex(i);
-                return true;
+                return;
             }
         }
-        return false;
     }
 
     private void addPartListener(final JComboBox<?> box, final char partChar) {
@@ -1092,6 +1092,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
                     throw e;
                 }
                 LOGGER.severe("Failed to render; " + e.getLocalizedMessage());
+                //noinspection CallToPrintStackTrace
                 e.printStackTrace();
             }
         });
@@ -1488,7 +1489,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
             if (items.size() == 1) {
                 return;
             }
-        } else if (items.size() < 1) {
+        } else if (items.isEmpty()) {
             return;
         }
         // Assign values to this drop down
@@ -1556,7 +1557,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
 
         this.rootPath = path;
         final String lastDirectory = ((PoseRenderedImagePanel) imageHolder).getLastDirectory();
-        if (lastDirectory == null || lastDirectory.length() < 1) {
+        if (lastDirectory == null || lastDirectory.isEmpty()) {
             ((PoseRenderedImagePanel) imageHolder).setLastDirectory(path.getPath());
         }
         if (didInitOnce) {
@@ -1573,6 +1574,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
      *
      * @param direction direction that the creature will be facing
      */
+    @SuppressWarnings("CallToPrintStackTrace")
     public void setFacing(int direction) {
         final int oldFacing = getFacing();
         if (direction != oldFacing) {
@@ -2699,10 +2701,12 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         void onPoseChange(Pose pose);
     }
 
+    @SuppressWarnings("unused")
     public void addBreedSelectionChangeListener(final BreedSelectionChangeListener listener) {
         breedSelectionChangeListeners.add(listener);
     }
 
+    @SuppressWarnings("unused")
     public void removeBreedSelectionChangeListener(final BreedSelectionChangeListener listener) {
         breedSelectionChangeListeners.remove(listener);
     }
@@ -3027,7 +3031,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
     }
 
 
-    public static interface BreedSelectionChangeListener {
+    public interface BreedSelectionChangeListener {
         void onBreedSelected(BreedKey key, char... parts);
     }
 
