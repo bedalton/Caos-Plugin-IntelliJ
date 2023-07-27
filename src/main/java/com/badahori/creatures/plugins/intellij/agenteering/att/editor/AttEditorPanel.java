@@ -940,7 +940,6 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
     }
 
     public void dispose() {
-        Log.i(() -> "Disposing ATTEditorPanel.java");
 //        poseEditor.dispose();
     }
 
