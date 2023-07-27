@@ -15,7 +15,7 @@ interface CaosScriptStubTypes {
         @JvmStatic
         val VAR_TOKEN = CaosScriptVarTokenStubType("CaosScript_VAR_TOKEN")
         @JvmStatic
-        val TARG_ASSIGNMENT = CaosScriptTargAssignmentStubType("CaosScript_CTarg")
+        val TARG_ASSIGNMENT = CaosScriptTargAssignmentStubType("CaosScript_C_Targ")
         @JvmStatic
         val LVALUE = CaosScriptLValueStubType("CaosScript_LVALUE")
         @JvmStatic
@@ -23,7 +23,7 @@ interface CaosScriptStubTypes {
         @JvmStatic
         val TOKEN_RVALUE = CaosScriptTokenRValueStubType("CaosScript_TOKEN_RVALUE")
         @JvmStatic
-        val VAR_ASSIGNMENT = CaosScriptAssignmentStubType("CaosScript_CAssignment")
+        val VAR_ASSIGNMENT = CaosScriptAssignmentStubType("CaosScript_C_Assignment")
         @JvmStatic
         val NAMED_GAME_VAR = CaosScriptNamedGameVarStubType("CaosScript_NAMED_GAME_VAR")
         @JvmStatic
