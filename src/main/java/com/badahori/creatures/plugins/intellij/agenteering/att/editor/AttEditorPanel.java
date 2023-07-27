@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor;
 
-import com.bedalton.creatures.common.structs.BreedKey;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorImpl;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport;
@@ -14,7 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey;
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications;
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ActionHelper;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem;
-import com.bedalton.log.Log;
+import com.bedalton.creatures.common.structs.BreedKey;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
@@ -141,7 +140,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
                 return;
             }
             final String value = ((String) temp).trim();
-            if (value.length() < 1) {
+            if (value.isEmpty()) {
                 throw new RuntimeException("Cannot set part to undefined");
             }
             final char part = Character.toLowerCase(value.toCharArray()[0]);
@@ -261,36 +260,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         menu.add(openRelated);
 
         for (int i = 0; i < 6; i++) {
-            final JMenuItem pointMenuItem = new JMenuItem("Point " + i);
-            JRadioButton button;
-            switch (i) {
-                case 0:
-                    button = point1;
-                    break;
-                case 1:
-                    button = point2;
-                    break;
-                case 2:
-                    button = point3;
-                    break;
-                case 3:
-                    button = point4;
-                    break;
-                case 4:
-                    button = point5;
-                    break;
-                case 5:
-                    button = point6;
-                    break;
-                default:
-                    throw new IndexOutOfBoundsException("Invalid point number '" + i + "' passed  in initMenuItems");
-            }
-            pointMenuItem.setAction(new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    button.setSelected(true);
-                }
-            });
+            final JMenuItem pointMenuItem = getPointMenuItem(i);
             pointMenuItems[i] = pointMenuItem;
         }
         mainPanel.setComponentPopupMenu(menu);
@@ -298,6 +268,41 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         scrollPane.setInheritsPopupMenu(true);
         spriteCellList.setComponentPopupMenu(menu);
         spriteCellList.setInheritsPopupMenu(true);
+    }
+
+    @NotNull
+    private JMenuItem getPointMenuItem(int i) {
+        final JMenuItem pointMenuItem = new JMenuItem("Point " + i);
+        JRadioButton button;
+        switch (i) {
+            case 0:
+                button = point1;
+                break;
+            case 1:
+                button = point2;
+                break;
+            case 2:
+                button = point3;
+                break;
+            case 3:
+                button = point4;
+                break;
+            case 4:
+                button = point5;
+                break;
+            case 5:
+                button = point6;
+                break;
+            default:
+                throw new IndexOutOfBoundsException("Invalid point number '" + i + "' passed  in initMenuItems");
+        }
+        pointMenuItem.setAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                button.setSelected(true);
+            }
+        });
+        return pointMenuItem;
     }
 
     /**
@@ -1053,6 +1058,22 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         // Set controller first as it may progress index to next/prev non-duplicated ATT line
         final int actualIndex = !Objects.equals(this, sender) ? controller.setSelected(index, true) : index;
 
+        int direction = getSelectedDirection(index, actualIndex);
+        cell = actualIndex;
+        poseEditor.setPose(direction, getPart(), actualIndex, true);
+        spriteCellList.reload();
+        redrawPose();
+        ApplicationManager.getApplication().invokeLater(() -> {
+            spriteCellList.requestFocus();
+            spriteCellList.requestFocusInWindow();
+            spriteCellList.scrollTo(actualIndex);
+            spriteCellList.focusCell(actualIndex);
+        });
+        this.settingSelected = false;
+        return actualIndex;
+    }
+
+    private int getSelectedDirection(int index, int actualIndex) {
         int direction;
         if (getVariant().isOld()) {
             if (actualIndex < 4) {
@@ -1069,18 +1090,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         } else {
             direction = (int) Math.floor((index % 16) / 4.0);
         }
-        cell = actualIndex;
-        poseEditor.setPose(direction, getPart(), actualIndex, true);
-        spriteCellList.reload();
-        redrawPose();
-        ApplicationManager.getApplication().invokeLater(() -> {
-            spriteCellList.requestFocus();
-            spriteCellList.requestFocusInWindow();
-            spriteCellList.scrollTo(actualIndex);
-            spriteCellList.focusCell(actualIndex);
-        });
-        this.settingSelected = false;
-        return actualIndex;
+        return direction;
     }
 
     private Character getPart() {

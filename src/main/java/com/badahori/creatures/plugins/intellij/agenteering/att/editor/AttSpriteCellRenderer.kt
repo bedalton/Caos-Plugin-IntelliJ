@@ -1,3 +1,5 @@
+@file:Suppress("UseJBColor")
+
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -11,6 +13,7 @@ import javax.swing.KeyStroke.getKeyStroke
 import kotlin.math.floor
 
 
+@Suppress("UseJBColor")
 private val colors = listOf(
     Color.YELLOW,
     Color.GREEN,
@@ -74,7 +77,6 @@ internal class AttSpriteCellComponent : JPanel() {
         .apply { inheritsPopupMenu = true }
     private var canvas: AttCellCanvas? = null
     private var foldedLabel: JLabel? = null
-    private var padding: Component? = null
     private val isFolded: Boolean get() = data?.isFolded == true
 
     init {
@@ -143,10 +145,14 @@ internal class AttSpriteCellComponent : JPanel() {
         // Set sizing information
         val padWidth = if (folded) 0 else 10
         val padHeight = if (folded) 0 else 10
-        val dimension =
-            if (width > 0 && height > 0) Dimension(width + padWidth, height + padHeight) else Dimension(1, 1)
+        val dimension = if (width > 0 && height > 0) {
+            Dimension(width + padWidth, height + padHeight)
+        } else {
+            Dimension(1, 1)
+        }
         this.size = dimension
         this.preferredSize = dimension
+        this.minimumSize = dimension
 //        this.canvas?.preferredSize = Dimension(width, height)
         this.minimumSize = dimension
 
@@ -361,8 +367,8 @@ internal class AttSpriteCellList(
     }
 
     fun setMaxWidthHeight(width: Int, height: Int) {
-        this.maxWidth = width;
-        this.maxHeight = height;
+        this.maxWidth = width
+        this.maxHeight = height
         reload()
     }
 

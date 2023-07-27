@@ -71,6 +71,7 @@ val PLUGIN: IdeaPluginDescriptor?
     }
 
 
+@Suppress("MemberVisibilityCanBePrivate")
 object CaosFileUtil {
 
     private const val RESOURCES_FOLDER = "classes"
@@ -171,11 +172,15 @@ object CaosFileUtil {
         return createFileOrDir(root, relativePath, data, false)
     }
 
+    fun createDirectory(root: VirtualFile, relativePath: String): VirtualFile {
+        return createFileOrDir(root, relativePath, null,true)
+    }
+
     /**
      * Taken from com.intellij.testFramework.TemporaryDirectory
      * Copyright 2000-2019 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
      */
-    private fun createFileOrDir(root: VirtualFile, relativePath: String, data: ByteArray, dir: Boolean): VirtualFile {
+    private fun createFileOrDir(root: VirtualFile, relativePath: String, data: ByteArray?, makeDirectoryNotFile: Boolean): VirtualFile {
         return try {
             WriteAction.computeAndWait<VirtualFile, IOException> {
                 var parent = root
@@ -193,14 +198,17 @@ object CaosFileUtil {
                 parent.children //need this to ensure that fileCreated event is fired
                 val name = PathUtil.getFileName(relativePath)
                 var file: VirtualFile?
-                if (dir) {
+                if (makeDirectoryNotFile) {
+                    if (data != null) {
+                        LOGGER.warning("Making directory in createFileOrDir, but file bytes argument was non-null")
+                    }
                     file = parent.createChildDirectory(CaosFileUtil::class.java, name)
                 } else {
                     file = parent.findChild(name)
                     if (file == null) {
                         file = parent.createChildData(CaosFileUtil::class.java, name)
                     }
-                    file.setBinaryContent(data)
+                    file.setBinaryContent(data ?: byteArrayOf())
                     // update the document now, otherwise MemoryDiskConflictResolver will do it later at unexpected moment of time
                     FileDocumentManager.getInstance().reloadFiles(file)
                 }
@@ -249,7 +257,6 @@ fun VirtualFile.md5(): String? {
             input,
             md
         ).use {
-            @Suppress("ControlFlowWithEmptyBody")
             while (input.read() > 0) {
                 // Do nothing, just need to read file
             }

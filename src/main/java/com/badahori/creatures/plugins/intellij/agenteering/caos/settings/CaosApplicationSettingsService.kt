@@ -3,8 +3,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ApplicationSettingsConverter
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent

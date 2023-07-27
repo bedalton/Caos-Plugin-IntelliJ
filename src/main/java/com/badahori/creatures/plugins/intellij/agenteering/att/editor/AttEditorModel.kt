@@ -101,6 +101,7 @@ internal class AttEditorModel(
 
     var relativeFileFailed = false
 
+    @Suppress("unused")
     var relativePoint: Int? = null
 
     var mRelativePart: Char? = null
@@ -155,7 +156,8 @@ internal class AttEditorModel(
 
     private var mFoldedLines: List<Int>? = null
 
-    protected var lockRelative = false
+    @Suppress("unused")
+    private var lockRelative = false
 
 
     init {
@@ -242,9 +244,6 @@ internal class AttEditorModel(
 
     fun getBreedPartKey(): BreedPartKey? {
         return fromFileName(attFile.nameWithoutExtension, variant)
-        attFile.nameWithoutExtension.getOrNull(0)?.lowercaseChar()?.let { part ->
-            BreedPartKey(variant, part = part)
-        }
     }
 
     fun getImages(): List<BufferedImage?> {
@@ -596,7 +595,7 @@ internal class AttEditorModel(
             return replications
         }
 
-    private suspend fun getReplications(line: Int): List<Int> {
+    private fun getReplications(line: Int): List<Int> {
         return if (replicateAttsToDuplicateSprites == false || mNotReplicatedAtts.contains(line)) {
             emptyList()
         } else {
@@ -626,22 +625,22 @@ internal class AttEditorModel(
             .show()
     }
 
-    fun commit() {
-        ApplicationManager.getApplication().invokeLater {
-            ApplicationManager.getApplication().runWriteAction {
-                val project = project
-                    ?: return@runWriteAction
-                if (project.isDisposed) {
-                    return@runWriteAction
-                }
-                if (!attFile.isValid) {
-                    return@runWriteAction
-                }
-                PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document!!)
-                PsiDocumentManager.getInstance(project).commitDocument(document!!)
-            }
-        }
-    }
+//    fun commit() {
+//        ApplicationManager.getApplication().invokeLater {
+//            ApplicationManager.getApplication().runWriteAction {
+//                val project = project
+//                    ?: return@runWriteAction
+//                if (project.isDisposed) {
+//                    return@runWriteAction
+//                }
+//                if (!attFile.isValid) {
+//                    return@runWriteAction
+//                }
+//                PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document!!)
+//                PsiDocumentManager.getInstance(project).commitDocument(document!!)
+//            }
+//        }
+//    }
 
     private fun writeFile(fileData: AttFileData): Boolean {
         val project = project
@@ -1029,6 +1028,7 @@ private data class RelativeAtt(
 
     init {
         if (!project.isDisposed) {
+            initWatcher()
             // Register disposer to prevent memory leaks
             Disposer.register(disposable, this)
         }
@@ -1110,6 +1110,9 @@ private data class RelativeAtt(
     }
 
     override fun dispose() {
-        watcher?.let { PsiManager.getInstance(project).removePsiTreeChangeListener(it) }
+        watcher?.let {
+            PsiManager.getInstance(project).removePsiTreeChangeListener(it)
+        }
+        watcher = null
     }
 }

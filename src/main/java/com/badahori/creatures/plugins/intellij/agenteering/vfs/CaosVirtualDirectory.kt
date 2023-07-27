@@ -12,10 +12,9 @@ import com.intellij.openapi.util.ModificationTracker
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileSystem
-import com.intellij.openapi.vfs.newvfs.impl.VirtualFileImpl
 import java.io.InputStream
 import java.io.OutputStream
-import java.util.Date
+import java.util.*
 
 class CaosVirtualDirectory(
     private val project: Project,

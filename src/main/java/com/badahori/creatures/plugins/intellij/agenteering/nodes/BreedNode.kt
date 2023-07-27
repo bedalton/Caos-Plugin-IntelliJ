@@ -64,7 +64,7 @@ internal class BreedNode(
     }
 
     override fun update(presentation: PresentationData) {
-        if (notNullProject.isDisposed || virtualFile?.isValid == false) {
+        if (notNullProject.isDisposed || parent?.isValid == false) {
             return
         }
         val extension = if (hasAtts && spriteExtensions.isEmpty()) {
@@ -181,7 +181,7 @@ internal val AbstractTreeNode<*>.nameExtended: String?
         return when (val value = this.value) {
             is PsiFile -> value.name.nullIfEmpty()
             is VirtualFile -> value.name.nullIfEmpty()
-            is BreedNode -> value.children.firstOrNull()?.nameExtended
+            is BreedNode -> value.children.firstOrNull()?.name?.nullIfEmpty()
             else -> null
         } ?: name?.nullIfEmpty()
     }

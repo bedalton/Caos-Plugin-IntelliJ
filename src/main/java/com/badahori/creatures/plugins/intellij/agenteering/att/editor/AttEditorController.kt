@@ -1,13 +1,12 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
-import com.bedalton.creatures.common.structs.BreedKey
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.bedalton.creatures.common.structs.BreedKey
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -284,7 +283,7 @@ internal class AttEditorController(
         fun refresh()
         fun clearPose()
         fun scrollCellIntoView()
-        fun preferredFocusComponent(): JComponent;
+        fun preferredFocusComponent(): JComponent
     }
 
 }

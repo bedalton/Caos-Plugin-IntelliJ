@@ -48,8 +48,10 @@ import com.intellij.psi.util.PsiTreeUtil.collectElementsOfType
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 
-class CaosScriptFile constructor(viewProvider: FileViewProvider, private val myFile: VirtualFile) :
-    PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant, DumbAware, Disposable {
+class CaosScriptFile(
+    viewProvider: FileViewProvider,
+    private val myFile: VirtualFile
+) : PsiFileBase(viewProvider, CaosScriptLanguage), HasVariant, DumbAware, Disposable {
 
 
     private val didFormatInitial = AtomicBoolean(false)

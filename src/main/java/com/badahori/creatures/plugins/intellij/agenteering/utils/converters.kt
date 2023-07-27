@@ -110,7 +110,6 @@ internal class StringListConverter : Converter<List<String>>() {
     companion object {
         private const val DELIMITER = "\n"
         private const val DELIMITER_DELIMITER = "@;_;_;@"
-        private const val DELIMITER_ESCAPE = "xx(@@(\$_\$_\$_$)@@)xx"
     }
 }
 
@@ -136,7 +135,7 @@ internal object GameInterfaceListConverter : Converter<List<GameInterfaceName>>(
     private const val DELIMITER_VALUES_DELIMITER = "|||"
     private const val DELIMITER = ":++__;;:!!:;;__++:"
 
-    override fun toString(values: List<GameInterfaceName>): String? {
+    override fun toString(values: List<GameInterfaceName>): String {
         val rawJSON = GameInterfaceName.json.encodeToString<Array<GameInterfaceName>>(values.toTypedArray())
         return rawJSON.encodeToByteArray().toBase64()
     }

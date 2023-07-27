@@ -1,12 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler
 
-import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions
-import com.bedalton.creatures.agents.pray.compiler.PrayCompilerTask
-import com.bedalton.creatures.agents.pray.compiler.compilePrayAndWrite
-import com.bedalton.creatures.agents.pray.compiler.pray.PrayParseValidationFailException
-import com.bedalton.log.logProgress
-import com.bedalton.common.util.className
-import com.bedalton.common.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
@@ -14,9 +7,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.closeWithOkExitCode
-import com.bedalton.common.util.PathUtil
+import com.bedalton.common.util.className
+import com.bedalton.common.util.nullIfEmpty
+import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions
+import com.bedalton.creatures.agents.pray.compiler.PrayCompilerTask
+import com.bedalton.creatures.agents.pray.compiler.compilePrayAndWrite
+import com.bedalton.creatures.agents.pray.compiler.pray.PrayParseValidationFailException
+import com.bedalton.log.logProgress
 import com.bedalton.vfs.LocalFileSystem
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -26,7 +23,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiDocumentManager
 import icons.CaosScriptIcons
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch

@@ -1,14 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 
-import com.bedalton.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.asWritable
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildrenAs
+import com.bedalton.common.util.toListOf
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAware

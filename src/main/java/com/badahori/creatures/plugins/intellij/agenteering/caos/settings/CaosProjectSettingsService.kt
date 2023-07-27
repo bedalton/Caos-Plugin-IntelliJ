@@ -9,7 +9,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosVariantConv
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ProjectSettingsConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
-import com.fasterxml.jackson.databind.annotation.JsonAppend.Attr
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
@@ -24,6 +23,7 @@ import java.util.*
 /**
  * State container responsible for getting/setting project state
  */
+@Suppress("LightServiceMigrationCode")
 @State(
     name = "CaosProjectSetting",
 )
@@ -44,14 +44,6 @@ class CaosProjectSettingsService(
     override fun getState(): CaosProjectSettings? {
         return this.myState
             ?.migrate()
-    }
-
-    fun setState(newState: CaosProjectSettings?) {
-        if (newState == null) {
-            myState = CaosProjectSettings()
-        } else if (newState != myState) {
-            loadState(newState)
-        }
     }
 
     override fun loadState(state: CaosProjectSettings) {
@@ -120,6 +112,7 @@ class CaosProjectSettingsService(
         }
 
 
+    @Suppress("unused")
     var ditherSPR: Boolean
         get() = stateNonNull.ditherSPR
         set(value) {
@@ -338,6 +331,7 @@ class CaosProjectSettingsService(
          * Adds a listener to track and change to the settings component
          * Listener should be released automatically when parent is disposed
          */
+        @Suppress("unused")
         fun addSettingsChangedListener(
             project: Project,
             disposable: Disposable,
