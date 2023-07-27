@@ -156,35 +156,48 @@ class BreedTreeProvider : TreeStructureProvider {
     }
 
     companion object {
-        @Suppress("ComponentNotRegistered")
-        class UseBreedNodeOptionAction : ToggleOptionAction({ event ->
-            event.project?.let {
-                CaosApplicationSettingsService.getInstance().combineAttNodes =
-                    !CaosApplicationSettingsService.getInstance().combineAttNodes
-            }
-            UseBreedNodeOption()
-        })
 
-        private class UseBreedNodeOption : ToggleOptionAction.Option {
 
-            override fun getName(): String {
-                return "Combine Breed Nodes"
-            }
 
-            override fun getDescription(): String {
-                return "Combine all breed files for a given genus, age and breed into a single project node"
-            }
-
-            override fun isSelected(): Boolean {
-                return CaosApplicationSettingsService.getInstance().combineAttNodes
-            }
-
-            override fun setSelected(selected: Boolean) {
-                CaosApplicationSettingsService.getInstance().combineAttNodes = selected
-            }
-
-        }
     }
+}
+
+@Suppress("ComponentNotRegistered")
+class UseBreedNodeOptionAction : ToggleOptionAction({ event ->
+    event.project?.let {
+        CaosApplicationSettingsService.getInstance().combineAttNodes =
+            !CaosApplicationSettingsService.getInstance().combineAttNodes
+    }
+    UseBreedNodeOption()
+})
+
+@Suppress("ComponentNotRegistered")
+class UseBreedCombineNodeOptionAction : ToggleOptionAction({ event ->
+    event.project?.let {
+        CaosApplicationSettingsService.getInstance().combineAttNodes =
+            !CaosApplicationSettingsService.getInstance().combineAttNodes
+    }
+    UseBreedNodeOption()
+})
+
+private class UseBreedNodeOption : ToggleOptionAction.Option {
+
+    override fun getName(): String {
+        return "Combine Breed Nodes"
+    }
+
+    override fun getDescription(): String {
+        return "Combine all breed files for a given genus, age and breed into a single project node"
+    }
+
+    override fun isSelected(): Boolean {
+        return CaosApplicationSettingsService.getInstance().combineAttNodes
+    }
+
+    override fun setSelected(selected: Boolean) {
+        CaosApplicationSettingsService.getInstance().combineAttNodes = selected
+    }
+
 }
 
 private fun BreedKey.isConcrete(): Boolean {
