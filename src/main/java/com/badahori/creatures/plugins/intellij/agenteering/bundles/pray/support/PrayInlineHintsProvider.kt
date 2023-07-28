@@ -127,5 +127,5 @@ private enum class InlayHints(
 
     };
 
-    override val option: Option = Option("SHOW_${this.name}", description, enabled)
+    override val option: Option = Option("SHOW_${this.name}", { description }, enabled)
 }

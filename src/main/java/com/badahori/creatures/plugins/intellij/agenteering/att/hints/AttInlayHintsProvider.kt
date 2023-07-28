@@ -142,7 +142,7 @@ enum class AttInlayHints(description: String, defaultEnabled: Boolean, override 
     override val enabled: Boolean
         get() = option.isEnabled()
 
-    override val option: Option = Option("SHOW_ATT_${this.name}", description, defaultEnabled)
+    override val option: Option = Option("SHOW_ATT_${this.name}",  { description }, defaultEnabled)
 
 
 }

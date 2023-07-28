@@ -5,7 +5,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInject
 import com.badahori.creatures.plugins.intellij.agenteering.utils.GameInterfaceListConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.JsonToXMLStringConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
-import com.fasterxml.jackson.databind.annotation.JsonAppend.Attr
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent

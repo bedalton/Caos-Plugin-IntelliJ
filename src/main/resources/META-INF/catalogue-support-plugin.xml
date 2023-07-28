@@ -35,7 +35,9 @@
                 serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueStubIndexServiceImpl"/>
 
         <stubElementTypeHolder
-                class="com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.types.CatalogueStubTypes"/>
+                externalIdPrefix="Catalogue_"
+                class="com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.types.CatalogueStubTypes"
+        />
         <stubIndex
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueEntryElementIndex"/>
 

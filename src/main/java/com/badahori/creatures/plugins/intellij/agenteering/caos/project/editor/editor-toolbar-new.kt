@@ -1,7 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 
-import com.bedalton.common.structs.Pointer
-import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CompileCAOS2Action
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.AddGameInterfaceAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosInjectorAction
@@ -10,11 +8,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInjectorApplicationSettingsService
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.allGameInterfaceNames
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.DisposablePsiTreChangeListener
 import com.badahori.creatures.plugins.intellij.agenteering.injector.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.bedalton.common.structs.Pointer
+import com.bedalton.common.util.className
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
@@ -40,11 +42,7 @@ import com.intellij.psi.text.BlockSupport
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil
-import java.awt.Color
-import java.awt.Component
-import java.awt.FlowLayout
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
+import java.awt.*
 import java.awt.event.ItemEvent
 import java.awt.event.MouseEvent
 import java.util.*
@@ -99,14 +97,11 @@ class CaosScriptEditorToolbar(
         return panel
     }
 
-    companion object {
-        private val KEY: Key<EditorNotificationPanel> = Key.create("creatures.caos.CaosEditorToolbar")
-
-    }
-
     override fun dispose() {
     }
 }
+
+private val KEY: Key<EditorNotificationPanel> = Key.create("creatures.caos.CaosEditorToolbar")
 
 internal fun createCaosScriptHeaderComponent(
     project: Project,
@@ -341,7 +336,7 @@ private fun populate(
                 compileButton.revalidate()
                 compilePanel.revalidate()
             } ?: return@run
-            PsiManager.getInstance(project).addPsiTreeChangeListener(caos2Listener)
+            PsiManager.getInstance(project).addPsiTreeChangeListener(caos2Listener, fileEditor)
 
         }
     }
@@ -475,6 +470,7 @@ private fun populate(
     invokeLater {
         interruptedInitializer(
             project,
+            fileEditor,
             pointer,
             setInitialVariant,
             setInitialInjector
@@ -486,6 +482,7 @@ private fun populate(
 
 private fun interruptedInitializer(
     project: Project,
+    disposable: Disposable,
     pointer: SmartPsiElementPointer<CaosScriptFile>,
     setVariant: (variant: CaosVariant?) -> Unit,
     setInitialInjector: (initialVariant: CaosVariant?, gameInterface: GameInterfaceName?) -> Unit
@@ -580,7 +577,7 @@ private fun interruptedInitializer(
 
     initializer = strongInitializer
     reschedule()
-    PsiManager.getInstance(project).addPsiTreeChangeListener(strongInitializer)
+    PsiManager.getInstance(project).addPsiTreeChangeListener(strongInitializer, disposable)
 }
 
 fun setWhenReady(

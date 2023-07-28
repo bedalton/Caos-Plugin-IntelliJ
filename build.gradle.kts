@@ -14,9 +14,9 @@ configurations {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.7.20"
-    id("org.jetbrains.intellij") version "1.10.2"
-    kotlin("plugin.serialization") version "1.7.20"
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.intellij")
+    kotlin("plugin.serialization")
 }
 
 val projectVersion: String by project
@@ -118,6 +118,7 @@ kotlin {
             languageSettings.optIn("kotlin.contracts.ExperimentalContracts")
             languageSettings.optIn("kotlin.ExperimentalStdlibApi")
             languageSettings.optIn("kotlinx.coroutines.DelicateCoroutinesApi")
+            languageSettings.optIn("kotlinx.serialization.ExperimentalSerializationApi")
 
             //languageSettings.useExperimentalAnnotation("kotlin.contracts.ExperimentalContracts")
         }

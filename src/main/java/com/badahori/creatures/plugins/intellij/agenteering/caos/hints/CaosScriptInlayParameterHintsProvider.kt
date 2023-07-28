@@ -113,7 +113,7 @@ enum class CaosScriptInlayParameterHintsProvider(description: String, defaultEna
     override val enabled: Boolean
         get() = option.isEnabled()
 
-    override val option: Option = Option("SHOW_${this.name}", description, defaultEnabled)
+    override val option: Option = Option("SHOW_${this.name}", { description }, defaultEnabled)
 
     companion object {
 

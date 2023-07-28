@@ -579,7 +579,7 @@ enum class CaosScriptInlayTypeHint(description: String, defaultEnabled: Boolean,
     override val enabled: Boolean
         get() = option.isEnabled()
 
-    override val option: Option = Option("SHOW_${this.name}", description, defaultEnabled)
+    override val option: Option = Option("SHOW_${this.name}", { description }, defaultEnabled)
 }
 
 

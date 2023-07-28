@@ -36,7 +36,7 @@ sealed class CaosVariant(open val code: String, open val fullName: String, open 
         override val code: String,
         override val fullName: String,
         val iconPath: String? = null,
-    ) : CaosVariant(code, fullName, -1, iconPath?.let { IconLoader.getIcon(iconPath) } ?: CaosScriptIcons.MODULE_ICON) {
+    ) : CaosVariant(code, fullName, -1, iconPath?.let { IconLoader.getIcon(iconPath, this::class.java) } ?: CaosScriptIcons.MODULE_ICON) {
 
 
         val base: CaosVariant by lazy {

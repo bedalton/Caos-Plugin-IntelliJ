@@ -77,7 +77,7 @@ object CaosFileUtil {
     private const val RESOURCES_FOLDER = "classes"
 
     private val PLUGIN_HOME_FILE: File?
-        get() = PLUGIN?.path
+        get() = PLUGIN?.pluginPath?.toFile()
 
 
     val PLUGIN_HOME_DIRECTORY: VirtualFile?

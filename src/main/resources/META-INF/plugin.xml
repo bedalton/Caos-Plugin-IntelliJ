@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.badahori.creatures.plugins.intellij.agenteering</id>
     <name>Creatures CAOS and Agenteering</name>
-    <version><!-- *** SET VERSION IN GRADLE *** -->2022.03.04</version>
+    <version><!-- *** SET VERSION IN GRADLE *** -->2023.01.00</version>
     <vendor>Bedalton</vendor>
 
     <description><![CDATA[
@@ -37,6 +37,20 @@
 
     <change-notes><![CDATA[
         <ul>
+            <li>
+                <b>Version: 2023.01.00</b>
+                <b>Improvement</b>
+                <ul>
+                    <li>Added more shortcut keys to ATT editor</li>
+                    <li>Catalogue inspections</li>
+                    <li>Catalogue value autocomplete</li>
+                </ul>
+                <b>Fixes</b>
+                <ul>
+                    <li>Relative path completion in CAOS2Pray directives</li>
+                    <li>Journal name autocomplete</li>
+                </ul>
+            </li>
             <li>
                 <b>Version: 2022.03.04</b>
                 <b>Fixes</b>
@@ -192,7 +206,7 @@
   </change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="202"/>
+    <idea-version since-build="211"/>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
