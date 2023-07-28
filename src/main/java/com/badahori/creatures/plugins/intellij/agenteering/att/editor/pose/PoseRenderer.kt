@@ -1,10 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
-import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility.*
+import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.SpriteBodyPart
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
+import com.bedalton.common.util.toListOf
 import java.awt.AlphaComposite
 import java.awt.Graphics2D
 import java.awt.RenderingHints
@@ -301,11 +302,16 @@ object PoseRenderer {
             when (pose.body) {
                 in 0..3 -> leftArm + leftLeg + tail.getOrNull(0) + bodyPart + tail.getOrNull(1) + headParts + rightLeg + rightArm
                 in 4..7 -> rightArm + rightLeg + tail.getOrNull(0) + bodyPart + tail.getOrNull(1)+ headParts + leftLeg + leftArm
-                8 -> tail + leftLeg + rightLeg + bodyPart + leftArm + rightArm + headParts
-                9 -> if (variant == CaosVariant.C1)
-                    leftLeg + rightLeg + leftArm + rightArm + bodyPart + tail + headParts
-                else
-                    headParts + leftArm + rightArm + leftLeg + rightLeg + bodyPart + tail
+                8 -> if (variant == CaosVariant.C1) {
+                    tail + bodyPart + leftLeg + rightLeg + leftArm + rightArm + headParts
+                } else {
+                    tail + leftLeg + rightLeg + bodyPart + leftArm + rightArm + headParts
+                }
+                9 -> if (variant == CaosVariant.C1) {
+                    bodyPart.toListOf() + leftLeg + rightLeg + leftArm + rightArm + tail + headParts
+                } else {
+                    leftLeg + rightLeg + leftArm + rightArm+ bodyPart + tail + headParts
+                }
                 else -> null
             }
         } else {
