@@ -12,6 +12,7 @@ import com.intellij.util.io.decodeBase64
 import com.intellij.util.xmlb.Converter
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationStrategy
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 

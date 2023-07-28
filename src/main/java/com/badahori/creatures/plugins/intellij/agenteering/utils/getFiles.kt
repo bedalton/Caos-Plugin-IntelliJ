@@ -63,5 +63,5 @@ private fun getFilesWithExtensionWithoutIndex(virtualFile: VirtualFile, extensio
     return virtualFile.collectChildren {
         ProgressIndicatorProvider.checkCanceled()
         it.extension?.equals(extension, true) == true
-    } ?: emptyList()
+    }
 }

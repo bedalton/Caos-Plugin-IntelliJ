@@ -10,7 +10,6 @@ import com.intellij.codeInsight.completion.CompletionResultSet
 import com.intellij.codeInsight.lookup.AutoCompletionPolicy
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.collectDescendantsOfType
 
 internal object SubroutineCompletionHandler {
 

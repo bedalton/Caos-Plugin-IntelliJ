@@ -256,7 +256,7 @@ internal fun getSimilarFileNames(
     val targetFile: VirtualFile? = if (extensions.isNullOrEmpty()) {
         VirtualFileUtil.findChildIgnoreCase(directory, removeExtension, directory = false, baseFileName)
     } else if (fileNameWithoutExtension.lowercase() == baseFileName) {
-        extensions!!.firstNotNullOfOrNull { extension ->
+        extensions.firstNotNullOfOrNull { extension ->
             VirtualFileUtil.findChildIgnoreCase(directory,
                 ignoreExtension = false,
                 directory = false,

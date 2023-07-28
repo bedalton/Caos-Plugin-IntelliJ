@@ -31,7 +31,7 @@ class CaosInjectorApplicationSettingsService :
     PersistentStateComponent<CaosInjectorApplicationSettingsService.CaosWineSettings> {
 
     @Attribute(converter = CaosWineApplicationSettingsConverter::class)
-    protected var myState: CaosWineSettings? = null
+    private var myState: CaosWineSettings? = null
 
     @Suppress("MemberVisibilityCanBePrivate")
     internal val stateNonNull: CaosWineSettings
@@ -47,7 +47,10 @@ class CaosInjectorApplicationSettingsService :
 
         // Ensure we do not serialize default game interface names
         val actualState = state.copy(gameInterfaceNames = state.gameInterfaceNames
-            .filter { it != null && (it !is NativeInjectorInterface || !it.isDefault) })
+            .filter {
+                @Suppress("SENSELESS_COMPARISON")
+                it != null && (it !is NativeInjectorInterface || !it.isDefault)
+            })
 
         if (actualState == this.myState) {
             return

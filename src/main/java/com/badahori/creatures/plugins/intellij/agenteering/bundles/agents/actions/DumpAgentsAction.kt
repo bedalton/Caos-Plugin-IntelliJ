@@ -1,8 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions
 
-import com.bedalton.creatures.agents.pray.parser.parsePrayAgentToFiles
-import com.bedalton.creatures.agents.util.RelativeFileSystem
-import com.bedalton.common.structs.Pointer
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
@@ -10,12 +7,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessag
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
+import com.bedalton.common.structs.Pointer
+import com.bedalton.creatures.agents.pray.parser.parsePrayAgentToFiles
+import com.bedalton.creatures.agents.util.RelativeFileSystem
 import com.bedalton.io.bytes.MemoryByteStreamReader
-import com.bedalton.io.bytes.internal.MemoryByteStreamReaderEx
 import com.bedalton.vfs.LocalFileSystem
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -131,7 +129,6 @@ class DumpAgentAction : AnAction(
         val count = files.size
         for (i in files.indices) {
             val file = files[i]
-            val tail = if (count == 1) "" else " (${i + 1} of $count)"
             CommandProcessor.getInstance().runUndoTransparentAction {
                 runBackgroundableTask("Dumping agent: ${file.name}") {
                     it.isIndeterminate = true
@@ -221,7 +218,7 @@ class DumpAgentAction : AnAction(
         val relativeWriter = RelativeFileSystem(LocalFileSystem!!, parentVirtualFile.path)
 
 //        val result = try {
-        val result = parsePrayAgentToFiles(file.name, prefix = prefix, stream, relativeWriter, "*") { i, total, tag, name ->
+        val result = parsePrayAgentToFiles(file.name, prefix = prefix, stream, relativeWriter, "*") { i, total, _, _ ->
             if (progressIndicator.isIndeterminate) {
                 progressIndicator.isIndeterminate = false
             }

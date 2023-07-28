@@ -152,8 +152,8 @@ private fun getVariantByAttLengths(
         return CaosVariant.UNKNOWN
     }
     if (part == 'a') {
-        val longestLine = lines.maxByOrNull { it.length }
-            ?: return CaosVariant.C3
+//        val longestLine = lines.maxByOrNull { it.length }
+//            ?: return CaosVariant.C3
         // USING last point led to false CV positives. Decided to just make it CV if asked
 //        val points = longestLine.split("\\s+".toRegex()).filter { it.isNotBlank() }
 //        if (points.lastOrNull()?.toIntSafe().orElse(0) > 0) {

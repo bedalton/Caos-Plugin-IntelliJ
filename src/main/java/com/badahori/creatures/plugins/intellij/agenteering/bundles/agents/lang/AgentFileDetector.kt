@@ -34,7 +34,7 @@ class AgentFileOverrider : FileTypeOverrider {
             return AgentFileType
 
         val contents = try {
-            val bytes = virtualFile.inputStream?.readNBytes(4)
+            val bytes = virtualFile.inputStream.readNBytes(4)
             ByteArraySequence(bytes)
         } catch (e: Exception) {
             if (e is ProcessCanceledException) {

@@ -494,11 +494,11 @@ private fun getLinksInDirectory(
     caos: Boolean,
 ): List<LinkedFile> {
     val out = mutableListOf<LinkedFile>()
-    val pathPrefix = if (path.isEmpty()) {
-        ""
-    } else {
-        "$path/"
-    }
+//    val pathPrefix = if (path.isEmpty()) {
+//        ""
+//    } else {
+//        "$path/"
+//    }
     for (child in directory.collectChildren(::skip)) {
         if (child.path == thisFile.path) {
             continue

@@ -186,12 +186,12 @@ internal object FileInjectorUtil {
 
     private fun injectScriptBlocks(
         project: Project,
-        variant: CaosVariant?,
+        @Suppress("UNUSED_PARAMETER") variant: CaosVariant?,
         connection: CaosConnection,
         fileName: String,
         scriptBlocks: Map<JectScriptType, List<CaosScriptStruct>>,
         totalFiles: Int,
-        collapse: Boolean,
+        @Suppress("UNUSED_PARAMETER") collapse: Boolean,
         progressIndicator: ProgressIndicator,
     ): InjectionStatus {
         val responses = mutableListOf<InjectionStatus>()
