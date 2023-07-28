@@ -71,7 +71,7 @@ object CatalogueCompletionProvider : CompletionProvider<CompletionParameters>() 
             resultSet.addElement(
                 LookupElementBuilder.create(keyword)
                     .withLookupStrings(
-                        listOf(keyword, keyword.upperCaseFirstLetter(), keyword.lowercase())
+                        listOf(keyword, keyword.upperCaseFirstLetter(), keyword.lowercase(), keyword.matchCase(case))
                     )
                     .withInsertHandler(SpaceAfterInsertHandler)
             )
