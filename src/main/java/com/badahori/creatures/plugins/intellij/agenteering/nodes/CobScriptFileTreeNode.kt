@@ -14,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.nullI
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.bedalton.common.util.formatted
 import com.bedalton.io.bytes.internal.MemoryByteStreamReaderEx
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
@@ -49,7 +50,7 @@ internal class CobFileTreeNode(
                     file.nameWithoutExtension
                 )
             } catch (e: Exception) {
-                Log.e { "Failed to parse COB. ${e.message}" }
+                Log.e { "Failed to parse COB. ${e.formatted(true)}" }
                 CobFileData.InvalidCobData("Failed to parse COB. ${e.message}")
             }
         }
