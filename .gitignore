@@ -108,3 +108,4 @@ Guides/images/raw
 /Guides/**/*.afdesign
 jflex-*.jar
 .idea/codeStyles/Project.xml
+src/main/java/com/badahori/creatures/plugins/intellij/agenteering/caos/project/CaosFileNameChangeListener.kt
