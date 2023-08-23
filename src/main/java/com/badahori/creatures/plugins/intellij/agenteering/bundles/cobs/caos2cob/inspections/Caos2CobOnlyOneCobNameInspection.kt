@@ -34,34 +34,33 @@ class Caos2CobOnlyOneCobNameInspection : LocalInspectionTool(), DumbAware {
         }
     }
 
-    companion object {
-        /**
-         * Validates a COB agent names to ensure only one tag name is used.
-         */
-        private fun validateAgentNames(element:CaosScriptCaos2Block, holder: ProblemsHolder) {
-            if (!element.containingCaosFile?.isCaos2Cob.orFalse())
-                return
-            val commands:List<CaosScriptCompositeElement> = element.caos2BlockCommentList.flatMap { blockCommentList -> blockCommentList.caos2CommandList.filter { CobCommand.fromString(it.commandName) == CobCommand.COBFILE }.flatMap { it.caos2ValueList }.filterNotNull() }
-            val tags:List<CaosScriptCompositeElement> = element.caos2BlockCommentList.flatMap { blockCommentList -> blockCommentList.caos2TagList.filter { CobTag.fromString(it.tagName) == CobTag.COB_NAME }.map { it.caos2Value } }.filterNotNull()
-            if (commands.size + tags.size <= 1) {
-                return
-            }
-            val valuesRaw = (commands + tags)
-                .sortedBy { it.startOffset }
-            val first = valuesRaw.first()
-            val error = AgentMessages.message("cob.caos2cob.inspections.only-one-cob-file-name.extraneous-cob-name")
-            for(tag in valuesRaw.drop(0)) {
-                val elementToDelete = tag.getParentOfType(CaosScriptCaos2Statement::class.java) ?: tag.getParentOfType(CaosScriptCaos2Command::class.java)?.let {
-                    if (first in it.caos2ValueList) {
-                        tag
-                    } else
-                        it
-                }
-                if (elementToDelete != null)
-                    holder.registerProblem(element, error, DeleteElementFix(AgentMessages.message("cob.caos2cob.inspections.only-one-cob-file-name.fix.delete-extraneous-cob-name", tag.text), elementToDelete))
-                else
-                    holder.registerProblem(element, error)
-            }
+}
+
+/**
+ * Validates a COB agent names to ensure only one tag name is used.
+ */
+private fun validateAgentNames(element:CaosScriptCaos2Block, holder: ProblemsHolder) {
+    if (!element.containingCaosFile?.isCaos2Cob.orFalse())
+        return
+    val commands:List<CaosScriptCompositeElement> = element.caos2BlockCommentList.flatMap { blockCommentList -> blockCommentList.caos2CommandList.filter { CobCommand.fromString(it.commandName) == CobCommand.COB_FILE }.flatMap { it.caos2ValueList }.filterNotNull() }
+    val tags:List<CaosScriptCompositeElement> = element.caos2BlockCommentList.flatMap { blockCommentList -> blockCommentList.caos2TagList.filter { CobTag.fromString(it.tagName) == CobTag.COB_NAME }.map { it.caos2Value } }.filterNotNull()
+    if (commands.size + tags.size <= 1) {
+        return
+    }
+    val valuesRaw = (commands + tags)
+        .sortedBy { it.startOffset }
+    val first = valuesRaw.first()
+    val error = AgentMessages.message("cob.caos2cob.inspections.only-one-cob-file-name.extraneous-cob-name")
+    for(tag in valuesRaw.drop(0)) {
+        val elementToDelete = tag.getParentOfType(CaosScriptCaos2Statement::class.java) ?: tag.getParentOfType(CaosScriptCaos2Command::class.java)?.let {
+            if (first in it.caos2ValueList) {
+                tag
+            } else
+                it
         }
+        if (elementToDelete != null)
+            holder.registerProblem(element, error, DeleteElementFix(AgentMessages.message("cob.caos2cob.inspections.only-one-cob-file-name.fix.delete-extraneous-cob-name", tag.text), elementToDelete))
+        else
+            holder.registerProblem(element, error)
     }
 }
