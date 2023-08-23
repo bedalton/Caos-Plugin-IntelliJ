@@ -12,7 +12,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.Sprite
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.command.undo.DocumentReferenceManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
@@ -20,7 +19,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.util.DocumentUtil
 import com.intellij.util.io.write
 import java.nio.file.Paths
 
@@ -188,7 +186,7 @@ object Caos2CobCompiler {
             }
         }.toMap().toMutableMap()
         val cobCommands = getCobCommands(variant, block)
-        cobCommands.firstOrNull { it.first == CobCommand.COBFILE }
+        cobCommands.firstOrNull { it.first == CobCommand.COB_FILE }
             ?.second
             ?.nullIfEmpty()
             ?.let { cobFileNames ->
