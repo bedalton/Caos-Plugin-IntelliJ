@@ -41,11 +41,11 @@ Any CAOS2Cob arguments or values that contain a space, must be enclosed in doubl
 Any quotes in the values must be escaped with a leading slash
 
 #### String values
-| Desired Value | What to write   |
-| ------------- | --------------- |
-| Hello         | `Hello` or `"Hello"`|
-| Fastest Car   | `"Fastest Car"`   |
-| The "One"     | ``"The \"One\""``   |
+| Desired Value | What to write        |
+|---------------|----------------------|
+| Hello         | `Hello` or `"Hello"` |
+| Fastest Car   | `"Fastest Car"`      |
+| The "One"     | ``"The \"One\""``    |
 
 #### Date Values
 Dates are formatted in the format `YYYY-MM-DD`, where `YYYY` is a four digit year, `MM` is a two-digit month, and `DD` is the two-digit day of the month
@@ -57,7 +57,7 @@ All file names are relative to the CAOS2Cob CAOS script's enclosing folder.
 *\*File names must be in quotes if they contain a space*
 
 #### Install and Removal Scripts
-Install blocks should be marked start with `iscr` and end with `endm`. In C1, each ISCR block is added to the cob separately.
+Install blocks should be start with `iscr` and end with `endm`. In C1, each ISCR block is added to the cob separately.
 In C2, they are combined in the order they appear in the document.
 
 Removal blocks should be marked start with `rscr` and end with `endm`.
