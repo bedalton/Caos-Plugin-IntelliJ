@@ -11,7 +11,6 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleServiceManager
 import com.intellij.util.xmlb.annotations.Attribute
 
-@Service
 interface CaosModuleSettingsService : HasIgnoredCatalogueTags {
     fun getState(): CaosModuleSettings
     fun loadState(settingsIn: CaosModuleSettings)
@@ -26,7 +25,7 @@ interface CaosModuleSettingsService : HasIgnoredCatalogueTags {
 
 @State(
     name = "CaosModuleSettings",
-    storages = [Storage(file = StoragePathMacros.MODULE_FILE)]
+    storages = [Storage(StoragePathMacros.MODULE_FILE)]
 )
 class CaosModuleSettingsComponent : PersistentStateComponent<CaosModuleSettings>, CaosModuleSettingsService {
 
