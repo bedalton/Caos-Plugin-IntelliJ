@@ -4,7 +4,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfac
 import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInjectorInterface
 import com.badahori.creatures.plugins.intellij.agenteering.utils.GameInterfaceListConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.JsonToXMLStringConverter
-import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.bedalton.common.util.className
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
@@ -127,7 +128,6 @@ class CaosInjectorApplicationSettingsService :
     data class CaosWineSettings(
         @Attribute(converter = GameInterfaceListConverter::class)
         val gameInterfaceNames: List<GameInterfaceName> = listOf(),
-        @Attribute(converter = StringListConverter::class)
         val lastGameInterfaceNames: List<String> = listOf(),
         @Attribute
         val lastWineDirectory: String? = null,
@@ -145,6 +145,15 @@ class CaosInjectorApplicationSettingsService :
             get() = CaosWineSettings.serializer()
         override val deserializer: DeserializationStrategy<CaosWineSettings>
             get() = CaosWineSettings.serializer()
+
+        override fun fromString(value: String): CaosWineSettings? {
+            return try {
+                super.fromString(value)
+            } catch (e: Exception) {
+                LOGGER.info("Failed to deserialize Caos injector settings; ${e.className}${e.message?.let { ":$it" }}\nValue:\n\t$value;")
+                null
+            }
+        }
     }
 
     interface CaosWineSettingsChangeListener : EventListener {
