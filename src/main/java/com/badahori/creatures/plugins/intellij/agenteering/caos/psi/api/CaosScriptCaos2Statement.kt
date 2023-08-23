@@ -86,7 +86,7 @@ enum class CobTag(vararg val keys: String, val required:Boolean = false, val var
 }
 enum class CobCommand(val keyStrings: Array<String>, val cosFiles:Boolean, val variant: CaosVariant? = null, val singleton: Boolean) {
     LINK(arrayOf("Link"), true, singleton = false),
-    COBFILE(arrayOf("Cob-File", "CobFile"), false, singleton = true),
+    COB_FILE(arrayOf("Cob-File", "CobFile"), false, singleton = true),
     INSTALL_SCRIPTS(arrayOf("Iscr", "InstallScript", "Install-Script"), true, singleton = true),
     REMOVAL_SCRIPTS(arrayOf("Rscr", "Remove Script", "Remover Script", "Removal Script", "Remover"), true, singleton = true),
     ATTACH(arrayOf("Attach"), false, variant = C2, singleton = false),

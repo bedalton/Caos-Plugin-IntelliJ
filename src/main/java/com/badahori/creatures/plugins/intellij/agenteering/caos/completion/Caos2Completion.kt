@@ -461,7 +461,7 @@ internal object Caos2CompletionProvider {
                         ?: return
                     when (cobCommand) {
                         CobCommand.LINK -> listOf("cos", "caos")
-                        CobCommand.COBFILE -> return
+                        CobCommand.COB_FILE -> return
                         CobCommand.INSTALL_SCRIPTS -> listOf("cos", "caos")
                         CobCommand.REMOVAL_SCRIPTS -> listOf("cos", "caos")
                         CobCommand.ATTACH -> listOf("wav", "s16")
