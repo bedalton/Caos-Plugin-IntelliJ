@@ -71,6 +71,7 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("C
             val builder = DialogBuilder()
             builder.setCenterPanel(panel.component)
             builder.addCancelAction()
+
             var options: PrayCompileOptions? = null
             builder.setCancelOperation {
                 builder.closeWithCancelExitCode()

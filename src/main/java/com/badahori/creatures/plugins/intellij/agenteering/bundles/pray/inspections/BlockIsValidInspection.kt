@@ -1,6 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.inspections
 
-import com.bedalton.creatures.agents.pray.compiler.pray.PrayDataValidator
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Path
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.PRAY
@@ -14,8 +13,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
+import com.bedalton.creatures.agents.pray.compiler.pray.PrayDataValidator
 import com.bedalton.vfs.LocalFileSystem
 import com.intellij.codeInspection.LocalInspectionTool
+import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
@@ -130,7 +131,7 @@ class Caos2PrayBlockIsValidInspection : PrayBlockIsValidInspection(), DumbAware 
                 val before = PsiTreeUtil.collectElementsOfType(block, CaosScriptCaos2BlockComment::class.java)
                     .firstOrNull()
 
-                val fix = { command: String ->
+                val fix: (String) -> LocalQuickFix = { command: String ->
                     val newText = "*# $command \"\""
                     val label = "Insert '$command' directive"
                     if (before != null) {
@@ -150,24 +151,88 @@ class Caos2PrayBlockIsValidInspection : PrayBlockIsValidInspection(), DumbAware 
                 }
 
                 val text = "\n" + block.text.lowercase()
-                if (!text.contains("^\\s*\\*#\\s+pray-?file +\\S+".toRegex(setOf(RegexOption.IGNORE_CASE,RegexOption.MULTILINE)))) {
-                    holder.registerProblem(
-                        block,
-                        TextRange(0, 2),
-                        AgentMessages.message("caos2pray.block-valid-inspection.missing-pray-file"),
-                        fix("Pray-File")
-                    )
-                }
-                if (!text.contains("^\\s*\\*#\\s+([a-z\\d]{4}|[Dd][Ss]|[Cc]3)-name +\\S+".toRegex(setOf(RegexOption.IGNORE_CASE,RegexOption.MULTILINE)))) {
-                    holder.registerProblem(
-                        block,
-                        TextRange(0, 2),
-                        AgentMessages.message("caos2pray.block-valid-inspection.missing-agent-name"),
-                        fix("DSAG-Name"),
-                        fix("AGNT-Name")
-                    )
-                }
+                validateHasPrayFile(block, text, fix, holder)
+                validateHasBlockName(block, text, fix, holder)
             }
         }
     }
+
+    private fun validateHasPrayFile(
+        block: CaosScriptCaos2Block,
+        text: String,
+        makeFix: (String) -> LocalQuickFix,
+        holder: ProblemsHolder
+    ) {
+
+        if (text.contains(hasPrayFileRegex)) {
+            return
+        }
+
+        if (text.contains(hasJoinMarkerRegex)) {
+            return
+        }
+
+        val markAsJoinFix = block.getCaos2BlockHeader()?.let {
+            CaosScriptInsertAfterFix(
+                AgentMessages.message("caos2pray.add-join-text"),
+                " Join",
+                it
+            )
+        } ?: CaosScriptInsertBeforeFix(
+            AgentMessages.message("caos2pray.add-join-text"),
+            "**CAOS2Pray Join",
+            block.firstChild
+        )
+        holder.registerProblem(
+            block,
+            TextRange(0, 2),
+            AgentMessages.message("caos2pray.block-valid-inspection.missing-pray-file"),
+            makeFix("Pray-File"),
+            markAsJoinFix
+        )
+    }
+
+    private fun validateHasBlockName(
+        block: CaosScriptCaos2Block,
+        text: String,
+        makeFix: (String) -> LocalQuickFix,
+        holder: ProblemsHolder
+    ) {
+        if (!text.contains(hasBlockNameRegex)) {
+            holder.registerProblem(
+                block,
+                TextRange(0, 2),
+                AgentMessages.message("caos2pray.block-valid-inspection.missing-agent-name"),
+                makeFix("DSAG-Name"),
+                makeFix("AGNT-Name")
+            )
+        }
+    }
+}
+
+private val hasPrayFileRegex by lazy {
+    "^\\s*\\*#\\s+pray-?file +\\S+".toRegex(
+        setOf(
+            RegexOption.IGNORE_CASE,
+            RegexOption.MULTILINE
+        )
+    )
+}
+
+private val hasJoinMarkerRegex by lazy {
+    "^\\s*\\*{1,2}\\s*(caos2pray\\s*|@)Join(\\([^)]*\\))?".toRegex(
+        setOf(
+            RegexOption.IGNORE_CASE,
+            RegexOption.MULTILINE
+        )
+    )
+}
+
+private val hasBlockNameRegex by lazy {
+    "^\\s*\\*#\\s+([a-z\\d]{4}|[Dd][Ss]|[Cc]3)-name +\\S+".toRegex(
+        setOf(
+            RegexOption.IGNORE_CASE,
+            RegexOption.MULTILINE
+        )
+    )
 }

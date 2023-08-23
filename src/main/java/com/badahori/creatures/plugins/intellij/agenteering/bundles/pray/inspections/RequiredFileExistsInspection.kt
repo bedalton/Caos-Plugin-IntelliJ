@@ -15,6 +15,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.PrayCommand.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.collectElementsOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -23,6 +24,7 @@ import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemHighlightType
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.util.PsiTreeUtil
@@ -159,37 +161,61 @@ internal fun getPrayTagRequiredExtension(tagName: String): List<String>? {
     }
 }
 
+/**
+ * Adds annotations to missing files in CAOS2Pray commands
+ */
 private fun annotateCaos2PrayCommand(command: PrayCommand, values: List<CaosScriptCaos2Value>, holder: ProblemsHolder) {
-    if (command == PrayCommand.DEPEND)
-        return
-
-    if (command == PrayCommand.LINK) {
-        for (value in values) {
-            annotateFileError(value, "@Link", value.valueAsString, "command", true, holder)
+    when (command) {
+        LINK -> annotateFilesInCommand("Link", values, holder)
+        ATTACH -> annotateFilesInCommand("Attach", values, holder)
+        REMOVAL_SCRIPTS -> annotateRemovalScriptCommand(values, holder)
+        INLINE -> {
+            val input = values.lastOrNull()
+                ?: return
+            annotateFileError(input, "@Inline", input.valueAsString, "command", true, holder)
         }
+        DEPEND -> {}
+        PRAY_FILE -> {}
+        JOIN -> annotateFilesInCommand("Join", values, holder)
+    }
+}
+
+private fun annotateFilesInCommand(kind: String, values: List<CaosScriptCaos2Value>, holder: ProblemsHolder) {
+    val atKind = if (kind.startsWith('@')) {
+        kind
+    } else {
+        "@$kind"
+    }
+    for (value in values) {
+        annotateFileError(value, atKind, value.valueAsString, "command", true, holder)
+    }
+    return
+}
+
+private fun annotateRemovalScriptCommand(values: List<CaosScriptCaos2Value>, holder: ProblemsHolder) {
+    if (values.isEmpty()) {
         return
     }
 
-    if (command == PrayCommand.ATTACH) {
-        for (value in values) {
-            annotateFileError(value, "@Attach", value.valueAsString, "command", true, holder)
-        }
+    // Add error if more than one values is supplied
+    if (values.size > 1) {
+        holder.registerProblem(
+            values.first().parent,
+            TextRange.create(values.first().startOffset, values.last().endOffset),
+            AgentMessages.message("pray.caos2pray.inspections.too-many-removal-scripts-in-command")
+        )
         return
     }
 
-    if (command == PrayCommand.INLINE) {
-        val input = values.lastOrNull()
-            ?: return
-
-        annotateFileError(input, "@Inline", input.valueAsString, "command", true, holder)
+    // Annotate only if file is path and not raw CAOS script
+    val input = values.singleOrNull()
+    val script = input
+        ?.valueAsString
+        ?: return
+    if (isRawScriptNotFile(script)) {
+        return
     }
-
-    if (command == PrayCommand.REMOVAL_SCRIPTS) {
-        val script = values.firstOrNull()?.text?.nullIfEmpty()
-        if (script != null && isRawScriptNotFile(script)) {
-            return
-        }
-    }
+    annotateFileError(input, "@RSCR", input.valueAsString, "command", true, holder)
 }
 
 private fun annotateFileError(element: PsiElement, tagName: String, fileName: String?, type: String, force: Boolean, holder: ProblemsHolder) {
@@ -201,8 +227,9 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
     val command = tagName[0] == '@'
 
     // Make sure tag needs file
-    if (!requiresFile(tagName) && !command && !force)
+    if (!requiresFile(tagName) && !command && !force) {
         return
+    }
 
     if (fileName.isNullOrBlank()) {
         holder.registerProblem(element, AgentMessages.message("caos.inspections.expects-file.filename-is-blank"))
@@ -217,10 +244,6 @@ private fun annotateFileError(element: PsiElement, tagName: String, fileName: St
     val includedFiles = if (file is CaosScriptFile) {
         file.collectElementsOfType(CaosScriptCaos2Command::class.java)
             .flatMap map@{
-//                if (PsiTreeUtil.findCommonContext(it,element)
-//                        ?.isOrHasParentOfType(CaosScriptCaos2BlockComment::class.java) != true) {
-//                    return@map emptyList()
-//                }
                 if (it.commandName like "Inline")
                     listOfNotNull(it.commandArgs.firstOrNull())
                 else if (it.commandName like "Attach") {

@@ -49,10 +49,7 @@ internal object Caos2CompletionProvider {
         // Make sure parent is command or tag, as those should be the only parents
         val parent = (caos2Child.parent as? CaosScriptCaos2Statement)
             ?: (caos2Child.parent?.parent as? CaosScriptCaos2Statement)
-
-        if (parent == null) {
-            return
-        }
+            ?: return
 
         val caos2Cob = variant.isOld && caos2Block.isCaos2Cob
         val caos2Pray = variant.isNotOld && caos2Block.isCaos2Pray
@@ -116,9 +113,6 @@ internal object Caos2CompletionProvider {
             return
         }
 
-        // Get child as pray tag value
-        val value = caos2Child
-
         val directory = caos2Child.directory
             ?: return
 
@@ -131,12 +125,12 @@ internal object Caos2CompletionProvider {
                 resultSet,
                 directory,
                 cobTag,
-                value,
+                caos2Child,
             )
             return
         }
 
-        addCaos2PrayFileNameCompletions(variant, resultSet, extendedSearch, directory, value, quoter)
+        addCaos2PrayFileNameCompletions(variant, resultSet, extendedSearch, directory, caos2Child, quoter)
     }
 
     /**
@@ -459,6 +453,7 @@ internal object Caos2CompletionProvider {
                         PrayCommand.ATTACH -> attachableFileExtensions
                         PrayCommand.DEPEND -> attachableFileExtensions
                         PrayCommand.REMOVAL_SCRIPTS -> listOf("cos", "caos")
+                        PrayCommand.JOIN -> listOf("cos", "caos")
                         PrayCommand.PRAY_FILE -> return
                     }
                 } else {

@@ -388,7 +388,7 @@ caos_2_block_header
 	;
 
 private caos_2_pray_header
-	::= CAOS_2_PRAY_HEADER
+	::= CAOS_2_PRAY_HEADER K_JOIN?
 	;
 
 private caos_2_cob_header

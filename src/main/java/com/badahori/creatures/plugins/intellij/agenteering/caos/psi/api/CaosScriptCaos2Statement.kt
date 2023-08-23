@@ -49,12 +49,13 @@ enum class CobTag(vararg val keys: String, val required:Boolean = false, val var
         return keysRegex.matches(value.trim())
     }
 
+    @Suppress("unused")
     companion object {
-        val C1_TAGS:List<CobTag> by lazy {
+        private val C1_TAGS:List<CobTag> by lazy {
             values().filter { it.variant == null || it.variant == C1 }
         }
 
-        val C2_TAGS:List<CobTag> by lazy {
+        private val C2_TAGS:List<CobTag> by lazy {
             values().filter { it.variant == null || it.variant == C2 }
         }
 
@@ -126,7 +127,8 @@ enum class PrayCommand(val keyStrings: Array<String>, val cosFiles:Boolean, val 
     ATTACH(arrayOf("Attach"), false, false),
     INLINE(arrayOf("Inline"), false, false),
     DEPEND(arrayOf("Depend"), false, false),
-    LINK(arrayOf("Link"), true, false)
+    LINK(arrayOf("Link"), true, false),
+    JOIN(arrayOf("Join"), true, false)
     ;
     val key = "(${keyStrings.joinToString("|") { "(^$it$)" }})".toRegex(RegexOption.IGNORE_CASE)
     companion object {
