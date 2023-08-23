@@ -322,6 +322,7 @@
                              nonDefaultProject="false"
         />
 
+        <!--suppress LightServiceMigrationXML -->
         <projectService
                 serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService"
         />
