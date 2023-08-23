@@ -929,8 +929,6 @@
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefCodeBlockInjector"
         />
         <!-- Indices -->
-        <stubElementTypeHolder
-                class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes"/>
         <applicationService
                 serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexService"
                 serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexServiceImpl"/>
