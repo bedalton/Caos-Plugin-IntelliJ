@@ -831,7 +831,7 @@
                 serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexServiceImpl"/>
 
         <stubElementTypeHolder
-                externalIdPrefix="CaosScript_"
+                externalIdPrefix="caos."
                 class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes"/>
 
         <stubIndex
