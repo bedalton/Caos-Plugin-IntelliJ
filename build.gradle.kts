@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.generator.CaosDefGeneratorTask
+import java.io.File
 
 configurations {
     compileClasspath
@@ -190,4 +191,28 @@ fun ExternalModuleDependency.excludeKotlin() {
     exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
     exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
     exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
+}
+
+
+val stripRedundantLexerRules = tasks.register("stripRedundantLexerCode") {
+    group = "other"
+    val codeToReplace = """@SuppressWarnings("unused")
+  private long yychar;
+
+  /** Whether the scanner is currently at the beginning of a line. */
+  @SuppressWarnings("unused")
+  private boolean zzAtBOL = true;
+
+  /** Whether the user-EOF-code has already been executed. */
+  @SuppressWarnings("unused")
+  private boolean zzEOFDone;
+"""
+    val file = File(projectDir, "src/main/gen/com/badahori/creatures/plugins/intellij/agenteering/caos/lexer/_CaosScriptLexer.java")
+    val text = file.readText(Charsets.UTF_8)
+        .replace(codeToReplace, "@SuppressWarnings(\"unused\")\n  private long yychar;")
+    file.writeText(text, Charsets.UTF_8)
+}
+
+tasks.withType<KotlinCompile>().forEach {
+    it.dependsOn(stripRedundantLexerRules)
 }
