@@ -1795,7 +1795,7 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getStringValue(stringIn: CaosScriptCharacter): String {
-        return stringIn.charChar?.text ?: ""
+        return stringIn.chars?.text ?: ""
     }
 
     /**
@@ -1844,6 +1844,15 @@ object CaosScriptPsiImplUtil {
             }
             else -> 0
         }
+    }
+
+
+    /**
+     * Gets string value of a token element
+     */
+    @JvmStatic
+    fun getStringValue(element: CaosScriptStringEscapeSequence): String {
+        return element.text
     }
 
     @JvmStatic

@@ -239,20 +239,16 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
 CONST_EQ = [=]
 N_CONST = [#][a-zA-Z_0-9]+
 N_VAR = [$][a-zA-Z_0-9]+
-ESCAPE_CHAR=("\\\\"|"\\\""|"\\"[^\"])
-QUOTE_STRING_CHAR=[^\"\\\n]
-QUOTE_CHARS=({ESCAPE_CHAR}|{QUOTE_STRING_CHAR})+
-
-SINGLE_QUOTE_ESCAPE_CHAR=("\\\\"|"\\'"|"\\"[^\'])
-SINGLE_QUOTE_STRING_CHAR=[^\'\\\n]
-SINGLE_QUOTE_CHARS=({SINGLE_QUOTE_ESCAPE_CHAR}|{SINGLE_QUOTE_STRING_CHAR})+
+QUOTE_ESCAPE_CHAR="\\"[^\n]
+QUOTE_STRING_CHARS=[^\"\\\n]+
+SINGLE_QUOTE_ESCAPE_CHAR="\\"[^\n]
+SINGLE_QUOTE_STRING_CHARS=[^\'\\\n]+
 WORD_CHAR = [a-zA-Z0-9_$#:!+*]
 ERROR_WORD={WORD_CHAR}{5,100}
 WORD={WORD_CHAR}{4}
 INCOMPLETE_WORD={WORD_CHAR}{1,3}
-CHAR_ESCAPE_CHAR=("\\\\"|"\\\'"|"\\"[^\'])
-CHAR_CHAR=[^\'\\]
-CHAR_CHARS=({CHAR_ESCAPE_CHAR}|{CHAR_CHAR})+
+CHAR_ESCAPE_CHAR=[\\][^\n]
+CHAR_CHARS= [^\n\\]
 SWIFT_ESCAPE=\\\([^)]*\)
 CAOS_2_COB=[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb](\s*[Cc][12])?
 CAOS_2_PRAY=[*]{2}[Cc][Aa][Oo][Ss][2][Pp][Rr][Aa][Yy]
@@ -344,24 +340,27 @@ DDE_PICT=[^\s]{3}
 
 <IN_STRING> {
 	\"						{ yypop(); return CaosScript_DOUBLE_QUOTE;}
-	{QUOTE_CHARS}     		{ return CaosScript_STRING_CHAR; }
-  	\n						{ yypop(); return CaosScript_GHOST_QUOTE; }
+	{QUOTE_ESCAPE_CHAR}     { return CaosScript_ESCAPED_CHAR; }
+    {QUOTE_STRING_CHARS}     { return CaosScript_STRING_CHARS; }
+  	\n						{ yypop(); return CaosScript_MISSING_QUOTE; }
 	[ \t]+					{ return WHITE_SPACE; }
     [^]						{ yypop(); yypushback(yylength());}
 }
 
 <IN_SINGLE_QUOTE_STRING> {
-	\'						{ yypop(); return CaosScript_SINGLE_QUOTE;}
-	{SINGLE_QUOTE_CHARS}    { return CaosScript_STRING_CHAR; }
-  	\n 						{ yypop(); return CaosScript_GHOST_QUOTE; }
-	[ \t]+					{ return WHITE_SPACE; }
-    [^]						{ yypop(); yypushback(yylength());}
+	\'						    { yypop(); return CaosScript_SINGLE_QUOTE;}
+    {SINGLE_QUOTE_STRING_CHARS} { return CaosScript_STRING_CHARS; }
+	{SINGLE_QUOTE_ESCAPE_CHAR}  { return CaosScript_ESCAPED_CHAR; }
+  	\n 						    { yypop(); return CaosScript_MISSING_QUOTE; }
+	[ \t]+					    { return WHITE_SPACE; }
+    [^]						    { yypop(); yypushback(yylength());}
 }
 
 <IN_CHAR> {
-	{CHAR_CHARS}			{ return CaosScript_CHAR_CHAR; }
- 	"'"						{ yypop(); return CaosScript_SINGLE_QUOTE; }
-  	\n						{ yypop(); return CaosScript_GHOST_QUOTE; }
+	{CHAR_ESCAPE_CHAR}		{ return CaosScript_ESCAPED_CHAR; }
+	{CHAR_CHARS}		    { return CaosScript_STRING_CHARS; }
+ 	\'						{ yypop(); return CaosScript_SINGLE_QUOTE; }
+  	\n						{ yypop(); return CaosScript_MISSING_QUOTE; }
     [^]						{ yypop(); yypushback(yylength());}
 }
 
@@ -371,7 +370,7 @@ DDE_PICT=[^\s]{3}
 }
 
 <IN_LINE> {
-	\"         				{ yypush(IN_STRING); return CaosScript_DOUBLE_QUOTE; }
+	"\""       				{ yypush(IN_STRING); return CaosScript_DOUBLE_QUOTE; }
 	":"                    	{ return CaosScript_COLON; }
 	"+"                    	{ return CaosScript_PLUS; }
 	"["                    	{ braceDepth++; yypush(isByteString() ? IN_BYTE_STRING : IN_TEXT); return CaosScript_OPEN_BRACKET; }
@@ -1140,7 +1139,8 @@ DDE_PICT=[^\s]{3}
   	{ERROR_WORD}			{ return CaosScript_ERROR_WORD; }
 	{WORD}                 	{ return CaosScript_WORD; }
 	{INCOMPLETE_WORD}      	{ return CaosScript_ERROR_WORD; }
-    '-'						{ return CaosScript_INCOMPLETE_INT; }
+    "-"						{ return CaosScript_INCOMPLETE_INT; }
+    "."						{ return CaosScript_INCOMPLETE_INT; }
     [^]						{ return BAD_CHARACTER; }
 }
 

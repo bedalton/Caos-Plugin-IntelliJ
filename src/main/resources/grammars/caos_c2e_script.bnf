@@ -292,12 +292,11 @@
 		ANIM_R = "R"
 		PICT_DIMENSION = "#|#";
 		BINARY = "binary int"
-		STRING_ESCAPE_CHAR = "escaped char"
-		STRING_CHAR = "string char";
-		GHOST_QUOTE = "\""
+		STRING_CHARS = "chars";
+		MISSING_QUOTE = "\""
 		DOUBLE_QUOTE = "\""
 		SINGLE_QUOTE = "'"
-		CHAR_CHAR = "'char'"
+		ESCAPED_CHAR = "'escaped_char'"
 		ERROR_WORD = "command"
 		INCOMPLETE_INT = "negative int"
 
@@ -2511,7 +2510,7 @@ binary_literal
 	;
 
 character
-	::= SINGLE_QUOTE CHAR_CHAR (SINGLE_QUOTE|GHOST_QUOTE)
+	::= SINGLE_QUOTE chars? (SINGLE_QUOTE|MISSING_QUOTE)
 	{
 		pin=1
 		implements = [
@@ -2530,6 +2529,10 @@ character
 		]
 	}
 	;
+
+chars
+    ::= (STRING_CHARS|string_escape_sequence|INCOMPLETE_INT)+
+    ;
 
 private string_literal
 	::= quote_string_literal
@@ -2556,7 +2559,7 @@ c1_string
 	;
 
 quote_string_literal
-	::= DOUBLE_QUOTE string_text? (DOUBLE_QUOTE|GHOST_QUOTE)
+	::= DOUBLE_QUOTE string_text? (DOUBLE_QUOTE|MISSING_QUOTE)
 	{
 		pin=1;
 		stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptQuoteStringLiteralStub"
@@ -2576,13 +2579,13 @@ quote_string_literal
 			getPresentation
 			getStringStubKind
 			getMeta
-			getGhostQuote="/GHOST_QUOTE"
+			getGhostQuote="/MISSING_QUOTE"
 		]
 	}
 	;
 
 string_text
-	::= (STRING_CHAR|STRING_ESCAPE_CHAR)+
+	::= (STRING_CHARS|string_escape_sequence)+
 	{
 		implements = [
 			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
@@ -2600,6 +2603,16 @@ string_text
 		]
 	}
 	;
+
+string_escape_sequence
+    ::= ESCAPED_CHAR
+    {
+        pin = 1
+		methods = [
+			getStringValue
+        ]
+    }
+    ;
 
 subroutine_name
 	::= all_tokens_private

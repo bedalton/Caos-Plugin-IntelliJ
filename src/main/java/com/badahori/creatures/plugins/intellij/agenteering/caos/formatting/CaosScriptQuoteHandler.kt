@@ -19,8 +19,8 @@ class CaosScriptQuoteHandler : QuoteHandler {
     private val insideTokens = listOf(
         CaosScriptTypes.CaosScript_STRING_TEXT,
         CaosScriptTypes.CaosScript_TEXT_LITERAL,
-        CaosScriptTypes.CaosScript_STRING_CHAR,
-        CaosScriptTypes.CaosScript_GHOST_QUOTE,
+        CaosScriptTypes.CaosScript_STRING_CHARS,
+        CaosScriptTypes.CaosScript_MISSING_QUOTE,
         CaosScriptTypes.CaosScript_ANIM_R,
         CaosScriptTypes.CaosScript_BYTE_STRING_POSE_ELEMENT,
         CaosScriptTypes.CaosScript_INT,

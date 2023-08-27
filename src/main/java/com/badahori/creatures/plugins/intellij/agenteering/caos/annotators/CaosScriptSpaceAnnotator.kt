@@ -38,7 +38,13 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
 
     private fun annotateElement(element: PsiElement, holder: AnnotationHolder) {
         val type = element.tokenType
-        if (type != WHITE_SPACE && type != CaosScript_COMMA && type != CaosScript_NEWLINE) {
+        if (
+            type != WHITE_SPACE &&
+            type != CaosScript_COMMA &&
+            type != CaosScript_NEWLINE &&
+            type != CaosScript_STRING_ESCAPE_SEQUENCE &&
+            type != CaosScript_CHARS
+        ) {
             val previous = element.previous
                 ?: return
             val previousType = previous.elementType
@@ -228,10 +234,21 @@ private fun isBracket(t1: IElementType, t2: IElementType): Boolean {
 
 private fun isQuoted(t1: IElementType, t2: IElementType): Boolean {
 
-    if (t1 === CaosScript_DOUBLE_QUOTE || t1 === CaosScript_SINGLE_QUOTE) {
+    if (
+        t1 == CaosScript_DOUBLE_QUOTE ||
+        t1 == CaosScript_SINGLE_QUOTE  ||
+        t1 == CaosScript_STRING_TEXT ||
+        t1 == CaosScript_ESCAPED_CHAR ||
+        t1 == CaosScript_CHARS
+    ) {
         if (t1 == t2)
             return true
-        if (t2 === CaosScript_CHAR_CHAR || t2 === CaosScript_STRING_TEXT || t2 === CaosScript_STRING_CHAR || t2 === CaosScript_STRING_ESCAPE_CHAR) {
+        if (
+            t2 == CaosScript_STRING_CHARS ||
+            t2 == CaosScript_STRING_TEXT ||
+            t2 == CaosScript_ESCAPED_CHAR ||
+            t2 == CaosScript_CHARS
+        ) {
             return true
         }
     }

@@ -89,10 +89,9 @@ object CaosScriptTokenSets {
         CaosScript_CLOSE_BRACKET,
         CaosScript_CHARACTER,
         CaosScript_DOUBLE_QUOTE,
-        CaosScript_STRING_CHAR,
-        CaosScript_STRING_ESCAPE_CHAR,
+        CaosScript_STRING_CHARS,
+        CaosScript_ESCAPED_CHAR,
         CaosScript_SINGLE_QUOTE,
-        CaosScript_CHAR_CHAR
     )
 
     val LITERALS: TokenSet = create(

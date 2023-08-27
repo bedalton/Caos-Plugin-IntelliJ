@@ -88,14 +88,14 @@ public class CaosScriptParserDefinition implements ParserDefinition {
             if (t1 == CaosScriptTypes.CaosScript_COMMENT_START)
                 return SpaceRequirements.MAY;
             if (t1 == CaosScript_DOUBLE_QUOTE || t1 == CaosScript_SINGLE_QUOTE) {
-                if (t2 == CaosScript_CHAR_CHAR || t2 == CaosScript_STRING_TEXT || t2 == CaosScript_STRING_CHAR || t2 == CaosScript_STRING_ESCAPE_CHAR) {
+                if (t2 == CaosScript_STRING_CHARS || t2 == CaosScript_STRING_TEXT || t2 == CaosScript_ESCAPED_CHAR) {
                     return SpaceRequirements.MAY;
                 }
             }
         }
         if (astNode1.getTextLength() == 1) {
             if (t2 == CaosScript_DOUBLE_QUOTE || t2 == CaosScript_SINGLE_QUOTE) {
-                if (t1 == CaosScript_CHAR_CHAR || t1 == CaosScript_STRING_TEXT || t1 == CaosScript_STRING_CHAR || t1 == CaosScript_STRING_ESCAPE_CHAR) {
+                if (t1 == CaosScript_STRING_CHARS || t1 == CaosScript_STRING_TEXT || t1 == CaosScript_ESCAPED_CHAR) {
                     return SpaceRequirements.MAY;
                 }
             }

@@ -35,7 +35,9 @@ class CaosApplicationSettingsService :
         @Attribute
         val replicateAttsToDuplicateSprites: Boolean? = null,
         @Attribute
-        val ignoredCatalogueTags: List<String> = emptyList()
+        val ignoredCatalogueTags: List<String> = emptyList(),
+        @Attribute
+        val ignoredCharacterEscapes: Set<Char> = emptySet()
     )
 
     @Attribute(converter = ApplicationSettingsConverter::class)
@@ -119,6 +121,19 @@ class CaosApplicationSettingsService :
             loadState(
                 myState.copy(
                     ignoredCatalogueTags = ignoredTags.distinct()
+                )
+            )
+        }
+
+    var ignoredCharacterEscapes: Set<Char>
+        get() = myState.ignoredCharacterEscapes
+        set(value) {
+            if (value == myState.ignoredCharacterEscapes) {
+                return
+            }
+            loadState(
+                myState.copy(
+                    ignoredCharacterEscapes = value
                 )
             )
         }

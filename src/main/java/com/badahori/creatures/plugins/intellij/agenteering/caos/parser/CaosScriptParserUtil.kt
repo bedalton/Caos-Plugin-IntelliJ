@@ -52,13 +52,15 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     const val STRING = 1
     const val OTHER = -1
     const val WHITE_SPACE_OPTIONAL = "whiteSpaceOptional"
+    const val IN_CHAR = "_char_"
     val needsNoWhitespace = TokenSet.create(
         CaosScript_BYTE_STRING,
         CaosScript_OPEN_BRACKET,
         CaosScript_INT,
         CaosScript_FLOAT,
         CaosScript_QUOTE_STRING_LITERAL,
-        CaosScript_CHAR_CHAR,
+        CaosScript_ESCAPED_CHAR,
+        CaosScript_STRING_CHARS,
         CaosScript_CHARACTER
     )
 

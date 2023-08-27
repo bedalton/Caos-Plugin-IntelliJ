@@ -16,10 +16,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.parameter
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors
 import com.intellij.openapi.project.DumbAware
 import com.intellij.psi.PsiComment
@@ -50,6 +52,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 .range(element)
                 .afterEndOfLine()
                 .create()
+
             is CaosScriptEqOpOld -> annotateOldEqualityOps(variant, element, holder)
             is CaosScriptEqOpNew -> annotateNewEqualityOps(variant, element, holder)
             is CaosScriptEqualityExpressionPlus -> annotateEqualityExpressionPlus(variant, element, holder)
@@ -66,44 +69,22 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 .newErrorAnnotation(message("caos.annotator.syntax-error-annotator.invalid-rvalue"))
                 .range(element)
                 .create()
+
             is CaosScriptErrorCommand -> annotateErrorCommand(variant, element, holder)
-            is CaosScriptCharacter -> {
-                val charChar = element.charChar?.text ?: ""
-                val charLength = charChar.length
-                val isEscapedChar = charChar.getOrNull(0) == '\\'
-                val validTextLength = if (isEscapedChar) 2 else 1
-                if (charLength == validTextLength) {
-                    if (isEscapedChar) {
-                        if (charChar[1] !in VALID_ESCAPE_CHARS) {
-                            val message = message("caos.annotator.syntax-error-annotator.char-escape-invalid")
-                            holder.newWeakWarningAnnotation(message)
-                                .range(element.charChar!!)
-                                .textAttributes(CaosScriptSyntaxHighlighter.INVALID_STRING_ESCAPE)
-                                .create()
-                        } else {
-                            holder.colorize(element.charChar!!, DefaultLanguageHighlighterColors.VALID_STRING_ESCAPE)
-                        }
-                    }
-                    return
-                }
-                if (isEscapedChar && charLength == 1) {
-                    simpleError(
-                        element.charChar ?: element,
-                        message("caos.annotator.syntax-error-annotator.char-incomplete-escape"),
-                        holder
-                    )
-                }
-                simpleError(
-                    element.charChar ?: element,
-                    message("caos.annotator.syntax-error-annotator.char-value-too-long"),
-                    holder
-                )
+            is CaosScriptStringEscapeSequence -> {
+                validateCharacterEscape(element, holder)
             }
+
+            is CaosScriptCharacter -> {
+                validateCharacterEscape(element.chars ?: element, holder)
+            }
+
             is CaosScriptErrorLvalue -> {
                 val variableType = when {
                     element.number != null -> "number"
                     element.quoteStringLiteral != null -> (element.parent?.parent as? CaosScriptNamedGameVar)?.varType?.token
                         ?: "string"
+
                     element.c1String != null -> "string"
                     element.animationString != null -> "animation"
                     element.byteString != null -> "byte-string"
@@ -115,6 +96,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                     holder
                 )
             }
+
             is CaosScriptIncomplete -> {
                 if (element.hasParentOfType(CaosScriptSubroutineName::class.java)) {
                     return
@@ -128,6 +110,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                 holder,
                 DeleteElementFix(message("caos.fixes.delete-extra-rvalue"), element)
             )
+
             is CaosScriptSwiftEscapeLiteral -> {
                 if (!allowSwift(element.containingFile)) {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.invalid-element"), holder)
@@ -135,6 +118,7 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.swift-value-empty"), holder)
                 }
             }
+
             is CaosScriptJsElement -> {
                 val allowJs =
                     PsiTreeUtil.collectElementsOfType(element.containingFile, CaosScriptAtDirectiveComment::class.java)
@@ -147,10 +131,12 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                     simpleError(element, message("caos.annotator.syntax-error-annotator.js-value-empty"), holder)
                 }
             }
+
             is LeafPsiElement -> {
                 if (element.parent is PsiErrorElement)
                     annotateErrorElement(variant, element, holder)
             }
+
             is CaosScriptCaos2CommentErrorValue -> {
                 val isCaos2Cob = (element.containingFile as? CaosScriptFile)?.isCaos2Cob ?: false
                 val directiveType = if (isCaos2Cob)
@@ -163,16 +149,15 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
                     holder
                 )
             }
+
             is CaosScriptFamily -> annotateClassifierArgument(element.rvalue, "Family", holder)
             is CaosScriptGenus -> annotateClassifierArgument(element.rvalue, "Genus", holder)
             is CaosScriptSpecies -> annotateClassifierArgument(element.rvalue, "Species", holder)
-            is CaosScriptIncompleteNegativeInteger -> simpleError(
-                element,
-                "Minus sign must be followed by a number or decimal",
-                holder
-            )
+            is CaosScriptIncompleteNegativeInteger -> annotateIncompleteInteger(element, holder)
         }
     }
+
+}
 
     /**
      * Further annotates an error element as it can possibly be an LValue used as a command
@@ -529,6 +514,54 @@ class CaosScriptSyntaxErrorAnnotator : Annotator, DumbAware {
             }
         }
     }
+
+private fun validateCharacterEscape(element: PsiElement, holder: AnnotationHolder) {
+    val charChar = if (element is CaosScriptStringLike) {
+        element.stringValue
+    } else {
+        element.text
+    }
+    val charLength = charChar.length
+    val isEscapedChar = charChar.getOrNull(0) == '\\'
+    val validTextLength = if (isEscapedChar) 2 else 1
+    if (charLength == validTextLength) {
+        if (!isEscapedChar) {
+            return
+        }
+
+        if (charChar[1] in VALID_ESCAPE_CHARS) {
+            holder.colorize(element, DefaultLanguageHighlighterColors.VALID_STRING_ESCAPE)
+            return
+        }
+        val char = charChar[1]
+        val add = char !in CaosApplicationSettingsService.getInstance().ignoredCharacterEscapes
+        val message = message("caos.annotator.syntax-error-annotator.char-escape-invalid")
+        val severity = if (add) {
+            HighlightSeverity.WARNING
+        } else {
+            HighlightSeverity.INFORMATION
+        }
+        holder.newAnnotation(severity, message)
+            .range(element)
+            .textAttributes(CaosScriptSyntaxHighlighter.INVALID_STRING_ESCAPE)
+            .newFix(IgnoreCharacterEscapeFix(add, char))
+            .registerFix()
+            .create()
+        return
+    }
+    if (isEscapedChar && charLength == 1) {
+        simpleError(
+            element,
+            message("caos.annotator.syntax-error-annotator.char-incomplete-escape"),
+            holder
+        )
+    }
+    simpleError(
+        element,
+        message("caos.annotator.syntax-error-annotator.char-value-too-long"),
+        holder
+    )
+}
 
 }
 
