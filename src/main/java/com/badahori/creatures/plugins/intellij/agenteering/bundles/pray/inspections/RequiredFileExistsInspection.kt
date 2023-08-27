@@ -199,9 +199,16 @@ private fun annotateRemovalScriptCommand(values: List<CaosScriptCaos2Value>, hol
 
     // Add error if more than one values is supplied
     if (values.size > 1) {
+        val element = PsiTreeUtil.findCommonParent(values[1], values.last())
+        val start = element ?: values[1]
+        val last = if (element == null) {
+            start
+        } else {
+            values.last()
+        }
         holder.registerProblem(
-            values.first().parent,
-            TextRange.create(values.first().startOffset, values.last().endOffset),
+            element ?: start,
+            TextRange.create(start.startOffset, last.endOffset),
             AgentMessages.message("pray.caos2pray.inspections.too-many-removal-scripts-in-command")
         )
         return
