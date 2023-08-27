@@ -29,7 +29,7 @@ class CaosScriptGhostElementAnnotator : Annotator, DumbAware {
     override fun annotate(element: PsiElement, annotationHolder: AnnotationHolder) {
         ProgressIndicatorProvider.checkCanceled()
 
-        if (element.elementType == CaosScriptTypes.CaosScript_GHOST_QUOTE) {
+        if (element.elementType == CaosScriptTypes.CaosScript_MISSING_QUOTE) {
             val parent = element
             val range = try {
 //                parent.textRange.cutOut(element.textRange)

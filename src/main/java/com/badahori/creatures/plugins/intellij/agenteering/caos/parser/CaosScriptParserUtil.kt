@@ -529,7 +529,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
             next = builder_.lookAhead(++lookAhead)
         }
 
-        if (next == CaosScript_GHOST_QUOTE) {
+        if (next == CaosScript_MISSING_QUOTE) {
             return true
         }
 
