@@ -2039,8 +2039,10 @@ object CaosScriptPsiImplUtil {
                         'r' -> '\r'
                         else -> it[1]
                     }
-                } else {
+                } else if (it.isNotEmpty()) {
                     it[0]
+                } else {
+                    null
                 }
             }?.code
         //?: expression.number?.character?.charChar?.text?.get(0)?.toInt()
