@@ -563,5 +563,20 @@ private fun validateCharacterEscape(element: PsiElement, holder: AnnotationHolde
     )
 }
 
+private fun annotateIncompleteInteger(element: PsiElement, holder: AnnotationHolder) {
+    if (element.parent is CaosScriptCharacter) {
+        return
+    }
+    val text = element.text
+    val error: String = when (text) {
+        "." -> message("caos.annotator.syntax-error-annotator.incomplete-decimal")
+        "-" -> message("caos.annotator.syntax-error-annotator.incomplete-negative-integer")
+        else -> return
+    }
+    simpleError(
+        element,
+        error,
+        holder
+    )
 }
 
