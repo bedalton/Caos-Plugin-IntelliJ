@@ -42,7 +42,7 @@ private class PictDimensionsForm(val position: Int, private val editor: Editor) 
         super.init()
     }
 
-    override fun createCenterPanel(): JComponent? {
+    override fun createCenterPanel(): JComponent {
         val fieldsPanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.LINE_AXIS)
         }
