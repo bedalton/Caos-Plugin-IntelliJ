@@ -38,7 +38,7 @@ import kotlin.collections.set
 class PoseEditorModel(
     val project: Project,
     var variant: CaosVariant,
-    val poseEditor: BreedPoseHolder,
+    private val poseEditor: BreedPoseHolder,
 ) {
 
 
@@ -54,6 +54,7 @@ class PoseEditorModel(
     private var renderId = AtomicInteger(0)
     val rendering: Boolean get() = mRendering?.let { it < now } ?: false
 
+    @Suppress("MemberVisibilityCanBePrivate")
     val locked: Map<Char, BodyPartFiles> get() = mLocked
 
 
@@ -194,9 +195,7 @@ class PoseEditorModel(
         if (project.isDisposed) {
             return false
         }
-        if (updating.get() > 0) {
-//            return false
-        }
+
         if (DumbService.isDumb(project)) {
             progressIndicator.checkCanceled()
             DumbService.getInstance(project).runWhenSmart {
@@ -239,9 +238,6 @@ class PoseEditorModel(
             return false
         }
         if (updatedSprites == null) {
-            if (updating.get() == 0 && id == renderId.get()) {
-//                LOGGER.severe("Failed to update sprite sets without reason")
-            }
             progressIndicator.cancel()
             mRendering = null
             return false

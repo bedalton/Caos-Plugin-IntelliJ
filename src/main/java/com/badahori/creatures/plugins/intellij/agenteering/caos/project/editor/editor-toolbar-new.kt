@@ -62,9 +62,6 @@ class CaosScriptEditorToolbar(
 
     override fun getKey(): Key<EditorNotificationPanel> = KEY
 
-    init {
-    }
-
     override fun createNotificationPanel(
         virtualFile: VirtualFile,
         fileEditor: FileEditor,
@@ -313,9 +310,9 @@ private fun populate(
     val moduleVariant = pointer.element?.module?.variant
     val showVariantSelect = try {
         (moduleVariant == null ||
-            moduleVariant == CaosVariant.UNKNOWN ||
-            moduleVariant.isC3DS) &&
-            pointer.element?.virtualFile !is CaosVirtualFile
+                moduleVariant == CaosVariant.UNKNOWN ||
+                moduleVariant.isC3DS) &&
+                pointer.element?.virtualFile !is CaosVirtualFile
     } catch (e: Exception) {
         false
     }

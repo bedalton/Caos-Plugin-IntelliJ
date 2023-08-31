@@ -55,7 +55,7 @@ class CompileCaos2CobAction : AnAction(
     // Static Methods
     companion object {
         private val isCaos2CobRegex =
-            "[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb]|[*][#]\\s*(C1-Name|C2-Name)".toRegex(RegexOption.IGNORE_CASE)
+            "[*]{2}[Cc][Aa][Oo][Ss]2[Cc][Oo][Bb]|[*]#\\s*(C1-Name|C2-Name)".toRegex(RegexOption.IGNORE_CASE)
 
         private fun hasCaos2Cob(file: VirtualFile): Boolean {
             if (file.isDirectory) {
@@ -88,6 +88,7 @@ class CompileCaos2CobAction : AnAction(
 
         private fun getCaosFiles(project: Project, file: VirtualFile): List<CaosScriptFile> {
             if (file.isDirectory) {
+                @Suppress("UnsafeVfsRecursion")
                 return file.children.flatMap { child -> getCaosFiles(project, child) }
             }
             return (file.getPsiFile(project) as? CaosScriptFile)?.let { script ->
@@ -117,7 +118,14 @@ class CompileCaos2CobAction : AnAction(
                         // Ensure in read action
                         runWriteAction action@{
                             // Update progress indicator
-                            runBlocking { Caos2CobCompiler.compile(project, compilationResult, file, progressIndicator) }
+                            runBlocking {
+                                Caos2CobCompiler.compile(
+                                    project = project,
+                                    compilationResult = compilationResult,
+                                    file = file,
+                                    progressIndicator = progressIndicator
+                                )
+                            }
                             if (compilationResult.index == numFiles) {
                                 printResult(project, compilationResult)
                             }

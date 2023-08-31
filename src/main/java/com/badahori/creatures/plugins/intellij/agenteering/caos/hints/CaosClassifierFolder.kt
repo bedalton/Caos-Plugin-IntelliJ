@@ -6,9 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.Classifi
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptClassifier
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueEntryElementIndex
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.now
-import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
 import com.intellij.lang.ASTNode
 import com.intellij.lang.folding.FoldingBuilderEx
 import com.intellij.lang.folding.FoldingDescriptor

@@ -573,6 +573,7 @@ internal fun formatCaos(variant: CaosVariant?, codeBlock: String?, collapse: Boo
 /**
  * Determine if C1e using variant if not null, and by checking code contents as fallback
  */
+@Suppress("unused")
 private fun isC1e(variant: CaosVariant?, codeBlock: String?): Boolean? {
     variant?.isOld?.let {
         return it
@@ -605,6 +606,7 @@ private fun isC1e(variant: CaosVariant?, codeBlock: String?): Boolean? {
 /**
  * COPY caos to a given interfaces Bootstrap directory
  */
+@Suppress("unused")
 internal fun copyForJect(variant: CaosVariant?, gameInterfaceName: GameInterfaceName, caos: String): File? {
 
     if (variant?.isNotOld != true) {
@@ -743,6 +745,7 @@ private fun findPossiblePsiElementOffsets(
                 scriptPointer.range.contains(range.endOffset)
     }
 
+    @Suppress("RegExpRedundantEscape")
     val pattern = ".*(\\.\\.\\.|\\[)(.*)\\{@\\}(.*)(\\.\\.\\.|\\]).*"
         .toRegex(RegexOption.MULTILINE)
 

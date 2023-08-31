@@ -31,7 +31,7 @@ class CaosScriptInterleavingBodyStatements : LocalInspectionTool(), DumbAware {
     override fun getGroupDisplayName(): String = CAOSScript
     override fun getShortName(): String = CaosBundle.message("caos.inspections.interleaving-body-scripts.short-name")
     override fun buildVisitor(holder: ProblemsHolder, isOnTheFly: Boolean): PsiElementVisitor {
-        return object : com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor() {
+        return object : CaosScriptVisitor() {
             override fun visitMacro(o: CaosScriptMacro) {
                 super.visitMacro(o)
                 annotate(o, holder)
@@ -108,14 +108,16 @@ private object CombineBodyScriptsToTopOfFile : LocalQuickFix {
                 ?: return@action false
             for (macro in macros) {
                 ProgressIndicatorProvider.checkCanceled()
-                previous = macro.element?.getParentOfType(CaosScriptScriptBodyElement::class.java)?.let { parent ->
-                    val parentCopy = parent.copy()
-                    parent.delete()
-                    previous.parent.addBefore(parentCopy, previous)
-                        ?.getSelfOrParentOfType(CaosScriptScriptBodyElement::class.java)?.apply {
-                        previous.parent.addAfter(CaosScriptPsiElementFactory.newLines(project, 2), this)
+                previous = macro.element?.getParentOfType(CaosScriptScriptBodyElement::class.java)
+                    ?.let { parent ->
+                        val parentCopy = parent.copy()
+                        parent.delete()
+                        previous.parent.addBefore(parentCopy, previous)
+                            ?.getSelfOrParentOfType(CaosScriptScriptBodyElement::class.java)?.apply {
+                                previous.parent.addAfter(CaosScriptPsiElementFactory.newLines(project, 2), this)
+                            }
                     }
-                } ?: return@action false
+                    ?: return@action false
             }
             val newline = CaosScriptPsiElementFactory.newLines(project, 1)
             firstNonMacro.getParentOfType(CaosScriptScriptBodyElement::class.java)?.let {
@@ -161,7 +163,11 @@ private class CombineBodyScriptsToScript(private val tag: String, private val co
         val start = macros.mapNotNull { it.element?.startOffset }.minOrNull()
             ?: return
 
-        val firstNonMacro = allBodyElements.filterNot { it is CaosScriptMacro && it.endOffset < start }.maxByOrNull { it.startOffset }
+        val firstNonMacro = allBodyElements
+            .filterNot {
+                it is CaosScriptMacro && it.endOffset < start
+            }
+            .maxByOrNull { it.startOffset }
             ?: return
         var baseScript = CaosScriptPsiElementFactory.createScriptElement(project, tag)?.let {
             if (tag == "iscr")
@@ -178,7 +184,9 @@ private class CombineBodyScriptsToScript(private val tag: String, private val co
                 previous = macro.element?.getParentOfType(CaosScriptScriptBodyElement::class.java)?.let prev@{ parent ->
                     PsiTreeUtil.collectElementsOfType(parent, CaosScriptScriptTerminator::class.java)
                         .forEach { terminator ->
-                            val spacePointer = (terminator.next as? CaosScriptWhiteSpaceLike)?.let { SmartPointerManager.createPointer(it)}
+                            val spacePointer = (terminator.next as? CaosScriptWhiteSpaceLike)?.let {
+                                SmartPointerManager.createPointer(it)
+                            }
                             terminator.delete()
                             spacePointer?.element?.delete()
                         }
@@ -186,9 +194,11 @@ private class CombineBodyScriptsToScript(private val tag: String, private val co
                     parent.delete()
                     if (parentCopy.text?.trim() like "endm")
                         return@prev previous
-                    baseScript.addAfter(parentCopy, previous)?.getSelfOrParentOfType(CaosScriptScriptBodyElement::class.java)?.let {
-                        baseScript.addAfter(CaosScriptPsiElementFactory.newLine(project), it)
-                    }
+                    baseScript.addAfter(parentCopy, previous)
+                        ?.getSelfOrParentOfType(CaosScriptScriptBodyElement::class.java)
+                        ?.let {
+                            baseScript.addAfter(CaosScriptPsiElementFactory.newLine(project), it)
+                        }
                 } ?: return@action false
                 macro.element?.scriptTerminator?.delete()
             }
@@ -204,7 +214,7 @@ private class CombineBodyScriptsToScript(private val tag: String, private val co
             baseScript = baseScriptPointer.element
                 ?: return@action false
             // Remove all lead
-            val previousSpace:PsiElement? = baseScript.previous?.previous
+            val previousSpace: PsiElement? = baseScript.previous?.previous
             if (previousSpace?.tokenType in CaosScriptTokenSets.WHITESPACES) {
                 previousSpace?.delete()
             }

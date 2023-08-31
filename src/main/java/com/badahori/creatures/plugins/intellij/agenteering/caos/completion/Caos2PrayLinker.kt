@@ -3,8 +3,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 import com.bedalton.common.structs.Pointer
 import com.bedalton.common.util.ensureEndsWith
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileType
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayAgentBlock
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.api.PrayBlockElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAtDirectiveComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
@@ -128,7 +126,7 @@ internal class LinkFilesInsertHandler(
         project: Project,
         allExtensions: Set<String>,
         files: List<LinkedFile>,
-        out: Pointer<Pair<List<LinkedFile>,Boolean>?>,
+        out: Pointer<Pair<List<LinkedFile>, Boolean>?>,
     ) {
 
         // Initialize JPanel
@@ -208,7 +206,7 @@ internal class LinkFilesInsertHandler(
         panel.add(regexField)
 
 
-        val inlineFiles = JBCheckBox("Inline Files")
+        val inlineFiles = JBCheckBox("Inline files")
         if (isPray) {
             panel.add(inlineFiles)
         }
@@ -241,9 +239,11 @@ internal class LinkFilesInsertHandler(
                 val document = file.document.apply {
                     if (this == null) {
                         invokeLater {
-                            CaosNotifications.showError(project,
+                            CaosNotifications.showError(
+                                project,
                                 "$action Failed",
-                                "Failed to $action files. Could not access document in tree")
+                                "Failed to $action files. Could not access document in tree"
+                            )
                         }
                         return@runWriteAction
                     }
@@ -261,7 +261,10 @@ internal class LinkFilesInsertHandler(
                 val insertPoint = elementAtCursor
                     ?.let {
                         val start = it.startOffset
-                        val nextPointer = (it.previous as? PsiWhiteSpace)?.let { ws -> SmartPointerManager.createPointer(ws) }
+                        val nextPointer = (it.previous as? PsiWhiteSpace)
+                            ?.let { ws ->
+                                SmartPointerManager.createPointer(ws)
+                            }
                         it.delete()
                         nextPointer?.element?.delete()
                         start
@@ -330,11 +333,13 @@ internal class LinkFilesInsertHandler(
         } else {
             try {
                 val regex = regexRaw.toRegex()
-                selected.filter { regex.matches(it.virtualFile.name) || try {
-                    ".*?$regexRaw".toRegex().matches(it.virtualFile.path)
-                } catch (_: Exception) {
-                    false
-                }
+                selected.filter {
+                    regex.matches(it.virtualFile.name) || try {
+                        ".*?$regexRaw".toRegex()
+                            .matches(it.virtualFile.path)
+                    } catch (_: Exception) {
+                        false
+                    }
                 }
             } catch (e: Exception) {
                 filtered.text = "Regex error"
@@ -488,18 +493,14 @@ internal data class LinkedFile(
     val category: String,
 )
 
+@Suppress("SameParameterValue")
 private fun getLinksInDirectory(
     directory: VirtualFile,
-    path: String,
+    path: String, // TODO figure out what this variable was for if value is always <"">
     thisFile: VirtualFile,
     caos: Boolean,
 ): List<LinkedFile> {
     val out = mutableListOf<LinkedFile>()
-//    val pathPrefix = if (path.isEmpty()) {
-//        ""
-//    } else {
-//        "$path/"
-//    }
     for (child in directory.collectChildren(::skip)) {
         if (child.path == thisFile.path) {
             continue
@@ -548,6 +549,7 @@ internal val creaturesFileExtensions = listOf(
     *attachableFileExtensions.toTypedArray()
 )
 
+@Suppress("unused")
 internal val caos2PrayFileExtensions = listOf(
     "att",
     "s16",

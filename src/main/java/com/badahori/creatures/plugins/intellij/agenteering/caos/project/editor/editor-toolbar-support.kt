@@ -13,28 +13,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSy
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
-
-
-/**
- * Creates a stronger pointer for use in toolbar actions
- */
-internal class CaosScriptPointer(private val virtualFile: VirtualFile, caosFileIn: CaosScriptFile) {
-    val pointer = SmartPointerManager.createPointer(caosFileIn)
-    private val project: Project = caosFileIn.project
-    val element: CaosScriptFile?
-        get() = try {
-            if (virtualFile.isValid)
-                pointer.element ?: (PsiManager.getInstance(project).findFile(virtualFile) as? CaosScriptFile)
-            else
-                null
-        } catch (e: Exception) {
-            null
-        }
-}
 
 /**
  * Opens up the docs for the given variant
@@ -151,7 +132,7 @@ private class CaosFileCaos2ChangedListener(
                 if (!child?.containingFile?.isEquivalentTo(associatedFile).orTrue()) {
                     return
                 }
-            } catch (e: Exception ) {
+            } catch (e: Exception) {
                 caos2 = null
                 return
             }

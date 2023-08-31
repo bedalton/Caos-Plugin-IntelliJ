@@ -113,7 +113,7 @@ class AttNewFileFromSpritesAction : AnAction(
 
         val singleFile = files.size == 1
 
-        val groupId = newFileActionId + (atomicId.incrementAndGet()).toString().padStart(4, '0')
+        val groupId = NEW_FILE_ACTION_ID + (atomicId.incrementAndGet()).toString().padStart(4, '0')
         val commandText = if (singleFile) {
             CaosBundle.message("att.actions.new-file-from-sprites.single.command-title", files[0].name)
         } else {
@@ -155,7 +155,7 @@ class AttNewFileFromSpritesAction : AnAction(
     companion object {
 
         private val atomicId = AtomicInteger(0)
-        const val newFileActionId = "Att-New-From-Sprites-"
+        const val NEW_FILE_ACTION_ID = "Att-New-From-Sprites-"
 
         fun files(e: AnActionEvent): List<VirtualFile> {
             return e.files

@@ -2,7 +2,10 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.ActionHelper
+import com.badahori.creatures.plugins.intellij.agenteering.utils.height
+import com.badahori.creatures.plugins.intellij.agenteering.utils.scaleNearestNeighbor
+import com.badahori.creatures.plugins.intellij.agenteering.utils.width
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.ui.JBColor

@@ -47,7 +47,7 @@ class ExpandCaosCommandsAction : AnAction(), DumbAware {
                     ?: return@each
 
                 // Ensure file is still valid from pointer
-                if (!file.isValid ) {
+                if (!file.isValid) {
                     return@each
                 }
                 // Apply the expand-commas action
@@ -56,7 +56,7 @@ class ExpandCaosCommandsAction : AnAction(), DumbAware {
         }
     }
 
-    private fun getCaosFiles(project:Project, file:VirtualFile) : List<CaosScriptFile> {
+    private fun getCaosFiles(project: Project, file: VirtualFile): List<CaosScriptFile> {
         if (file.isDirectory) {
             return file.collectChildrenAs {
                 asCaosScript(project, file)
@@ -74,10 +74,10 @@ class ExpandCaosCommandsAction : AnAction(), DumbAware {
         }
     }
 
-    private fun hasCaos(file:VirtualFile) : Boolean {
+    private fun hasCaos(file: VirtualFile): Boolean {
         return if (file.isDirectory) {
             var isCaos = false
-            VfsUtilCore.visitChildrenRecursively(file, object: VirtualFileVisitor<Boolean>(NO_FOLLOW_SYMLINKS) {
+            VfsUtilCore.visitChildrenRecursively(file, object : VirtualFileVisitor<Boolean>(NO_FOLLOW_SYMLINKS) {
 
                 override fun visitFile(file: VirtualFile): Boolean {
                     if (!isCaos && file.fileType == CaosScriptFileType.INSTANCE) {

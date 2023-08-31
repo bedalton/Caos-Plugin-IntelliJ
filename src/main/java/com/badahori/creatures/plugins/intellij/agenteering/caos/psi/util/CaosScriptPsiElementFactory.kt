@@ -19,6 +19,9 @@ object CaosScriptPsiElementFactory {
 
     internal val C1E_SUBROUTINE_NAME_REGEX = "[a-zA-Z0-9_:$#!*]{4}".toRegex()
     internal val C2E_SUBROUTINE_NAME_REGEX = "[a-zA-Z][a-zA-Z0-9_:\$#!*]+".toRegex()
+
+    @Suppress("MemberVisibilityCanBePrivate", "unused")
+    @JvmStatic
     fun createFileFromText(project: Project, text: String, variant: CaosVariant = CaosVariant.DS, fileName: String = "dummy.cos"): CaosScriptFile {
         return (PsiFileFactory.getInstance(project).createFileFromText(fileName, CaosScriptLanguage, text) as CaosScriptFile).apply {
             setVariant(variant, true)
@@ -48,7 +51,7 @@ object CaosScriptPsiElementFactory {
     fun createTokenElement(project: Project, newNameString: String): CaosScriptToken? {
         if (!TOKEN_NAME_REGEX.matches(newNameString))
             return null
-        @Suppress("SpellCheckingInspection") val script = "sndf $newNameString"
+        val script = "sndf $newNameString"
         val file = createFileFromText(project, script,  CaosVariant.C1, "dummy.cos")
         return PsiTreeUtil.collectElementsOfType(file, CaosScriptToken::class.java).firstOrNull()
     }
@@ -115,7 +118,12 @@ object CaosScriptPsiElementFactory {
         return createAndGet(project, "slim slim", PsiWhiteSpace::class.java)!!
     }
 
-    fun <PsiT : PsiElement> createAndGet(project: Project, script: String, type: Class<PsiT>, variant: CaosVariant = CaosVariant.C1) : PsiT? {
+    fun <PsiT : PsiElement> createAndGet(
+        project: Project,
+        script: String,
+        type: Class<PsiT>,
+        variant: CaosVariant = CaosVariant.C1
+    ): PsiT? {
         val file = createFileFromText(project, script)
         val pointer = SmartPointerManager.createPointer(file)
         (file as? CaosScriptFile)?.apply {
@@ -138,6 +146,7 @@ object CaosScriptPsiElementFactory {
         return createAndGet(project, "$tag\nendm", CaosScriptScriptElement::class.java)
     }
 
+    @Suppress("unused")
     fun createCAOS2PrayTag(project: Project, correctedCase: String, startsWithQuote: Boolean): CaosScriptCaos2TagName? {
         val tag = if (startsWithQuote)
             "\"$correctedCase\""

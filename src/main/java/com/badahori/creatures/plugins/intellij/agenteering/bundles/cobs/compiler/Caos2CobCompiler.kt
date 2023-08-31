@@ -113,7 +113,10 @@ object Caos2CobCompiler {
                 error
             )
         }*/
-        if (PathUtil.getFileNameWithoutExtension(removerCob.targetFile).let { it.isNotNullOrBlank() && it notLike "false" }) {
+        val makeRemover = PathUtil
+            .getFileNameWithoutExtension(removerCob.targetFile)
+            .let { it.isNotNullOrBlank() && it notLike "false" }
+        if (makeRemover) {
             val removerData = compile(project, file, removerCob)
             if (removerData == null) {
                 ++compilationResult.failures
@@ -195,7 +198,7 @@ object Caos2CobCompiler {
                     throw Caos2CobException("Conflicting cob file name tags/commands. Only one tag or command for cob file is allowed")
                 }
                 cobTags[CobTag.COB_NAME] = cobFileNames.firstOrNull()
-        }
+            }
         val agentNameFromTags = cobTags[CobTag.AGENT_NAME]
         if (block.agentBlockNames.map { it.first }.size > 1) {
             throw Caos2CobException("CAOS2Cob allows only 1 Agent Name tag. Found ${block.agentBlockNames}")
@@ -220,7 +223,7 @@ object Caos2CobCompiler {
 
         val missingInstallFile = mutableListOf<String>()
         var isNotCaosFile = false
-        val installScripts:List<String> = cobCommands
+        val installScripts: List<String> = cobCommands
             .filter { it.first == CobCommand.INSTALL_SCRIPTS }
             .flatMap { (_, files) ->
                 files.flatMap files@{ fileName ->
@@ -570,7 +573,7 @@ object Caos2CobCompiler {
     /**
      * Flattens a file and gets its scripts
      */
-    private fun getFileScripts(fileIn: CaosScriptFile) : List<CaosScriptScriptElement> {
+    private fun getFileScripts(fileIn: CaosScriptFile): List<CaosScriptScriptElement> {
         val scripts = mutableListOf<CaosScriptScriptElement>()
         val pointer = SmartPointerManager.createPointer(fileIn)
         val text = fileIn.text

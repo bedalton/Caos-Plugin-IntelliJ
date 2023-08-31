@@ -333,10 +333,11 @@ internal class SubScriptLeafNode(
     }
 
     override fun getChildren(): List<AbstractTreeNode<*>> {
-        return if (isValid())
+        return if (isValid()) {
             getSubroutineNodes(nonNullProject, subroutines)
-        else
+        } else {
             emptyList()
+        }
     }
 
     private val navigationNode: Navigatable?
@@ -356,23 +357,27 @@ internal class SubScriptLeafNode(
     override fun getVirtualFile(): VirtualFile? {
         ProgressIndicatorProvider.checkCanceled()
         return try {
-            if (!script.isValid)
+            if (!script.isValid) {
                 return null
+            }
             script.containingFile?.let {
-                return if (it.isValid)
+                return if (it.isValid) {
                     it.virtualFile
-                else
+                } else {
                     null
+                }
             }
             script.originalElement.containingFile?.let {
-                if (it.isValid)
+                if (it.isValid) {
                     it.virtualFile
-                else
+                } else {
                     null
+                }
             }
         } catch (e: Exception) {
-            if (e is ProcessCanceledException)
+            if (e is ProcessCanceledException) {
                 return null
+            }
             LOGGER.severe("Error when getting virtual file in CaosScriptTreeNode")
             e.printStackTrace()
             null
@@ -385,8 +390,9 @@ internal class SubScriptLeafNode(
 
     override fun update(presentationData: PresentationData) {
         presentationData.presentableText = text
-        if (enclosingCobFileName != null)
+        if (enclosingCobFileName != null) {
             presentationData.locationString = enclosingCobFileName
+        }
         presentationData.setIcon(
             when (script) {
                 is CaosScriptMacro -> CaosScriptIcons.MACRO
@@ -410,10 +416,11 @@ internal class SubScriptLeafNode(
         }
     }
     override fun getLeafState(): LeafState {
-        return if (isAlwaysLeaf)
+        return if (isAlwaysLeaf) {
             LeafState.ALWAYS
-        else
+        } else {
             LeafState.ASYNC
+        }
     }
 }
 

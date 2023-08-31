@@ -36,7 +36,7 @@ object CobVirtualFileUtil {
     private val VIRTUAL_FILE_PATH_KEY = Key<String>("creatures.cob.decompiler.DIRECTORY")
 
     @Suppress("MemberVisibilityCanBePrivate")
-    fun cobVirtualFileDirectory(file:VirtualFile) : CaosVirtualFile {
+    fun cobVirtualFileDirectory(file: VirtualFile): CaosVirtualFile {
         return file.getUserData(VIRTUAL_FILE_PATH_KEY)?.let { path ->
             CaosVirtualFileSystem.instance.getDirectory(path)
         } ?: getOrCreateCobVirtualFileDirectory(file)
@@ -55,12 +55,15 @@ object CobVirtualFileUtil {
             isWritable = true
         }
     }
-    fun decompiledCobFiles(cobFile:VirtualFile, project: Project): List<CaosVirtualFile> {
+
+    fun decompiledCobFiles(cobFile: VirtualFile, project: Project): List<CaosVirtualFile> {
         val directory = cobVirtualFileDirectory(cobFile)
         directory.children.ifEmpty { null }?.let { return it.toList() }
         val data = try {
             CobToDataObjectDecompiler.decompile(cobFile)
-                    ?: return emptyList<CaosVirtualFile>().apply { LOGGER.severe("Failed to decompile COB: '${cobFile.name}'")}
+                ?: return emptyList<CaosVirtualFile>().apply {
+                    LOGGER.severe("Failed to decompile COB: '${cobFile.name}'")
+                }
         } catch (e: Exception) {
             LOGGER.severe("Failed to decompile cob: '${cobFile.name}'; ${e.className}: ${e.message}")
             e.printStackTrace()
@@ -68,7 +71,15 @@ object CobVirtualFileUtil {
         }
         return when (data) {
             is CobFileData.C1CobData -> blockToVirtualFiles(project, CaosVariant.C1, data.cobBlock, directory)
-            is CobFileData.C2CobData -> data.blocks.flatMap { blockToVirtualFiles(project, CaosVariant.C2, it, directory) }
+            is CobFileData.C2CobData -> data.blocks.flatMap {
+                blockToVirtualFiles(
+                    project = project,
+                    variant = CaosVariant.C2,
+                    block = it,
+                    parent = directory
+                )
+            }
+
             else -> emptyList()
         }
     }
@@ -76,43 +87,74 @@ object CobVirtualFileUtil {
     /**
      * Converts a COB block into a list of virtual files
      */
-    private fun blockToVirtualFiles(project: Project, variant: CaosVariant, block: CobBlock, parent: CaosVirtualFile): List<CaosVirtualFile> {
+    private fun blockToVirtualFiles(
+        project: Project,
+        variant: CaosVariant,
+        block: CobBlock,
+        parent: CaosVirtualFile
+    ): List<CaosVirtualFile> {
         return when (block) {
             is CobBlock.FileBlock.SpriteBlock -> listOf(parent.createChildWithContent(block.fileName, block.contents))
             is CobBlock.FileBlock.SoundBlock -> listOf(parent.createChildWithContent(block.fileName, block.contents))
-            is CobBlock.AuthorBlock -> emptyList()//parent.createChildWithContent("Author.txt", block.)
+            is CobBlock.AuthorBlock -> emptyList()
             is CobBlock.AgentBlock -> {
+
+                // Get virtual file directory
                 val agentBlockName = block.name.nullIfEmpty() ?: UUID.randomUUID().toString()
                 val agentDirectory = parent.createChildDirectory(agentBlockName)
-                val installScripts:List<CaosVirtualFile> = block.installScripts.let { installScripts ->
+
+                // Create install script files
+                val installScripts: List<CaosVirtualFile> = block.installScripts.let { installScripts ->
                     if (installScripts.size == 1) {
                         val script = installScripts.first()
                         listOf(createChildCaosScript(project, agentDirectory, variant, script.scriptName, script.code))
                     } else {
                         val multipleInstallScripts = installScripts.size > 1
                         installScripts.mapIndexed { i, script ->
-                            val scriptName = "Install ${script.scriptName}".let { scriptName ->
-                                if (multipleInstallScripts)
-                                    "$scriptName ($i)"
-                                else
-                                    scriptName
-                            }
+                            val tail = if (multipleInstallScripts) " ($i)" else ""
+                            val scriptName = "Install ${script.scriptName}$tail"
                             createChildCaosScript(project, agentDirectory, variant, scriptName, script.code)
                         }
                     }
                 }
-                val scripts: List<CaosVirtualFile> = installScripts + listOfNotNull(
-                        block.removalScript?.nullIfEmpty()?.let { createChildCaosScript(project, agentDirectory, variant, it.scriptName, it.code) }
-                ) + block.eventScripts.map map@{ script ->
-                    createChildCaosScript(project, agentDirectory, variant, script.scriptName, script.code)
+
+                // Create remover script files
+                val removalScriptElement = block.removalScript
+                val removalScript = createNullableChildCaosScript(
+                    project = project,
+                    parent = agentDirectory,
+                    variant = variant,
+                    fileName = removalScriptElement?.scriptName ?: "Removal Script",
+                    code = removalScriptElement?.code
+                )
+
+                // Create event script files
+                val eventScripts = block.eventScripts.map map@{ script ->
+                    createChildCaosScript(
+                        project = project,
+                        parent = agentDirectory,
+                        variant = variant,
+                        fileName = script.scriptName,
+                        code = script.code
+                    )
                 }
+
+                // All scripts
+                val scripts: List<CaosVirtualFile> = installScripts +
+                        listOfNotNull(removalScript) +
+                        eventScripts
+
+                // Preview Image
                 val previews: List<CaosVirtualFile> = listOfNotNull(block.image?.let {
                     agentDirectory.createChildWithContent("Thumbnail.png", it.toPngByteArray())
                 })
+
+                // All children
                 previews + scripts.map { file ->
                     file.apply { this.setVariant(variant, true) }
                 }
             }
+
             is CobBlock.UnknownCobBlock -> emptyList()
         }
     }
@@ -122,11 +164,49 @@ object CobVirtualFileUtil {
      * Attempts to format file with new lines and indents
      */
     fun createChildCaosScript(project: Project, parent:CaosVirtualFile, variant: CaosVariant, fileName: String, code: String): CaosVirtualFile {
+
+    /**
+     * Creates a caos script virtual file in the given directory
+     * Attempts to format file with new lines and indents
+     */
+    fun createChildCaosScript(
+        project: Project,
+        parent: CaosVirtualFile,
+        variant: CaosVariant,
+        fileName: String,
+        code: String
+    ): CaosVirtualFile {
+        return createNullableChildCaosScript(
+            project = project,
+            parent = parent,
+            variant = variant,
+            fileName = fileName,
+            code = code
+        ) ?: throw NullPointerException("Child CAOS script was null but CAOS script was not")
+    }
+
+    /**
+     * Creates a caos script virtual file in the given directory
+     * Attempts to format file with new lines and indents
+     */
+    private fun createNullableChildCaosScript(
+        project: Project,
+        parent: CaosVirtualFile,
+        variant: CaosVariant,
+        fileName: String,
+        code: String?
+    ): CaosVirtualFile? {
+
+        if (code == null) {
+            return null
+        }
+
         parent.findChild(fileName)?.let { return it }
         // Initialize file with contents
-        @Suppress( "MemberVisibilityCanBePrivate") val virtualFile = try {
-            parent.createChildWithContent(fileName, code, false).apply { this.setVariant(variant, true) }
-        } catch(e:Exception) {
+        @Suppress("MemberVisibilityCanBePrivate") val virtualFile = try {
+            parent.createChildWithContent(fileName, code, false)
+                .apply { this.setVariant(variant, true) }
+        } catch (e: Exception) {
             LOGGER.severe("Failed to create virtual file. Error: ${e.message}")
             e.printStackTrace()
             throw e
@@ -137,14 +217,18 @@ object CobVirtualFileUtil {
                 if (project.isDisposed) {
                     return@run null
                 }
+
                 // Get PSI file after creating virtual file
                 val psiFile = ApplicationManager.getApplication().runReadAction(Computable {
                     findFile(project, virtualFile)
-                }) ?: return@run virtualFile.apply { LOGGER.severe("Failed to find CaosPsiFile after virtual file creation") }
+                }) ?: return@run virtualFile.apply {
+                    LOGGER.severe("Failed to find CaosPsiFile after virtual file creation")
+                }
+
                 // Try quick format if file is found
                 virtualFile.isWritable = true
                 tryQuickFormat(psiFile, virtualFile)
-            } catch(e:Exception) {
+            } catch (e: Exception) {
                 LOGGER.severe("Failed to quick-format after creating virtual file")
                 e.printStackTrace()
                 virtualFile
@@ -164,11 +248,10 @@ object CobVirtualFileUtil {
             }
         }
         return virtualFile
-
     }
 }
 
-private fun findFile(project: Project, file:CaosVirtualFile) : CaosScriptFile? {
+private fun findFile(project: Project, file: CaosVirtualFile): CaosScriptFile? {
     if (project.isDisposed) {
         return null
     }
@@ -181,7 +264,7 @@ private fun findFile(project: Project, file:CaosVirtualFile) : CaosScriptFile? {
     }
 }
 
-private fun tryQuickFormat(psiFile:CaosScriptFile, file:CaosVirtualFile) : CaosVirtualFile {
+private fun tryQuickFormat(psiFile: CaosScriptFile, file: CaosVirtualFile): CaosVirtualFile {
     if (psiFile.projectDisposed || psiFile.isInvalid || !file.isValid) {
         return file
     }

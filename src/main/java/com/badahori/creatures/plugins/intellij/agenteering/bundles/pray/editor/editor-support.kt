@@ -31,7 +31,7 @@ import javax.swing.JPanel
 
 
 /**
- * A editor notification provider
+ * An editor notification provider
  * Though not its original purpose, the notification provider functions as a persistent toolbar
  */
 class PrayEditorToolbar(val project: Project) : EditorNotifications.Provider<EditorNotificationPanel>() {
@@ -104,6 +104,7 @@ internal fun createPrayScriptHeaderComponent(psiFile: PsiFile): JComponent {
     return toolbar
 }
 
+@Suppress("unused")
 internal object PrayCompilerToolbarActions {
 
     internal fun compile(project: Project, file: PsiFile) {

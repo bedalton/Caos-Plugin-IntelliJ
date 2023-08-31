@@ -48,15 +48,17 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
 
         fun decompileToPsiFile(project: Project, fileName: String, byteArray: ByteArray): PsiFile {
             val cobData = runBlocking {
-                CobToDataObjectDecompiler.decompile(MemoryByteStreamReaderEx(byteArray), PathUtil.getFileNameWithoutExtension(fileName))
+                CobToDataObjectDecompiler.decompile(
+                    MemoryByteStreamReaderEx(byteArray),
+                    PathUtil.getFileNameWithoutExtension(fileName)
+                )
             }
             val text = presentCobData(fileName, cobData)
             val psiFile = PsiFileFactory.getInstance(project)
-                    .createFileFromText("(Decompiled) $fileName", CaosScriptLanguage, text) as CaosScriptFile
+                .createFileFromText("(Decompiled) $fileName", CaosScriptLanguage, text) as CaosScriptFile
             val variant = if (cobData is CobFileData.C1CobData) CaosVariant.C1 else CaosVariant.C2
             psiFile.setVariant(variant, true)
             psiFile.runInspections = false
-            runBlocking {
                 CaosScriptExpandCommasIntentionAction.invoke(project, psiFile)
             }
             return psiFile
@@ -65,7 +67,11 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
         fun cobDataToPsiFile(project: Project, fileName: String, cobData: CobFileData): PsiFile {
             val text = presentCobData(fileName, cobData)
             val psiFile = PsiFileFactory.getInstance(project)
-                    .createFileFromText("(Decompiled) $fileName", CaosScriptLanguage, text) as CaosScriptFile
+                .createFileFromText(
+                    "(Decompiled) $fileName",
+                    CaosScriptLanguage,
+                    text
+                ) as CaosScriptFile
             val variant = if (cobData is CobFileData.C1CobData) CaosVariant.C1 else CaosVariant.C2
             psiFile.setVariant(variant, true)
             psiFile.runInspections = false
@@ -82,9 +88,11 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
                 is CobFileData.C1CobData -> {
                     presentC1CobData(fileName, cobData)
                 }
+
                 is CobFileData.C2CobData -> {
                     presentC2CobData(fileName, cobData)
                 }
+
                 is CobFileData.InvalidCobData -> {
                     val maxLength = 80
                     val words = cobData.message.split(" ")
@@ -108,36 +116,40 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
             val agentBlock = cobData.cobBlock
             val scriptHeaderLength = 30
             val wrapChar = "="
-            val installScript = agentBlock.installScripts.nullIfEmpty()?.let { installScripts ->
-                        installScripts
-                            .joinToString(""){
-                                    installScript -> "\n*** INSTALL SCRIPT ***\n" + installScript.code
-                            }
-                            .trim()
-                            .nullIfEmpty()
-            } ?: ""
-                val eventScripts = agentBlock.eventScripts.joinToString("\n\n") {
-                    "${wrap(it.scriptName, scriptHeaderLength, wrapChar)}\n${it.code}"
+            val installScript = agentBlock
+                .installScripts
+                .nullIfEmpty()
+                ?.let { installScripts ->
+                    installScripts
+                        .joinToString("") { installScript ->
+                            "\n*** INSTALL SCRIPT ***\n" + installScript.code
+                        }
+                        .trim()
+                        .nullIfEmpty()
                 }
-                val header = "COB...............$fileName"
-                val agentName = "Agent.............${agentBlock.name}"
-                val expiry = "Expiry............${agentBlock.expiry.let { DATE_FORMAT.format(it.time) }}"
-                val quantity = "Quantity..........${agentBlock.quantityAvailable}"
-                val width = listOf(header, agentName, expiry, quantity).map { it.length + 2 }.maxOrNull()!! + 5
-                val top = (1..width).joinToString("") { "*" }
-                val offset = 3 // leading asterisk, space and trailing asterisk
-                val items = listOfNotNull(
-                    top,
-                    header.nullIfEmpty()?.let { "* ${pad(it, width - offset)}*" },
-                    agentName.nullIfEmpty()?.let { "* ${pad(it, width - offset)}*" },
-                    expiry.nullIfEmpty()?.let { "* ${pad(it, width - offset)}*" },
-                    quantity.nullIfEmpty()?.let { "* ${pad(it, width - offset)}*" },
-                    top,
-                    installScript.trim().nullIfEmpty()?.let { "\n$it" },
-                    eventScripts.trim().nullIfEmpty()?.let { "\n$it" }
+                ?: ""
+            val eventScripts = agentBlock.eventScripts.joinToString("\n\n") {
+                "${wrap(it.scriptName, scriptHeaderLength, wrapChar)}\n${it.code}"
+            }
+            val header = "COB...............$fileName"
+            val agentName = "Agent.............${agentBlock.name}"
+            val expiry = "Expiry............${agentBlock.expiry.let { DATE_FORMAT.format(it.time) }}"
+            val quantity = "Quantity..........${agentBlock.quantityAvailable}"
+            val width = listOf(header, agentName, expiry, quantity).map { it.length + 2 }.maxOrNull()!! + 5
+            val top = (1..width).joinToString("") { "*" }
+            val offset = 3 // leading asterisk, space and trailing asterisk
+            val items = listOfNotNull(
+                top,
+                header.nullIfEmpty()?.let { "* ${pad(it, width - offset)}*" },
+                agentName.nullIfEmpty()?.let { "* ${pad(it, width - offset)}*" },
+                expiry.nullIfEmpty()?.let { "* ${pad(it, width - offset)}*" },
+                quantity.nullIfEmpty()?.let { "* ${pad(it, width - offset)}*" },
+                top,
+                installScript.trim().nullIfEmpty()?.let { "\n$it" },
+                eventScripts.trim().nullIfEmpty()?.let { "\n$it" }
 
-                )
-                return items.joinToString("\n")
+            )
+            return items.joinToString("\n")
         }
 
         private fun presentC2CobData(fileName: String, cobData: CobFileData.C2CobData): String {
@@ -155,18 +167,18 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
                 val expiry = block.expiry.let { DATE_FORMAT.format(it.time) }
                 val dependencies = "[${block.dependencies.joinToString { it.fileName }}]"
                 val width = listOfNotNull(
-                        block.name.length,
-                        block.description.length,
-                        expiry.length,
-                        dependencies.length,
-                        "${block.quantityAvailable}".length,
-                        block.useInterval?.let { "$it".length }
+                    block.name.length,
+                    block.description.length,
+                    expiry.length,
+                    dependencies.length,
+                    "${block.quantityAvailable}".length,
+                    block.useInterval?.let { "$it".length }
                 ).maxOrNull()!! + 5
                 val top = (1..width).joinToString("") { "*" }
                 val padLength = width - "* Agent.........".length
-                val installScript = block.installScripts.joinToString("") {
-                    it.code.trim().nullIfEmpty()?.let {
-                        "\n\n***** INSTALL SCRIPT *****\n$it"
+                val installScript = block.installScripts.joinToString("") { installScripts ->
+                    installScripts.code.trim().nullIfEmpty()?.let { installScript ->
+                        "\n\n***** INSTALL SCRIPT *****\n$installScript"
                     } ?: ""
                 }
                 val removalScript = (block.removalScript?.code?.trim()?.nullIfEmpty())?.let {
@@ -196,6 +208,7 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
             return string.padEnd(length, ' ')
         }
 
+        @Suppress("SameParameterValue")
         private fun wrap(string: String, length: Int, padChar: String = "="): String {
             assert(string.length <= length - 6) {
                 "Cannot wrap string when string is longer than target length. ${string.length} >= ($length - 6)"

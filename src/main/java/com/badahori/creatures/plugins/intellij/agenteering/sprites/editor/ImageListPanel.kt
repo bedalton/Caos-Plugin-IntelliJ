@@ -22,6 +22,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 
+@Suppress("MemberVisibilityCanBePrivate")
 internal class ImageListPanel<T : HasImage>(private val project: Project, private var list: List<T>) : JBList<T>(),
     DragSourceListener,
     DragGestureListener,
@@ -35,7 +36,7 @@ internal class ImageListPanel<T : HasImage>(private val project: Project, privat
     var dragYStart: Int? = null
     var lastItemClickedMin: Int? = null
     var lastItemClickedMax: Int? = null
-    var setSelectionIntervalActual: (e:MouseEvent,min: Int, max: Int) -> Unit
+    var setSelectionIntervalActual: (e: MouseEvent, min: Int, max: Int) -> Unit
 
     init {
         DragSource.getDefaultDragSource()
@@ -43,7 +44,7 @@ internal class ImageListPanel<T : HasImage>(private val project: Project, privat
         this.selectionModel = object : DefaultListSelectionModel() {
 
             init {
-                this@ImageListPanel.setSelectionIntervalActual = { e:MouseEvent, min: Int, max: Int ->
+                this@ImageListPanel.setSelectionIntervalActual = { e: MouseEvent, min: Int, max: Int ->
                     if (e.isMetaDown || e.isControlDown) {
                         addSelectionInterval(min, max)
                     } else
@@ -65,8 +66,8 @@ internal class ImageListPanel<T : HasImage>(private val project: Project, privat
             list.forEach { addElement(it) }
         }
         addMouseListener(this)
-        inputMap.put(KeyStroke.getKeyStroke('c', java.awt.event.InputEvent.META_DOWN_MASK), TransferHandler.getCopyAction())
-        actionMap.put(TransferHandler.getCopyAction().getValue(Action.NAME), object: AbstractAction() {
+        inputMap.put(KeyStroke.getKeyStroke('c', InputEvent.META_DOWN_MASK), TransferHandler.getCopyAction())
+        actionMap.put(TransferHandler.getCopyAction().getValue(Action.NAME), object : AbstractAction() {
 
             private var mEnabled = true
             override fun actionPerformed(e: ActionEvent?) {
@@ -122,7 +123,7 @@ internal class ImageListPanel<T : HasImage>(private val project: Project, privat
 
     override fun keyReleased(e: KeyEvent) {
         if (e.isMetaDown && e.keyChar == 'c') {
-                copy();
+            copy()
         }
     }
 
@@ -142,7 +143,7 @@ internal class ImageListPanel<T : HasImage>(private val project: Project, privat
                 try {
                     if (OsUtil.isMac) {
                         @Suppress("UNCHECKED_CAST")
-                        val files:List<File> = data.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
+                        val files: List<File> = data.getTransferData(DataFlavor.javaFileListFlavor) as List<File>
                         NSPasteboardAPI.writeClipboardFilesURL(files.map { it.path }.toTypedArray())
                     }
                 } catch (e: Exception) {

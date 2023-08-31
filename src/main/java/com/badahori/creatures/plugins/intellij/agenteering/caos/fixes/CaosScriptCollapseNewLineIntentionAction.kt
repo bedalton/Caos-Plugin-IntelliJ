@@ -36,7 +36,7 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
 
     override fun getFamilyName(): String = CAOSScript
 
-    open override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
+    override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
         val file = element.containingFile
         if (file !is CaosScriptFile)
             return false
@@ -104,8 +104,8 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
         private val QUOTE_STRING =
             "(\"([^\"\\\\\\n\\r]|\\\\[\"|\\\\])*\")|('([^\\r\\n'\\\\]|\\\\['\\\\])*')".toRegex(RegexOption.MULTILINE)
         private val BRACKET_STRING = "\\[[^\\\\]*?]".toRegex(RegexOption.MULTILINE)
-        private val AT_DIRECTIVES = "^[*]{2}((([^\\n;]|[;][^;])*;;)|[^\\n]*)".toRegex(RegexOption.MULTILINE)
-        val COMMENT = "^[ \\t]*[*][^\\n]*\\n?".toRegex(RegexOption.MULTILINE)
+        private val AT_DIRECTIVES = "^[*]{2}((([^\\n;]|;[^;])*;;)|[^\\n]*)".toRegex(RegexOption.MULTILINE)
+        private val COMMENT = "^[ \\t]*[*][^\\n]*\\n?".toRegex(RegexOption.MULTILINE)
 
         // Escape strings
         private const val QUOTE_STRING_ESCAPE = "&;;3&2&1&;xX_X_Xx;1&2&3&;;&"
@@ -125,23 +125,6 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
             }
         }
 
-        internal fun collapseLinesInCopyEx(elementIn: PsiElement, collapseChar: CollapseChar = CollapseChar.COMMA): PsiElement? {
-            val project = elementIn.project
-            val document = PsiDocumentManager.getInstance(project).getCachedDocument(elementIn.containingFile)
-                ?: elementIn.document
-            if (document != null) {
-                PsiDocumentManager.getInstance(project).commitDocument(document)
-            }
-            if (elementIn is CaosScriptFile) {
-                val file = CaosScriptPsiElementFactory.createFileFromText(project, elementIn.text)
-                file.setVariant(elementIn.variant, true)
-                return collapseLines(file, collapseChar, elementIn.variant)
-            } else {
-                val element = elementIn.copy()
-                return collapseLines(element, collapseChar, elementIn.variant)
-            }
-        }
-
         fun collapseLines(elementIn: PsiElement, collapseChar: CollapseChar, variant: CaosVariant? = null): PsiElement? {
             return if (ApplicationManager.getApplication().isDispatchThread) {
                 runWriteAction {
@@ -155,7 +138,7 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
         }
 
 
-        fun collapseLinesEx(elementIn: PsiElement, collapseChar: CollapseChar, variant: CaosVariant? = null): PsiElement? {
+        private fun collapseLinesEx(elementIn: PsiElement, collapseChar: CollapseChar, variant: CaosVariant? = null): PsiElement? {
             val before = elementIn.text.replace(COLLAPSE_TEST_REGEX, "").replace(WHITESPACE_OR_COMMA, "")
             val project = elementIn.project
             val document = elementIn.document
@@ -172,13 +155,13 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
             formatted = COMMENT.replace(formatted, " ")
 
             // Escape quote strings
-            val quoteStrings = QUOTE_STRING.findAll(formatted).asSequence().toList().map {
+            val quoteStrings = QUOTE_STRING.findAll(formatted).toList().map {
                 it.groupValues[0]
             }
             formatted = QUOTE_STRING.replace(formatted, QUOTE_STRING_ESCAPE)
 
             // Escape Bracket Strings
-            val bracketStrings = BRACKET_STRING.findAll(formatted).asSequence().toList().map {
+            val bracketStrings = BRACKET_STRING.findAll(formatted).toList().map {
                 it.groupValues[0]
             }
             formatted = BRACKET_STRING.replace(formatted, BRACKET_STRING_ESCAPE)

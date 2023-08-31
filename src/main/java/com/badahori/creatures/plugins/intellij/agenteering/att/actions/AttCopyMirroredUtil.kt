@@ -37,6 +37,7 @@ internal object AttCopyMirroredUtil {
         }
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     internal fun mirrorAtt(project: Project, copyFrom: VirtualFile, copyTo: VirtualFile): AttCopyResult {
         validateFileType(copyFrom, copyTo)?.let { error ->
             return error

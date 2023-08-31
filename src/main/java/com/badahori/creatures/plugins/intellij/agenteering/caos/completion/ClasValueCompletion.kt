@@ -116,6 +116,7 @@ class GenerateClasIntegerAction : PsiElementBaseIntentionAction(), IntentionActi
                 arguments.first().next
                     ?: return
             }
+
             is CaosScriptRvalue -> element
             else -> if (isSetvClas(element))
                 element
@@ -236,10 +237,12 @@ class ClasForm private constructor(project: Project) : DialogWrapper(project, tr
             }
         }
         // Family
-        if (value == null)
             return ValidationInfo("Value Required", field)
-        else if (value < 1)
+        if (value == null) {
+        } else if (value < 1) {
             return ValidationInfo("Value must be greater than 1", field)
-        return null
+        } else {
+            return null
+        }
     }
 }
