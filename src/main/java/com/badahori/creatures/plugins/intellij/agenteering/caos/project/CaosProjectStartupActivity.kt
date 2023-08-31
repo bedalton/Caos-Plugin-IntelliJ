@@ -209,8 +209,6 @@ class CaosProjectStartupActivity : StartupActivity {
             CaosBundleSourcesRegistrationUtil.register(module, project)
         }
     }
-
-    companion object {
-        private val ATTACH_SOURCES_IF_FILE_TYPE_LIST = listOf("cos", "cob", "agent", "agents")
-    }
 }
+
+private val ATTACH_SOURCES_IF_FILE_TYPE_LIST = listOf("cos", "cob", "agent", "agents")

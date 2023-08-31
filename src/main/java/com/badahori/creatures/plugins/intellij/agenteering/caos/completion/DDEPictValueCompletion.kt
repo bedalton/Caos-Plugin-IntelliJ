@@ -80,7 +80,7 @@ private class PictDimensionsForm(val position: Int, private val editor: Editor) 
     private fun validate(field: JTextField): ValidationInfo? {
         val text = field.text
         if (!NUMBER_REGEX.matches(text))
-            return ValidationInfo("numeric value expected", field)
+            return ValidationInfo("Numeric value expected", field)
         val value = text.nullIfEmpty()?.let {
             try {
                 it.toInt()
@@ -90,7 +90,7 @@ private class PictDimensionsForm(val position: Int, private val editor: Editor) 
         }
         // Family
         if (value == null)
-            return ValidationInfo("Value Required", field)
+            return ValidationInfo("Value required", field)
         else if (value < 1)
             return ValidationInfo("Value must be greater than 1", field)
         return null

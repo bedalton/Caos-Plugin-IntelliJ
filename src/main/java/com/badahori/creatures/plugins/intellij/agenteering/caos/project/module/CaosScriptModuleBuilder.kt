@@ -20,7 +20,7 @@ import com.intellij.openapi.roots.ModifiableModelsProvider
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider
 import com.intellij.openapi.vfs.VfsUtil
-import java.awt.Color
+import com.intellij.ui.JBColor
 import java.io.File
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -41,7 +41,7 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
         variantComboBox.setRenderer { _: JList<out CaosVariant>?, value: CaosVariant, _: Int, isSelected: Boolean, _: Boolean ->
             val label = JLabel(value.fullName)
             if (isSelected) {
-                label.background = Color.lightGray
+                label.background = JBColor.lightGray
             }
             label
         }

@@ -26,6 +26,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import com.intellij.ui.JBColor
 import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
 import kotlinx.coroutines.runBlocking
@@ -480,6 +481,9 @@ internal class SoundFileTreeNode(
 
 private val ERROR_COB_TEXT_ATTRIBUTES =
     TextAttributesKey.createTextAttributesKey("INVALID_COB", HighlighterColors.NO_HIGHLIGHTING).apply {
-        defaultAttributes.effectColor = Color(223, 45, 45)
+        defaultAttributes.effectColor = JBColor(
+            Color(223, 45, 45),
+            Color(218, 30, 35)
+        )
         defaultAttributes.effectType = EffectType.WAVE_UNDERSCORE
     }

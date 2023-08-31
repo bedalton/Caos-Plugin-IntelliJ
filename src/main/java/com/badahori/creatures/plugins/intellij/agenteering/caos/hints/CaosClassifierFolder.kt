@@ -129,18 +129,16 @@ class CaosClassifierFolder: FoldingBuilderEx() {
         }
     }
 
-    companion object {
+}
 
-        private const val CACHE_FOR_IN_SECONDS = 20_000
-        private val KEY  = Key<Pair<Long, Pair<TextRange, String>?>?>("bedalton.creatures.ClassifierFolder.RANGE_AND_TEXT")
+private const val CACHE_FOR_IN_SECONDS = 20_000
+private val KEY  = Key<Pair<Long, Pair<TextRange, String>?>?>("bedalton.creatures.ClassifierFolder.RANGE_AND_TEXT")
 
-        fun shouldRun(element: PsiElement?): Boolean {
-            return shouldRun(element?.project, element)
-        }
+fun shouldRun(element: PsiElement?): Boolean {
+    return shouldRun(element?.project, element)
+}
 
-        @Suppress("MemberVisibilityCanBePrivate")
-        fun shouldRun(project: Project?, element: PsiElement?): Boolean {
-            return project?.isDisposed == false && element?.isValid == true && !DumbService.isDumb(project)
-        }
-    }
+@Suppress("MemberVisibilityCanBePrivate")
+fun shouldRun(project: Project?, element: PsiElement?): Boolean {
+    return project?.isDisposed == false && element?.isValid == true && !DumbService.isDumb(project)
 }

@@ -67,7 +67,7 @@ class PoseRenderedImagePanel(private val project: Project, defaultDirectory: Str
         val image = image
         if (image == null) {
             val builder = DialogBuilder()
-            builder.setTitle("Pose save error")
+            builder.setTitle("Pose Save Error")
             builder.setErrorText("Cannot save un-rendered image")
             builder.show()
             return

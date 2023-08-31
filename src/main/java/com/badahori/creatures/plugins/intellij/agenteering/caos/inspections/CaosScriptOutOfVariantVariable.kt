@@ -153,6 +153,8 @@ class CaosScriptVariableVariantFix(
         val startOffset = element.startOffset
         val endOffset = element.endOffset
 
+        val title = text[0].uppercaseChar() + text.substring(1).lowercase()
+
         CommandProcessor.getInstance().executeCommand(
             project,
             {
@@ -163,7 +165,7 @@ class CaosScriptVariableVariantFix(
                     EditorUtil.replaceText(document, TextRange(startOffset, endOffset), replacementText)
                 }
             },
-            text,
+            title,
             "FixVariableExpression${nextId.incrementAndGet()}"
         )
     }

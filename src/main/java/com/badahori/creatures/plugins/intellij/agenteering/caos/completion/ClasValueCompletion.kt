@@ -228,7 +228,7 @@ class ClasForm private constructor(project: Project) : DialogWrapper(project, tr
     private fun validate(field: JTextField): ValidationInfo? {
         val text = field.text
         if (!NUMBER_REGEX.matches(text))
-            return ValidationInfo("numeric value expected", field)
+            return ValidationInfo("Numeric value expected", field)
         val value = text.nullIfEmpty()?.let {
             try {
                 it.toInt()
@@ -237,12 +237,10 @@ class ClasForm private constructor(project: Project) : DialogWrapper(project, tr
             }
         }
         // Family
-            return ValidationInfo("Value Required", field)
-        if (value == null) {
-        } else if (value < 1) {
-            return ValidationInfo("Value must be greater than 1", field)
-        } else {
-            return null
+        return when {
+            value == null -> ValidationInfo("Value required", field)
+            value < 1 -> ValidationInfo("Value must be greater than 1", field)
+            else -> null
         }
     }
 }

@@ -52,13 +52,9 @@ class PrayEditorToolbar(val project: Project) : EditorNotifications.Provider<Edi
         panel.add(headerComponent)
         return panel
     }
-
-    companion object {
-        private val KEY: Key<EditorNotificationPanel> = Key.create("creatures.pray.PRAYEditorToolbar")
-
-    }
 }
 
+private val KEY: Key<EditorNotificationPanel> = Key.create("creatures.pray.PRAYEditorToolbar")
 
 private class EditorActionGroup(psiFile: PsiFile) : ActionGroup() {
 
