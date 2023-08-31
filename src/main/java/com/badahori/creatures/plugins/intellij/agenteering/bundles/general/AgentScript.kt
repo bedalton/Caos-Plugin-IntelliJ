@@ -40,7 +40,6 @@ open class AgentScript(val code: String, val scriptName: String, val type: Agent
                 "$fileName.cos"
             }
             val file = CobVirtualFileUtil.createChildCaosScript(
-                project,
                 cobPath,
                 caosVariant,
                 actualFileName,

@@ -17,6 +17,7 @@ import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.*
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil
@@ -64,6 +65,9 @@ fun expandCommasInCaosScript(project: Project, fileIn: PsiFile?) {
     if (fileIn == null) {
         return
     }
+    if (project.isDisposed || fileIn.isInvalid) {
+        return
+    }
 
     // Makes sure in proper context
     val application = ApplicationManager.getApplication()
@@ -76,7 +80,11 @@ fun expandCommasInCaosScript(project: Project, fileIn: PsiFile?) {
 
     runUndoTransparentWriteAction {
         try {
+            val virtualFile: VirtualFile? = fileIn.virtualFile ?: fileIn.originalFile.virtualFile
+            val isWritable = virtualFile?.isWritable == true
+            virtualFile?.isWritable = true
             runnable(project, fileIn)
+            virtualFile?.isWritable = isWritable
         } catch (e: Throwable) {
             LOGGER.severe("Failed to run expandCommas on '${fileIn.name}' in runUndoTransparentAction with throwable: ${e.message}")
             e.printStackTrace()
@@ -94,7 +102,6 @@ fun expandCommasInCaosScript(project: Project, fileIn: PsiFile?) {
  * Method to expand commas and spaces into newlines
  */
 private fun runnable(project: Project, fileIn: PsiFile?): Boolean {
-
     val file = fileIn as? CaosScriptFile
         ?: return false
     val variant = fileIn.variant

@@ -298,45 +298,28 @@ class CaosScriptFile(
                 return
             if (caosFile.didFormatInitial.getAndSet(true))
                 return
+
             if (caosFile.virtualFile?.parent == null) {
                 LOGGER.severe("Cannot QuickFormat CAOSScript file <${caosFile.virtualFile?.path}>. Parent is null")
                 return
             }
+            
             val project = caosFile.project
-            when {
-                application.isWriteAccessAllowed -> {
-                    runQuickFormatInWriteAction(caosFile)
-                }
 
-                DumbService.isDumb(project) -> {
-                    if (!application.isDispatchThread) {
-                        DumbService.getInstance(project).runWhenSmart {
-                            if (project.isDisposed) {
-                                return@runWhenSmart
-                            }
-                            runQuickFormatInWriteAction(caosFile)
+            if (DumbService.isDumb(project)) {
+                if (!application.isDispatchThread) {
+                    DumbService.getInstance(project).runWhenSmart {
+                        if (project.isDisposed) {
+                            return@runWhenSmart
                         }
+                        expandCommasInCaosScript(caosFile.project, caosFile)
                     }
                 }
-
-                application.isDispatchThread -> {
-                    runWriteAction {
-                        runQuickFormatInWriteAction(caosFile)
-                    }
-                }
-
-                else -> {
-                    invokeLater {
-                        runWriteAction {
-                            runQuickFormatInWriteAction(caosFile)
-                        }
-                    }
-                }
+                return
             }
-        }
 
-        private fun runQuickFormatInWriteAction(caosFile: CaosScriptFile) {
             expandCommasInCaosScript(caosFile.project, caosFile)
+
         }
     }
 }

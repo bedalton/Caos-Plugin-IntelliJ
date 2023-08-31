@@ -1,11 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.isInvalid
-import com.badahori.creatures.plugins.intellij.agenteering.utils.projectDisposed
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
@@ -14,11 +11,8 @@ import com.bedalton.common.util.nullIfEmpty
 import com.intellij.openapi.application.*
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.PlainTextFileType
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiManager
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -56,7 +50,7 @@ object CobVirtualFileUtil {
         }
     }
 
-    fun decompiledCobFiles(cobFile: VirtualFile, project: Project): List<CaosVirtualFile> {
+    fun decompiledCobFiles(cobFile: VirtualFile): List<CaosVirtualFile> {
         val directory = cobVirtualFileDirectory(cobFile)
         directory.children.ifEmpty { null }?.let { return it.toList() }
         val data = try {
@@ -70,10 +64,9 @@ object CobVirtualFileUtil {
             return emptyList()
         }
         return when (data) {
-            is CobFileData.C1CobData -> blockToVirtualFiles(project, CaosVariant.C1, data.cobBlock, directory)
+            is CobFileData.C1CobData -> blockToVirtualFiles(CaosVariant.C1, data.cobBlock, directory)
             is CobFileData.C2CobData -> data.blocks.flatMap {
                 blockToVirtualFiles(
-                    project = project,
                     variant = CaosVariant.C2,
                     block = it,
                     parent = directory
@@ -88,7 +81,6 @@ object CobVirtualFileUtil {
      * Converts a COB block into a list of virtual files
      */
     private fun blockToVirtualFiles(
-        project: Project,
         variant: CaosVariant,
         block: CobBlock,
         parent: CaosVirtualFile
@@ -107,13 +99,13 @@ object CobVirtualFileUtil {
                 val installScripts: List<CaosVirtualFile> = block.installScripts.let { installScripts ->
                     if (installScripts.size == 1) {
                         val script = installScripts.first()
-                        listOf(createChildCaosScript(project, agentDirectory, variant, script.scriptName, script.code))
+                        listOf(createChildCaosScript(agentDirectory, variant, script.scriptName, script.code))
                     } else {
                         val multipleInstallScripts = installScripts.size > 1
                         installScripts.mapIndexed { i, script ->
                             val tail = if (multipleInstallScripts) " ($i)" else ""
                             val scriptName = "Install ${script.scriptName}$tail"
-                            createChildCaosScript(project, agentDirectory, variant, scriptName, script.code)
+                            createChildCaosScript(agentDirectory, variant, scriptName, script.code)
                         }
                     }
                 }
@@ -121,7 +113,6 @@ object CobVirtualFileUtil {
                 // Create remover script files
                 val removalScriptElement = block.removalScript
                 val removalScript = createNullableChildCaosScript(
-                    project = project,
                     parent = agentDirectory,
                     variant = variant,
                     fileName = removalScriptElement?.scriptName ?: "Removal Script",
@@ -131,7 +122,6 @@ object CobVirtualFileUtil {
                 // Create event script files
                 val eventScripts = block.eventScripts.map map@{ script ->
                     createChildCaosScript(
-                        project = project,
                         parent = agentDirectory,
                         variant = variant,
                         fileName = script.scriptName,
@@ -198,14 +188,12 @@ object CobVirtualFileUtil {
      * Attempts to format file with new lines and indents
      */
     fun createChildCaosScript(
-        project: Project,
         parent: CaosVirtualFile,
         variant: CaosVariant,
         fileName: String,
         code: String
     ): CaosVirtualFile {
         return createNullableChildCaosScript(
-            project = project,
             parent = parent,
             variant = variant,
             fileName = fileName,
@@ -218,7 +206,6 @@ object CobVirtualFileUtil {
      * Attempts to format file with new lines and indents
      */
     private fun createNullableChildCaosScript(
-        project: Project,
         parent: CaosVirtualFile,
         variant: CaosVariant,
         fileName: String,
@@ -240,75 +227,6 @@ object CobVirtualFileUtil {
             throw e
         }
         virtualFile.fileType = CaosScriptFileType.INSTANCE
-        val runnable = run@{
-            try {
-                if (project.isDisposed || !virtualFile.isValid) {
-                    return@run virtualFile
-                }
-
-                // Get PSI file after creating virtual file
-                val psiFile = ApplicationManager.getApplication().runReadAction(Computable {
-                    findFile(project, virtualFile)
-                }) ?: return@run virtualFile.apply {
-                    LOGGER.severe("Failed to find CaosPsiFile after virtual file creation")
-                }
-
-                // Try quick format if file is found
-                virtualFile.isWritable = true
-                if (ApplicationManager.getApplication().isDispatchThread) {
-                    tryQuickFormat(psiFile, virtualFile)
-                } else {
-                    virtualFile
-                }
-            } catch (e: Exception) {
-                LOGGER.severe("Failed to quick-format after creating virtual file")
-                e.printStackTrace()
-                virtualFile
-            } finally {
-                virtualFile.isWritable = false
-            }
-        }
-        if (ApplicationManager.getApplication().isDispatchThread) {
-            runUndoTransparentWriteAction {
-                runnable()
-            }
-        } else {
-            invokeLater {
-                runUndoTransparentWriteAction {
-                    runWriteAction(runnable)
-                }
-            }
-        }
         return virtualFile
     }
-}
-
-private fun findFile(project: Project, file: CaosVirtualFile): CaosScriptFile? {
-    if (project.isDisposed) {
-        return null
-    }
-    return if (ApplicationManager.getApplication().isReadAccessAllowed) {
-        PsiManager.getInstance(project).findFile(file) as? CaosScriptFile
-    } else {
-        runReadAction {
-            PsiManager.getInstance(project).findFile(file) as? CaosScriptFile
-        }
-    }
-}
-
-private fun tryQuickFormat(psiFile: CaosScriptFile, file: CaosVirtualFile): CaosVirtualFile {
-    if (psiFile.projectDisposed || psiFile.isInvalid || !file.isValid) {
-        return file
-    }
-    val writable = file.isWritable
-    try {
-        file.isWritable = true
-        psiFile.quickFormat()
-    } catch (e: Exception) {
-        LOGGER.severe("Failed to quick format in createChildScript method in CobVirtualFileUtil. Error: ${e.message}")
-        e.printStackTrace()
-    } finally {
-        file.isWritable = writable
-    }
-    return (psiFile.virtualFile as? CaosVirtualFile) ?: file
 }

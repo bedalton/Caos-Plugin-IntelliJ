@@ -234,7 +234,7 @@ class CaosDefElementsSearchExecutor : QueryExecutorBase<PsiReference, References
             return FilenameIndex.getAllFilesByExt(project, "cob")
                 .flatMap { file ->
                     ProgressIndicatorProvider.checkCanceled()
-                    CobVirtualFileUtil.decompiledCobFiles(file, project)
+                    CobVirtualFileUtil.decompiledCobFiles(file)
                 }
                 .filter { file ->
                     scope == null || scope.contains(file)
