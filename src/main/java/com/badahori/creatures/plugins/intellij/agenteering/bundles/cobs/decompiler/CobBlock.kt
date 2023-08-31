@@ -58,7 +58,7 @@ sealed class CobBlock {
 
     data class AuthorBlock(
             val creationDate:Calendar,
-            val authorName: String,
+            val authorName: String?,
             val authorEmail:String?,
             val version:Int,
             val revision:Int,

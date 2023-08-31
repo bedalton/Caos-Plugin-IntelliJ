@@ -103,7 +103,7 @@ internal class CobFileTreeNode(
         return when (block) {
             is SpriteBlock -> listOf(CobSpriteFileTreeNode(nonNullProject, cobVirtualFile, block, viewSettings))
             is SoundBlock -> listOf(SoundFileTreeNode(nonNullProject, cobVirtualFile, block))
-            is AuthorBlock -> listOf(AuthorTreeNode(nonNullProject, block))
+            is AuthorBlock -> listOf(AuthorTreeNode(nonNullProject, cobVirtualFile, block, viewSettings))
             is AgentBlock -> {
                 if (solo) {
                     flattenedAgent(block, variant)
@@ -117,6 +117,7 @@ internal class CobFileTreeNode(
                     ).toListOf()
                 }
             }
+
             is UnknownCobBlock -> emptyList()
         }
     }
@@ -299,10 +300,23 @@ internal class CobAgentTreeNode(
     }
 }
 
-internal class AuthorTreeNode(project: Project, block: AuthorBlock) : AbstractTreeNode<AuthorBlock>(project, block) {
+internal class AuthorTreeNode(
+    project: Project,
+    parent: CaosVirtualFile,
+    block: AuthorBlock,
+    viewSettings: ViewSettings?,
+) : VirtualFileBasedNode<VirtualFile>(project, blockToVirtualFile(parent, block), viewSettings) {
+
+    private val projectNotNull = project
     override fun getChildren(): List<AbstractTreeNode<*>> = emptyList()
-    override fun navigate(p0: Boolean) {}
-    override fun canNavigate(): Boolean = false
+    override fun navigate(requestFocus: Boolean) {
+        if (projectNotNull.isDisposed) {
+            return
+        }
+        virtualFile.getPsiFile(projectNotNull)?.navigate(requestFocus)
+    }
+
+    override fun canNavigate(): Boolean = virtualFile.contentsToByteArray().size > 10
     override fun canNavigateToSource(): Boolean = false
     override fun update(presentationData: PresentationData) {
         presentationData.presentableText = "Author"
@@ -314,6 +328,44 @@ internal class AuthorTreeNode(project: Project, block: AuthorBlock) : AbstractTr
 
     override fun getWeight(): Int {
         return super.getWeight() * 3
+    }
+
+    companion object {
+        private fun blockToVirtualFile(parent: CaosVirtualFile, authorBlock: AuthorBlock): VirtualFile {
+            val pairs = mutableListOf(
+                "# Author" to "",
+                "Name" to authorBlock.authorName,
+                "Website" to authorBlock.authorUrl,
+                "Email" to authorBlock.authorEmail,
+                "Comments" to authorBlock.authorComments,
+                "# Agent Information" to "",
+                "Version" to authorBlock.version.toString(),
+                "Revision" to authorBlock.revision.toString()
+            )
+            val text: String = if (pairs.all { it.second.isNullOrBlank() }) {
+                ""
+            } else {
+                val out = StringBuilder()
+                val padding = (pairs.maxOfOrNull { if (it.second.isNullOrBlank()) 0 else it.first.length } ?: 0) + 6
+                for ((field, value) in pairs) {
+                    if (value == null) {
+                        continue
+                    }
+                    if (value.isBlank()) {
+                        out.appendLine(field)
+                    } else {
+                        out.append(field)
+                            .append(' ')
+                            .append(".".repeat(padding - field.length))
+                            .append(' ')
+                            .append(value)
+                            .appendLine()
+                    }
+                }
+                out.toString()
+            }
+            return CobVirtualFileUtil.createChildTextFile(parent, "Author", text)
+        }
     }
 
 }

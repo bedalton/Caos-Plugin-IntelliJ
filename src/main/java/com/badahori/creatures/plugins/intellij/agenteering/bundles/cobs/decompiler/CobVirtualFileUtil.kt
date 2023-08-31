@@ -163,7 +163,35 @@ object CobVirtualFileUtil {
      * Creates a caos script virtual file in the given directory
      * Attempts to format file with new lines and indents
      */
-    fun createChildCaosScript(project: Project, parent:CaosVirtualFile, variant: CaosVariant, fileName: String, code: String): CaosVirtualFile {
+    fun createChildTextFile(
+        parent: CaosVirtualFile,
+        fileName: String,
+        text: String,
+        fileType: FileType = PlainTextFileType.INSTANCE
+    ): CaosVirtualFile {
+        parent.findChild(fileName)?.let { return it }
+        // Initialize file with contents
+        val virtualFile = try {
+            parent.createChildWithContent(fileName, text, false)
+        } catch (e: Exception) {
+            LOGGER.severe("Failed to create virtual file. Error: ${e.message}")
+            e.printStackTrace()
+            throw e
+        }
+        virtualFile.fileType = fileType
+
+        val runnable = run@{
+            virtualFile.isWritable = false
+        }
+        if (ApplicationManager.getApplication().isDispatchThread) {
+            runWriteAction(runnable)
+        } else {
+            invokeLater(ModalityState.defaultModalityState()) {
+                runWriteAction(runnable)
+            }
+        }
+        return virtualFile
+    }
 
     /**
      * Creates a caos script virtual file in the given directory
