@@ -84,10 +84,10 @@ private suspend fun ByteStreamReaderEx.readC2AuthorBlock() : CobBlock.AuthorBloc
     }
     val version = uInt8()
     val revision = uInt8()
-    val authorName = cString()
-    val authorEmail = cString()
-    val authorUrl = cString()
-    val authorComment = cString()
+    val authorName = cString().nullIfEmpty()
+    val authorEmail = cString().nullIfEmpty()
+    val authorUrl = cString().nullIfEmpty()
+    val authorComment = cString().nullIfEmpty()
     return CobBlock.AuthorBlock(
             creationDate = creationDate,
             version = version,
