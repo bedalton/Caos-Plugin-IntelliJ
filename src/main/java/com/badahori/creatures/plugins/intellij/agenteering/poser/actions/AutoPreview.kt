@@ -16,6 +16,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
 import com.bedalton.common.util.className
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project

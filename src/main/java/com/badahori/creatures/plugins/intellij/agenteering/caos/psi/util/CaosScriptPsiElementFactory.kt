@@ -6,7 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptL
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileFactory

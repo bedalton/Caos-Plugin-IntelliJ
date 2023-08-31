@@ -6,8 +6,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVa
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.toFileText
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
-import com.badahori.creatures.plugins.intellij.agenteering.utils.runUndoTransparentWriteAction
 import com.bedalton.io.bytes.CREATURES_CHARACTER_ENCODING
+import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile

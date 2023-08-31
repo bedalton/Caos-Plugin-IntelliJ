@@ -2,19 +2,17 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.actions.UndoableQuickFix
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.IgnoreCatalogueTag.IgnoreScope.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.HasIgnoredCatalogueTags
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.settings
-import com.intellij.codeInspection.ProblemDescriptor
-import com.intellij.openapi.project.Project
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.IgnoreCatalogueTag.IgnoreScope.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
-import com.intellij.psi.PsiElement
+import com.intellij.codeInspection.ProblemDescriptor
+import com.intellij.openapi.application.runWriteAction
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 
 class IgnoreCatalogueTag(
@@ -22,7 +20,6 @@ class IgnoreCatalogueTag(
     private val add: Boolean,
     private val ignoreIn: IgnoreScope = PROJECT
 ) : UndoableQuickFix() {
-
 
 
     override fun startInWriteAction(): Boolean {

@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.common
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileChooser.FileChooserFactory
 import com.intellij.openapi.fileChooser.FileSaverDescriptor
 import com.intellij.openapi.project.Project

@@ -30,13 +30,15 @@ import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.application.runUndoTransparentWriteAction
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.util.UserDataHolder
 import com.intellij.openapi.vfs.VirtualFile
@@ -118,12 +120,10 @@ class CaosScriptFile(
         directory?.setCachedVariant(variant, false)
 
         if (ApplicationManager.getApplication().isDispatchThread && this.isValid) {
-            runWriteAction {
-                if (virtualFile is CaosVirtualFile) {
-                    invokeLater {
-                        runWriteAction {
-                            quickFormat()
-                        }
+            if (virtualFile is CaosVirtualFile) {
+                invokeLater {
+                    runUndoTransparentWriteAction {
+                        quickFormat()
                     }
                 }
                 DaemonCodeAnalyzer.getInstance(project).restart(this)
@@ -280,6 +280,20 @@ class CaosScriptFile(
             Key<CaosVariant?>("com.badahori.creatures.plugins.intellij.agenteering.caos.IMPLICIT_SCRIPT_VARIANT_KEY")
 
         fun quickFormat(caosFile: CaosScriptFile) {
+            val application = ApplicationManager.getApplication()
+            if (!application.isDispatchThread) {
+                invokeLater {
+                    runWriteAction {
+                        quickFormat(caosFile)
+                    }
+                }
+                return
+            } else if (!application.isWriteAccessAllowed) {
+                runWriteAction {
+                    quickFormat(caosFile)
+                }
+                return
+            }
             if (caosFile.project.isDisposed)
                 return
             if (caosFile.didFormatInitial.getAndSet(true))
@@ -289,7 +303,6 @@ class CaosScriptFile(
                 return
             }
             val project = caosFile.project
-            val application = ApplicationManager.getApplication()
             when {
                 application.isWriteAccessAllowed -> {
                     runQuickFormatInWriteAction(caosFile)
@@ -297,37 +310,26 @@ class CaosScriptFile(
 
                 DumbService.isDumb(project) -> {
                     if (!application.isDispatchThread) {
-                        invokeLater {
-//                            DumbService.getInstance(project).runWhenSmart {
-//                                if (project.isDisposed) {
-//                                    return@runWhenSmart
-//                                }
-                            application.runWriteAction {
-                                runQuickFormatInWriteAction(caosFile)
+                        DumbService.getInstance(project).runWhenSmart {
+                            if (project.isDisposed) {
+                                return@runWhenSmart
                             }
-//                            }
-                        }
-                    } else {
-//                        DumbService.getInstance(project).runWhenSmart {
-//                            if (project.isDisposed) {
-//                                return@runWhenSmart
-//                            }
-                        application.runWriteAction {
                             runQuickFormatInWriteAction(caosFile)
                         }
-//                        }
                     }
                 }
 
                 application.isDispatchThread -> {
-                    application.runWriteAction(Computable {
+                    runWriteAction {
                         runQuickFormatInWriteAction(caosFile)
-                    })
+                    }
                 }
 
                 else -> {
                     application.invokeLater {
                         application.runWriteAction {
+                    invokeLater {
+                        runWriteAction {
                             runQuickFormatInWriteAction(caosFile)
                         }
                     }

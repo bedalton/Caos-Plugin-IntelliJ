@@ -2,11 +2,11 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.general.acti
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.bedalton.common.util.className
-import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
 import com.badahori.creatures.plugins.intellij.agenteering.utils.virtualFile
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.command.undo.BasicUndoableAction

@@ -11,6 +11,7 @@ import com.intellij.psi.SmartPointerManager
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.util.TextRange
 
     class CaosScriptFixQuoteType(element:PsiElement, private val quoteStart:Char, private val quoteEnd:Char = quoteStart) : IntentionAndQuickFixAction() {

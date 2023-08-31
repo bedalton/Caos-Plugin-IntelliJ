@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.Implici
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project

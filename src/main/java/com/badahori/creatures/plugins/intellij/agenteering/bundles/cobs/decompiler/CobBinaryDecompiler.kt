@@ -12,6 +12,7 @@ import com.bedalton.common.util.PathUtil
 import com.bedalton.io.bytes.MemoryByteStreamReader
 import com.bedalton.io.bytes.internal.MemoryByteStreamReaderEx
 import com.bedalton.io.bytes.string
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileTypes.BinaryFileDecompiler
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -69,7 +70,9 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
             psiFile.setVariant(variant, true)
             psiFile.runInspections = false
             GlobalScope.launch {
-                CaosScriptExpandCommasIntentionAction.invoke(project, psiFile)
+                runWriteAction {
+                    expandCommasInCaosScript(project, psiFile)
+                }
             }
             return psiFile
         }

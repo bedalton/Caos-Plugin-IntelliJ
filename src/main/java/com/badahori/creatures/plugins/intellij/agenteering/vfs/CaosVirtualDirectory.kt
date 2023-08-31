@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
+import com.intellij.openapi.application.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.randomString
 import com.bedalton.common.util.className
 import com.bedalton.common.util.ensureEndsWith

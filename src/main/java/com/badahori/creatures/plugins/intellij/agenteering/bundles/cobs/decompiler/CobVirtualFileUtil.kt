@@ -1,14 +1,19 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.isInvalid
+import com.badahori.creatures.plugins.intellij.agenteering.utils.projectDisposed
+import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.bedalton.common.util.className
-import com.intellij.openapi.application.ApplicationManager
+import com.bedalton.common.util.nullIfEmpty
+import com.intellij.openapi.application.*
+import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.Key
@@ -147,11 +152,15 @@ object CobVirtualFileUtil {
                 virtualFile.isWritable = false
             }
         }
-        if (ApplicationManager.getApplication().isDispatchThread)
-            runWriteAction(runnable)
-        else {
-            ApplicationManager.getApplication().invokeLater {
-                runWriteAction(runnable)
+        if (ApplicationManager.getApplication().isDispatchThread) {
+            runUndoTransparentWriteAction {
+                runnable()
+            }
+        } else {
+            invokeLater {
+                runUndoTransparentWriteAction {
+                    runWriteAction(runnable)
+                }
             }
         }
         return virtualFile
@@ -166,9 +175,9 @@ private fun findFile(project: Project, file:CaosVirtualFile) : CaosScriptFile? {
     return if (ApplicationManager.getApplication().isReadAccessAllowed) {
         PsiManager.getInstance(project).findFile(file) as? CaosScriptFile
     } else {
-        ApplicationManager.getApplication().runReadAction( Computable {
+        runReadAction {
             PsiManager.getInstance(project).findFile(file) as? CaosScriptFile
-        })
+        }
     }
 }
 

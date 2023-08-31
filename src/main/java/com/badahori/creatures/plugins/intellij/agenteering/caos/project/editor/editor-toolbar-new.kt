@@ -25,7 +25,9 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -295,7 +297,7 @@ private fun populate(
         file.setVariant(selected, explicit)
 
         // Reparse file with new variant
-        com.intellij.openapi.application.runWriteAction run@{
+        runWriteAction run@{
             file = pointer.element
                 ?: return@run
             try {

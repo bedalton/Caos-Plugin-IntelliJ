@@ -3,6 +3,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.ui.JBColor
 import java.awt.*

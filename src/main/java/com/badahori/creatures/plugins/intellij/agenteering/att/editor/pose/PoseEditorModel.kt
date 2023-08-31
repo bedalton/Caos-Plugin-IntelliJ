@@ -12,20 +12,28 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartsIndex
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.executeOnPooledThread
+import com.badahori.creatures.plugins.intellij.agenteering.utils.filterNotNull
+import com.badahori.creatures.plugins.intellij.agenteering.utils.now
+import com.badahori.creatures.plugins.intellij.agenteering.utils.randomString
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem.Companion.instance
 import com.intellij.openapi.application.invokeAndWaitIfNeeded
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
+import kotlin.collections.set
 
 class PoseEditorModel(
     val project: Project,
@@ -266,7 +274,7 @@ class PoseEditorModel(
             } else {
                 val image = render(variant, updatedSprites, updatedPose, visibilityMask, poseEditor.zoom)
 //                progressIndicator.checkCanceled()
-                invokeLater {
+                invokeLater{
 //                    progressIndicator.checkCanceled()
                     poseEditor.setRendered(image)
                 }

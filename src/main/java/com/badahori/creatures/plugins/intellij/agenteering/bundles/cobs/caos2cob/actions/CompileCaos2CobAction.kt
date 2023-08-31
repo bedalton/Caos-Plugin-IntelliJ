@@ -10,10 +10,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.Project
@@ -71,7 +71,7 @@ class CompileCaos2CobAction : AnAction(
             // Run compile phase in background
             // Requires read-access though, so will have to move back onto ui thread I think
             runBackgroundableTask("Compile 1 Caos2Cob Files") { progressIndicator ->
-                ApplicationManager.getApplication().invokeLater {
+                invokeLater {
                     progressIndicator.checkCanceled()
                     // Ensure in read action
                     runWriteAction action@{
@@ -112,7 +112,7 @@ class CompileCaos2CobAction : AnAction(
             runBackgroundableTask("Compile $numFiles Caos2Cob files") { progressIndicator ->
                 files.forEach { file ->
                     // Run on pooled event dispatch thread
-                    ApplicationManager.getApplication().invokeLater {
+                    invokeLater {
                         progressIndicator.checkCanceled()
                         // Ensure in read action
                         runWriteAction action@{

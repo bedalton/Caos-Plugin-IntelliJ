@@ -25,7 +25,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.event.DocumentEvent
@@ -174,7 +174,7 @@ internal class AttEditorModel(
         CaosApplicationSettingsService.addSettingsChangedListener(this) { _, it ->
             replicateAttsToDuplicateSprites = it.replicateAttsToDuplicateSprites
             mFoldedLines = null
-            ApplicationManager.getApplication().invokeLater {
+            invokeLater {
                 attChangeListener?.onAttUpdate()
             }
         }
@@ -399,7 +399,7 @@ internal class AttEditorModel(
             setSelected(changedLine, true)
         }
 
-        ApplicationManager.getApplication().invokeLater {
+        invokeLater {
             attChangeListener?.onAttUpdate()
         }
     }

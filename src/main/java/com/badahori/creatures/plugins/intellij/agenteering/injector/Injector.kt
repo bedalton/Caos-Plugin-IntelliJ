@@ -2,17 +2,17 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import com.bedalton.common.util.className
-import com.bedalton.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.JectScriptType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.messageOrNoneText
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle.message
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.bedalton.common.util.className
+import com.bedalton.common.util.toListOf
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.SmartPsiElementPointer

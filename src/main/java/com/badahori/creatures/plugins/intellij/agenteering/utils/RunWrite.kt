@@ -2,26 +2,38 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.invokeAndWaitIfNeeded
+import java.util.concurrent.Callable
 import java.util.concurrent.Future
 
-fun invokeAndWait (modality:ModalityState, runnable:()->Unit) {
-    val application = ApplicationManager.getApplication();
-    application.invokeAndWait(runnable, modality)
+fun <T> invokeAndWait (modality:ModalityState, runnable:() -> T): T {
+    return invokeAndWaitIfNeeded(modality, runnable)
 }
 
-fun invokeLater(runnable: ()->Unit) {
-    val application = ApplicationManager.getApplication();
-    application.invokeLater(runnable)
+@Deprecated("Use IntelliJ official invokeLater",
+    replaceWith = ReplaceWith(
+        "com.intellij.openapi.application.invokeLater(runnable)",
+        imports = ["com.intellij.openapi.application.invokeLater"]
+    )
+)
+inline fun invokeLater(crossinline runnable: ()->Unit) {
+    com.intellij.openapi.application.invokeLater(null, runnable)
 }
 
+@Deprecated("Use IntelliJ official invokeLater",
+    replaceWith = ReplaceWith(
+        "com.intellij.openapi.application.invokeLater(modality, runnable)",
+        imports = ["com.intellij.openapi.application.invokeLater"]
+    )
+)
 fun invokeLater (modality:ModalityState, runnable:()->Unit) {
-    val application = ApplicationManager.getApplication();
-    application.invokeLater(runnable, modality)
+    com.intellij.openapi.application.invokeLater(modality, runnable)
 }
 
-fun <T> executeOnPooledThread(callable: () -> T) : Future<T> {
+
+inline fun <T> executeOnPooledThread(crossinline callable: () -> T) : Future<T> {
     val application = ApplicationManager.getApplication();
-    return application.executeOnPooledThread(callable)
+    return application.executeOnPooledThread(Callable { callable() })
 }
 
 fun executeOnPooledThread(runnable: Runnable) : Future<*> {
@@ -29,10 +41,23 @@ fun executeOnPooledThread(runnable: Runnable) : Future<*> {
     return application.executeOnPooledThread(runnable)
 }
 
-fun <T> runWriteAction(runnable: () -> T): T {
+@Deprecated("Use IntelliJ official invokeLater",
+    replaceWith = ReplaceWith(
+        "com.intellij.openapi.application.runWriteAction(runnable)",
+        imports = ["com.intellij.openapi.application.runWriteAction"]
+    )
+)
+inline fun <T> runWriteAction(crossinline runnable: () -> T): T {
     return com.intellij.openapi.application.runWriteAction(runnable)
 }
 
-fun <T> runUndoTransparentWriteAction(runnable: () -> T): T {
+
+@Deprecated("Use IntelliJ official runUndoTransparentAction(runnable)",
+    replaceWith = ReplaceWith(
+        "com.intellij.openapi.application.runUndoTransparentWriteAction(runnable)",
+        imports = ["com.intellij.openapi.application.runUndoTransparentWriteAction"]
+    )
+)
+inline fun <T> runUndoTransparentWriteAction(crossinline runnable: () -> T): T {
     return com.intellij.openapi.application.runUndoTransparentWriteAction(runnable)
 }

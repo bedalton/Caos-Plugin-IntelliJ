@@ -18,6 +18,7 @@ import com.intellij.navigation.NavigationItem
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicator
@@ -470,7 +471,6 @@ internal fun postError(
     positions: List<SmartPsiElementPointer<out PsiElement>>? = null,
 ) {
     invokeLater {
-
         val tail = if (positions != null && positions.size > 1) {
             message("caos.injection.notification.possible-error-locations")
         } else {

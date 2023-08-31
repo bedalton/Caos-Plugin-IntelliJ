@@ -14,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSy
 import com.bedalton.creatures.common.structs.BreedKey;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProcessCanceledException;
@@ -845,7 +846,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
             if (!justSetString) {
                 justSetString = true;
                 updatePoseStringField(partChar);
-                ApplicationManager.getApplication().invokeLater(() -> justSetString = false);
+                ApplicationManager.getApplication().invokeLater(() -> justSetString = false, ModalityState.defaultModalityState());
             }
             ApplicationManager.getApplication().invokeLater(() -> {
 
@@ -859,7 +860,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
                         redraw(partChar);
                     }
                 }
-            });
+            }, ModalityState.defaultModalityState());
         });
     }
 

@@ -2,8 +2,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
 import com.badahori.creatures.plugins.intellij.agenteering.common.saveImageWithDialog
 import com.badahori.creatures.plugins.intellij.agenteering.utils.copyToClipboard
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
 import java.awt.Dimension
@@ -154,7 +154,4 @@ class PoseRenderedImagePanel(private val project: Project, defaultDirectory: Str
         initHandlers()
     }
 
-    companion object {
-        private val LOGGER = Logger.getLogger("#PoseRenderedImagePanel")
-    }
 }

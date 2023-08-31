@@ -14,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.Sprite
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileChooser.FileChooser
@@ -27,7 +28,6 @@ import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileFactory
 import icons.CaosScriptIcons
-import kotlinx.coroutines.runBlocking
 import java.util.concurrent.atomic.AtomicInteger
 
 class AttNewFileFromSpritesAction : AnAction(

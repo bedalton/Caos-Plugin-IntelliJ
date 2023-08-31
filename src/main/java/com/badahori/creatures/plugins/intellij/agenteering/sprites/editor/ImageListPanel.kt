@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
+import com.intellij.openapi.application.invokeLater
 import com.github.timmyovo.nspasteboard.NSPasteboardAPI
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.ide.CopyPasteManager

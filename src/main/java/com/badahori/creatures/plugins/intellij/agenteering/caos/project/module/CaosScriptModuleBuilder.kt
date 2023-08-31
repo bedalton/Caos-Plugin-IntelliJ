@@ -3,10 +3,14 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.errorNotification
+import com.badahori.creatures.plugins.intellij.agenteering.utils.myModuleFile
+import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.warningNotification
 import com.intellij.ide.util.projectWizard.*
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.project.Project
@@ -144,16 +148,21 @@ private fun setupContentEntries(project: Project, module: Module, contentEntries
         ?: contentEntries.sourceFolders.firstOrNull { it.file != null }?.file
         ?: VfsUtil.findFileByIoFile(File(url), true)
     ?: run {
-        invokeLater {
-            val temp = module.myModuleFile
-                ?: contentEntries.sourceFolders.firstOrNull { it.file != null }?.file
-                ?: VfsUtil.findFileByIoFile(File(url), true)
-            if (temp == null) {
-                warningNotification(project, "Module root initialization delayed. Wait or refresh root")
+            invokeLater {
+                val temp = module.myModuleFile
+                    ?: contentEntries
+                        .sourceFolders
+                        .firstOrNull {
+                            it.file != null
+                        }
+                        ?.file
+                    ?: VfsUtil.findFileByIoFile(File(url), true)
+                if (temp == null) {
+                    warningNotification(project, "Module root initialization delayed. Wait or refresh root")
+                }
             }
+            return
         }
-        return
-    }
     try {
         if (!baseDir.exists()) {
             val file = VfsUtil.virtualToIoFile(baseDir)

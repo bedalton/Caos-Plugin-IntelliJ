@@ -7,7 +7,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessag
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
 import com.bedalton.common.structs.Pointer
@@ -17,6 +16,7 @@ import com.bedalton.io.bytes.MemoryByteStreamReader
 import com.bedalton.vfs.LocalFileSystem
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction

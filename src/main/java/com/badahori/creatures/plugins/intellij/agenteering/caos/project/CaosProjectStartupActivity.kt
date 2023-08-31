@@ -4,7 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosSdkProjectRootsChangeListener
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
+import com.intellij.openapi.application.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.virtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem

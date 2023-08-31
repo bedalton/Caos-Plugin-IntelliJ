@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.NUMBER_REGEX
-import com.badahori.creatures.plugins.intellij.agenteering.utils.invokeLater
+import com.intellij.openapi.application.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext

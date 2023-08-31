@@ -17,6 +17,7 @@ import com.bedalton.creatures.common.structs.BreedKey;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
@@ -1027,7 +1028,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
             final JComponent component = spriteCellList.get(pose);
             scrollPane.scrollRectToVisible(component.getVisibleRect());
             spriteCellList.focusCell(pose);
-        });
+        }, ModalityState.defaultModalityState());
     }
 
     public void clearPose() {
@@ -1068,7 +1069,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
             spriteCellList.requestFocusInWindow();
             spriteCellList.scrollTo(actualIndex);
             spriteCellList.focusCell(actualIndex);
-        });
+        }, ModalityState.defaultModalityState());
         this.settingSelected = false;
         return actualIndex;
     }

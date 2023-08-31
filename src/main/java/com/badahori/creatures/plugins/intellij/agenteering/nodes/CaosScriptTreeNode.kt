@@ -6,12 +6,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.count
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.runWriteAction
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.application.*
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
@@ -211,12 +209,12 @@ internal class ChildCaosScriptFileTreeNode(
             ?: return
         if (!ApplicationManager.getApplication().isDispatchThread) {
             invokeLater {
-                runWriteAction {
+                runUndoTransparentWriteAction {
                     quickFormat(project, caosFile)
                 }
             }
         } else {
-            runWriteAction {
+            runUndoTransparentWriteAction {
                 quickFormat(project, caosFile)
             }
         }

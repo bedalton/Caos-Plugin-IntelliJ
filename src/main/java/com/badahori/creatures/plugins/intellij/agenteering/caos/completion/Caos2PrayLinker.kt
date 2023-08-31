@@ -19,7 +19,8 @@ import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
-import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -104,7 +105,7 @@ internal class LinkFilesInsertHandler(
         val linksRaw = getLinksInDirectory(parent, "", file.virtualFile, action.lowercase() == "link")
         val allExtensions = linksRaw.map { it.category + " in " + it.parentPath }.distinct().sorted().toSet()
         val selected = Pointer<Pair<List<LinkedFile>, Boolean>?>(null)
-        invokeLater(ModalityState.current()) {
+        invokeLater {
             showPanel(file.fileType == PrayFileType, project, allExtensions, linksRaw, selected)
 
             val selectedFiles = selected.value
