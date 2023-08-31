@@ -242,8 +242,8 @@ object CobVirtualFileUtil {
         virtualFile.fileType = CaosScriptFileType.INSTANCE
         val runnable = run@{
             try {
-                if (project.isDisposed) {
-                    return@run null
+                if (project.isDisposed || !virtualFile.isValid) {
+                    return@run virtualFile
                 }
 
                 // Get PSI file after creating virtual file
@@ -255,7 +255,11 @@ object CobVirtualFileUtil {
 
                 // Try quick format if file is found
                 virtualFile.isWritable = true
-                tryQuickFormat(psiFile, virtualFile)
+                if (ApplicationManager.getApplication().isDispatchThread) {
+                    tryQuickFormat(psiFile, virtualFile)
+                } else {
+                    virtualFile
+                }
             } catch (e: Exception) {
                 LOGGER.severe("Failed to quick-format after creating virtual file")
                 e.printStackTrace()

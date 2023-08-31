@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.expandCommasInCaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.runInspections
@@ -59,9 +59,9 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
             val variant = if (cobData is CobFileData.C1CobData) CaosVariant.C1 else CaosVariant.C2
             psiFile.setVariant(variant, true)
             psiFile.runInspections = false
-                CaosScriptExpandCommasIntentionAction.invoke(project, psiFile)
             runWriteAction {
                 runBlocking {
+                    expandCommasInCaosScript(project, psiFile)
                 }
             }
             return psiFile
@@ -138,7 +138,7 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
             val agentName = "Agent.............${agentBlock.name}"
             val expiry = "Expiry............${agentBlock.expiry.let { DATE_FORMAT.format(it.time) }}"
             val quantity = "Quantity..........${agentBlock.quantityAvailable}"
-            val width = listOf(header, agentName, expiry, quantity).map { it.length + 2 }.maxOrNull()!! + 5
+            val width = listOf(header, agentName, expiry, quantity).maxOf { it.length + 2 } + 5
             val top = (1..width).joinToString("") { "*" }
             val offset = 3 // leading asterisk, space and trailing asterisk
             val items = listOfNotNull(

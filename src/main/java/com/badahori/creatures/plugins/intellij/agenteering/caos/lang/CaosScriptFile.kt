@@ -14,7 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.direc
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PRAY_COMPILER_SETTINGS_KEY
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PraySettingsPropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayTagStruct
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.expandCommasInCaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfNotConcrete
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
@@ -326,8 +326,6 @@ class CaosScriptFile(
                 }
 
                 else -> {
-                    application.invokeLater {
-                        application.runWriteAction {
                     invokeLater {
                         runWriteAction {
                             runQuickFormatInWriteAction(caosFile)
@@ -338,7 +336,7 @@ class CaosScriptFile(
         }
 
         private fun runQuickFormatInWriteAction(caosFile: CaosScriptFile) {
-            CaosScriptExpandCommasIntentionAction.invoke(caosFile.project, caosFile)
+            expandCommasInCaosScript(caosFile.project, caosFile)
         }
     }
 }

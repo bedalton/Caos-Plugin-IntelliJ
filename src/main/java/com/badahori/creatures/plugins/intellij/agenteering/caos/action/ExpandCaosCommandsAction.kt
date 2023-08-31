@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.expandCommasInCaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
@@ -51,7 +51,7 @@ class ExpandCaosCommandsAction : AnAction(), DumbAware {
                     return@each
                 }
                 // Apply the expand-commas action
-                CaosScriptExpandCommasIntentionAction.invoke(project, file)
+                expandCommasInCaosScript(project, file)
             }
         }
     }
