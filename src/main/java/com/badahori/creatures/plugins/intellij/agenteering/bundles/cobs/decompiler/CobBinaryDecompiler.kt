@@ -60,6 +60,9 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
             psiFile.setVariant(variant, true)
             psiFile.runInspections = false
                 CaosScriptExpandCommasIntentionAction.invoke(project, psiFile)
+            runWriteAction {
+                runBlocking {
+                }
             }
             return psiFile
         }
