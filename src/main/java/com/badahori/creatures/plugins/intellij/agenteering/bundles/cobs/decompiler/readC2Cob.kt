@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.Agent
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.bedalton.common.util.ensureEndsWith
 import korlibs.image.awt.toAwt
 import java.util.*
 
@@ -39,12 +40,16 @@ private suspend fun ByteStreamReaderEx.readC2AgentBlock() : CobBlock.AgentBlock 
     skip(12) // Reserved?
     val agentName = cString()
     val description = cString()
+
     val installScript = AgentScript.InstallScript(cString())
+
     val removalScript = cString().nullIfEmpty()?.let { AgentScript.RemovalScript(it) }
+
     val eventScripts = (0 until uInt16()).map {index ->
-        val script = cString()
+        val script = cString().endm()
         AgentScript(script, "Script $index", AgentScriptType.EVENT)
     }
+
     val dependencies = (0 until uInt16()).map {
         val type = if (uInt16() == 0) CobFileBlockType.SPRITE else CobFileBlockType.SOUND
         val name = cString()
@@ -121,4 +126,7 @@ private suspend fun ByteStreamReaderEx.readC2FileBlock() : CobBlock.FileBlock {
                 reserved = reserved,
                 contents = contents
         )
+
+private fun String.endm(): String {
+    return this.trimEnd().ensureEndsWith(" endm")
 }
