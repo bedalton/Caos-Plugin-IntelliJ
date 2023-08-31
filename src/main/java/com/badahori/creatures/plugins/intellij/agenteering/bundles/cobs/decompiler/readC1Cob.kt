@@ -49,7 +49,7 @@ internal suspend fun ByteStreamReaderEx.readC1Cob(fileName: String?): CobBlock.A
     val image = if (pictureWidth > 0 && pictureHeight > 0) {
         com.bedalton.creatures.sprite.parsers.readSprFrame(
             this,
-            position().toLong(),
+            position(),
             pictureWidth,
             pictureHeight,
             ColorPalette.C1TransparentBlack
