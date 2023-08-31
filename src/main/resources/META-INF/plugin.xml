@@ -967,6 +967,36 @@
                 implementationClass="com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem"
                 key="caosvfs"
         />
+
+
+        <!-- =========================== -->
+        <!-- === Notification Groups  == -->
+        <!-- =========================== -->
+
+        <notificationGroup
+                displayType="TOOL_WINDOW"
+                id="creatures.CAOS_MAIN"
+                isLogByDefault="true"
+                key="caos.general.notification.group"
+                bundle="com.badahori.creatures.plugins.intellij.caos-bundle"
+        />
+
+        <notificationGroup
+                displayType="TOOL_WINDOW"
+                id="creatures.CAOS_INJECTOR"
+                isLogByDefault="true"
+                key="caos.injector.notification.group"
+                bundle="com.badahori.creatures.plugins.intellij.caos-bundle"
+        />
+
+        <notificationGroup
+                displayType="BALLOON"
+                id="creatures.CAOS_BALLOON"
+                isLogByDefault="true"
+                key="caos.injector.notification.balloon-group"
+                bundle="com.badahori.creatures.plugins.intellij.caos-bundle"
+        />
+
     </extensions>
 
     <actions>

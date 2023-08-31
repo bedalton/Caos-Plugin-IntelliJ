@@ -25,7 +25,6 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.notification.*
 import com.intellij.openapi.actionSystem.AnAction
@@ -33,23 +32,14 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import javax.swing.Icon
 
-/**
- * Wrapper function for showing {@link Notification}.
- *
- * @author Jakub Chrzanowski <jakub@hsz.mobi>
- * @since 1.7
- */
 open class CaosNotificationsBase(
-    groupName: String,
-    displayType: NotificationDisplayType = NotificationDisplayType.TOOL_WINDOW,
-    toolWindow: String? = null,
+    groupName: String
 ) {
-    private val notificationGroup: NotificationGroup = NotificationGroup(
-        groupName,
-        displayType,
-        true,
-        toolWindow
-    )
+    private val notificationGroup: NotificationGroup by lazy {
+        NotificationGroupManager
+            .getInstance()
+            .getNotificationGroup(groupName)
+    }
 
     /**
      * Shows {@link Notification} in ".ignore plugin" group.
@@ -311,6 +301,6 @@ data class CaosNotification internal constructor(
     }
 }
 
-object CaosInjectorNotifications : CaosNotificationsBase(CaosBundle.message("caos.injector.notification.group"))
-object CaosNotifications : CaosNotificationsBase(CaosBundle.message("caos.general.notification.group"))
-object CaosBalloonNotifications : CaosNotificationsBase("CAOS Balloon Notifications", NotificationDisplayType.BALLOON)
+object CaosInjectorNotifications : CaosNotificationsBase("creatures.CAOS_INJECTOR")
+object CaosNotifications : CaosNotificationsBase("creatures.CAOS_MAIN")
+object CaosBalloonNotifications : CaosNotificationsBase("creatures.CAOS_BALLOON")

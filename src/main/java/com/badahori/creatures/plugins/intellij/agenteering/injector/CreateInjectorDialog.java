@@ -100,7 +100,7 @@ public class CreateInjectorDialog extends DialogBuilder {
     }
 
     private boolean isNameDefault(final CaosVariant variant, final String text) {
-        if (text.length() == 0 || variant.isDefaultInjectorName(text)) {
+        if (text.isEmpty() || variant.isDefaultInjectorName(text)) {
             return true;
         }
         // Match loosely based on game name or code,
@@ -148,7 +148,7 @@ public class CreateInjectorDialog extends DialogBuilder {
         nameIsDefault = isNameDefault(variant, gameName.getText());
         if (nameIsDefault) {
             final String interfaceName = variant.getDefaultInjectorInterfaceName();
-            if (interfaceName != null && interfaceName.trim().length() != 0) {
+            if (interfaceName != null && !interfaceName.trim().isEmpty()) {
                 gameName.setText("");
             }
         }
@@ -472,7 +472,7 @@ public class CreateInjectorDialog extends DialogBuilder {
             return null;
         }
         String path = (gamePathData.getSecond() != null) ? gamePathData.getSecond().getPath() : gamePathData.getFirst();
-        if (path.trim().length() == 0) {
+        if (path.isBlank()) {
             return null;
         }
         if (path.contains("\\") && !path.endsWith("\\")) {
@@ -487,7 +487,7 @@ public class CreateInjectorDialog extends DialogBuilder {
             } else if (!prefixPath.endsWith("/")) {
                 prefixPath += '/';
             }
-            if (prefixPath.length() > 0 && path.equals(prefixPath)) {
+            if (!prefixPath.isEmpty() && path.equals(prefixPath)) {
                 return null;
             }
         }
@@ -709,7 +709,7 @@ public class CreateInjectorDialog extends DialogBuilder {
                 "The root folder of the wine prefix. Sometimes at ~/.wine",
                 getDefaultWineDirectory(state, home),
                 (event, newText) -> {
-                    final String homeText = newText != null && newText.trim().length() > 0
+                    final String homeText = newText != null && newText.isBlank()
                             ? newText
                             : (((TextFieldWithBrowseButton)winePrefix).getText());
                     setDefaultWineGameDirectory(homeText);
@@ -719,7 +719,7 @@ public class CreateInjectorDialog extends DialogBuilder {
 
         final Runnable onChange = () -> {
             final String text = prefix.getText().trim();
-            if (text.length() == 0) {
+            if (text.isBlank()) {
                 return;
             }
             if ((new File(text)).exists()) {
@@ -764,7 +764,7 @@ public class CreateInjectorDialog extends DialogBuilder {
 
     private void setDefaultWineGameDirectory(@Nullable final String prefix) {
         final String text = prefix != null && !prefix.isBlank() ? prefix : ((TextFieldWithBrowseButton) winePrefix).getText().trim();
-        if (text.length() == 0) {
+        if (text.isBlank()) {
             return;
         }
         final File winePrefix = new File(text);
@@ -775,7 +775,7 @@ public class CreateInjectorDialog extends DialogBuilder {
         final String gameDirectory = gameDirectoryField.getText().trim();
         final File homeDirectoryFile = getHomeDirectory();
         final String home = homeDirectoryFile != null ? homeDirectoryFile.getPath() : null;
-        if (gameDirectory.length() != 0 && !gameDirectory.equals(home) && gameDirectory.startsWith(text) && !gameDirectory.equals(text)) {
+        if (gameDirectory.isBlank() && !gameDirectory.equals(home) && gameDirectory.startsWith(text) && !gameDirectory.equals(text)) {
             return;
         }
         String winePath = getWineGamePath(getSelectedVariant(), winePrefix);
@@ -796,7 +796,7 @@ public class CreateInjectorDialog extends DialogBuilder {
         final CaosInjectorApplicationSettingsService state = CaosInjectorApplicationSettingsService.getInstance();
         String lastWineDirectory = state.getWinePath();
         if (lastWineDirectory == null) {
-            lastWineDirectory = WineHelper.getDefault(false, true);
+            lastWineDirectory = WineHelper.getDefault(true, true);
         }
         File wineDir = lastWineDirectory != null ? new File(lastWineDirectory) : new File("/usr/local/bin/wine");
         return wineDir.exists() ? wineDir : (new File("/usr/local/bin/wine"));
@@ -842,7 +842,7 @@ public class CreateInjectorDialog extends DialogBuilder {
     @Nullable
     private File getHomeDirectory() {
         final String home = System.getProperty("user.home");
-        if (home == null || home.length() == 0) {
+        if (home == null || home.isEmpty()) {
             return null;
         }
         File homeFolder = new File(home);

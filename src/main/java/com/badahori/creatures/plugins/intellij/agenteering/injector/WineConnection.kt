@@ -95,14 +95,14 @@ internal class WineConnection(
         } catch (e: Exception) {
             throw e
         } finally {
-            try {
-                val tempFile = File(caosOrFile)
-                if (tempFile.exists()) {
+//            try {
+//                val tempFile = File(caosOrFile)
+//                if (tempFile.exists()) {
 //                    tempFile.delete()
-                }
-            } catch (e: Exception) {
-                LOGGER.severe("Failed to delete temp CAOS file")
-            }
+//                }
+//            } catch (e: Exception) {
+//                LOGGER.severe("Failed to delete temp CAOS file")
+//            }
         }
     }
 
@@ -683,7 +683,7 @@ object WineHelper {
 
         val applicationSettings = CaosInjectorApplicationSettingsService
             .getInstance()
-       var executable = if (isWin32) {
+        var executable = if (isWin32) {
             applicationSettings.wine32Path ?: applicationSettings.winePath
         } else {
             applicationSettings.wine64Path ?: applicationSettings.winePath
@@ -702,6 +702,14 @@ object WineHelper {
             wineX86InKnownLocations.firstOrNull()
         } else {
             wineX64InKnownLocations.firstOrNull()
+        }
+
+        if (executable == null) {
+            executable = if (isWin32) {
+                wineX64InKnownLocations.firstOrNull()
+            } else {
+                wineX86InKnownLocations.firstOrNull()
+            }
         }
 
         if (executable != null && (!nullIfNotExists || File(executable).exists())) {
