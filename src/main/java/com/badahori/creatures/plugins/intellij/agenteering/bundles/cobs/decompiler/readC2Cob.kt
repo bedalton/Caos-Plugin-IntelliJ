@@ -58,11 +58,11 @@ private suspend fun ByteStreamReaderEx.readC2AgentBlock() : CobBlock.AgentBlock 
 
     val thumbWidth = uInt16()
     val thumbHeight = uInt16()
-    val image = if (thumbWidth > 0 && thumbHeight > 0)
+    val image = if (thumbWidth > 0 && thumbHeight > 0) {
         parseS16FrameAtCurrentPosition(this, thumbWidth, thumbHeight, ColorEncoding.X_565, transparentBlack).toAwt()
-    else
+    } else {
         null
-    skip(thumbWidth * thumbHeight * 2)
+    }
     return CobBlock.AgentBlock(
             format = CobFormat.C2,
             name = agentName,
@@ -114,18 +114,20 @@ private suspend fun ByteStreamReaderEx.readC2FileBlock() : CobBlock.FileBlock {
     val size = uInt32()
     val fileName = cString()
     val contents = bytes(size)
-    return if (type == CobFileBlockType.SPRITE)
+    return if (type == CobFileBlockType.SPRITE) {
         CobBlock.FileBlock.SpriteBlock(
-                fileName = fileName,
-                reserved = reserved,
-                contents = contents
+            fileName = fileName,
+            reserved = reserved,
+            contents = contents
         )
-    else
+    } else {
         CobBlock.FileBlock.SoundBlock(
-                fileName = fileName,
-                reserved = reserved,
-                contents = contents
+            fileName = fileName,
+            reserved = reserved,
+            contents = contents
         )
+    }
+}
 
 private fun String.endm(): String {
     return this.trimEnd().ensureEndsWith(" endm")
