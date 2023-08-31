@@ -20,6 +20,7 @@ import com.intellij.openapi.util.UserDataHolder
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.GlobalSearchScopes.directoryScope
+import java.io.InputStream
 
 
 val Project.settings: CaosProjectSettingsService get() = CaosProjectSettingsService.getInstance(this)
@@ -322,10 +323,14 @@ private fun variantInScopeFinal(
         )
         val buffer = ByteArray(4)
         val cob2 = cobs.any {
+            var inputStream: InputStream? = null
             try {
-                it.inputStream?.read(buffer) == 4 && buffer.contentEquals(cobHeader)
+                inputStream = it.inputStream
+                inputStream.read(buffer) == 4 && buffer.contentEquals(cobHeader)
             } catch (_: Exception) {
                 false
+            } finally {
+                inputStream?.close()
             }
         }
         if (cob2) {
