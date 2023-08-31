@@ -7,7 +7,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.Agent
 import korlibs.image.awt.toAwt
 import java.util.*
 
-const val COB_LOG_KEY = "COB_LOG_VERBOSE"
 
 internal suspend fun ByteStreamReaderEx.readC1Cob(fileName: String?): CobBlock.AgentBlock {
     val quantityAvailable = uInt16()
