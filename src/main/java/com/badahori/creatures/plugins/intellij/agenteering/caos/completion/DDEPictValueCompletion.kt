@@ -64,7 +64,7 @@ private class PictDimensionsForm(val position: Int, private val editor: Editor) 
             try {
                 val dimensions = "${widthVal}|${heightVal}"
                 EditorUtil.insertText(editor, dimensions, position, true)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
         super.doOKAction()
