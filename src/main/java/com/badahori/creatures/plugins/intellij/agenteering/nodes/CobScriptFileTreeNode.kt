@@ -22,6 +22,8 @@ import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.editor.HighlighterColors
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.editor.markup.EffectType
+import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
@@ -73,7 +75,8 @@ internal class CobFileTreeNode(
     override fun canNavigateToSource(): Boolean = false
 
     override fun getChildren(): List<AbstractTreeNode<*>> {
-        if (!isValid()) {
+        val project = project
+        if (project == null || project.isDisposed || !virtualFile.isValid || DumbService.isDumb(project)) {
             return emptyList()
         }
         val children = when (val data = cobData) {
@@ -98,7 +101,8 @@ internal class CobFileTreeNode(
     }
 
     private fun getChildren(block: CobBlock, variant: CaosVariant, solo: Boolean): List<AbstractTreeNode<*>> {
-        if (!isValid()) {
+        val project = project
+        if (project == null || project.isDisposed || !virtualFile.isValid || DumbService.isDumb(project)) {
             return emptyList()
         }
         return when (block) {
@@ -124,6 +128,10 @@ internal class CobFileTreeNode(
     }
 
     private fun flattenedAgent(block: AgentBlock, variant: CaosVariant): List<AbstractTreeNode<*>> {
+        val project = project
+        if (project == null || project.isDisposed || !virtualFile.isValid || DumbService.isDumb(project)) {
+            return emptyList()
+        }
         val needsInstallScriptIdentifier = block.installScripts.size > 2
         val installScripts = block.installScripts.mapIndexed { i, installScript ->
             ChildCaosScriptFileTreeNode(
@@ -199,7 +207,7 @@ internal class CobAgentTreeNode(
     private val agentBlock: AgentBlock,
     private val variant: CaosVariant,
     private val viewSettings: ViewSettings?,
-) : AbstractTreeNode<AgentBlock>(nonNullProject, agentBlock) {
+) : AbstractTreeNode<AgentBlock>(nonNullProject, agentBlock), DumbAware {
 
     private val agentName get() = StringUtil.toTitleCase(agentBlock.name)
 
@@ -237,6 +245,10 @@ internal class CobAgentTreeNode(
     }
 
     private fun getChildren(block: AgentBlock, variant: CaosVariant): List<AbstractTreeNode<*>> {
+        val project = project
+        if (project == null || project.isDisposed || DumbService.isDumb(project)) {
+            return emptyList()
+        }
         val needsInstallScriptIdentifier = block.installScripts.size > 2
         val installScripts = block.installScripts.mapIndexed { i, installScript ->
             ChildCaosScriptFileTreeNode(
