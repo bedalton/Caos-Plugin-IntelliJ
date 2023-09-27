@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
@@ -44,13 +45,14 @@ internal class AttEditorController(
     override val shiftRelativeAtt: Boolean
         get() = model.shiftAttachmentPointInRelatedAtt
 
-    internal val view:  View get() {
-        if (this::mView.isInitialized)
-            return mView
-        val view =  createView()
-        mView = view
-        return view
-    }
+    internal val view: View
+        get() {
+            if (this::mView.isInitialized)
+                return mView
+            val view = createView()
+            mView = view
+            return view
+        }
 
     override var lockX: Boolean
         get() = model.lockX
@@ -276,7 +278,7 @@ internal class AttEditorController(
     /**
      * Interface for the view
      */
-    internal interface View: AttChangeListener, Disposable, PartBreedsProvider, HasSelectedCell {
+    internal interface View : AttChangeListener, Disposable, PartBreedsProvider, HasSelectedCell {
         val component: Any
         val toolbar: Any
         fun init()
@@ -284,6 +286,8 @@ internal class AttEditorController(
         fun clearPose()
         fun scrollCellIntoView()
         fun preferredFocusComponent(): JComponent
+        fun togglePartVisibility(part: Char, visibility: PartVisibility)
+        fun incrementPartPose(part: Char)
     }
 
 }
@@ -293,7 +297,7 @@ internal interface AttChangeListener {
     fun onAttUpdate(vararg lines: Int)
 }
 
-internal interface AttEditorHandler: OnChangePoint, HasSelectedCell {
+internal interface AttEditorHandler : OnChangePoint, HasSelectedCell {
     val variant: CaosVariant
     val spriteFile: VirtualFile
     val part: Char
@@ -305,7 +309,7 @@ internal interface AttEditorHandler: OnChangePoint, HasSelectedCell {
     val rootPath: VirtualFile
     val pointNames: List<String>
     val fileName: String
-    val showFooterNotification:(message: String, messageType: MessageType)->Unit
+    val showFooterNotification: (message: String, messageType: MessageType) -> Unit
     var lockX: Boolean
     var lockY: Boolean
     val replications: Map<Int, List<Int>>

@@ -38,5 +38,237 @@
         language="Att"
     />
 
+
+    <actionPromoter
+            implementation="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttEditorActionPromoter" />
+
+
   </extensions>
+  <actions>
+    <!-- ========= NEW FILES ========= -->
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileFromSpritesAction"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileFromSpritesAction">
+      <add-to-group group-id="NewGroup" anchor="after"
+                    relative-to-action="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction"/>
+    </action>
+
+    <!-- ========= INCREMENT POSE ========= -->
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementHeadPartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementHeadPartPose"
+            text="Increment Head Part Pose" description="Increments the head pose in an ATT editor">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift a"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementBodyPartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementBodyPartPose"
+            text="Increment Body Part Pose" description="Shifts pose of body by one frame">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift b"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementLeftThighPartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementLeftThighPartPose"
+            text="Increment Left Thigh Pose" description="Increment left thigh pose by one frame">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift c"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementLeftShinPartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementLeftShinPartPose"
+            text="Increment Left Shin Pose">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift d"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementLeftFootPartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementLeftFootPartPose"
+            text="Increment Left Foot Pose">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift e"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementRightThighPartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementRightThighPartPose"
+            text="Increment Right Thigh Pose">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift f"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementRightShinPartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementRightShinPartPose"
+            text="Increment Right Shin Pose">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift g"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementRightFootPartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementRightFootPartPose"
+            text="Increment Right Foot Pose">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift h"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementLeftHumerusPartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementLeftHumerusPartPose"
+            text="Increment Left Humerus Pose">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift i"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementLeftRadiusPartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementLeftRadiusPartPose"
+            text="Increment Left Radius Part Pose">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift j"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementRightHumerusPartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementRightHumerusPartPose"
+            text="Increment Right Humerus Pose">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift k"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementRightRadiusPartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementRightRadiusPartPose"
+            text="Increment Right Radius Pose">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift l"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementTailBasePartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementTailBasePartPose"
+            text="Increment Tail Base Pose">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift m"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementTailTipPartPose"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementTailTipPartPose"
+            text="Increment Tail Tip Pose">
+      <keyboard-shortcut keymap="$default" first-keystroke="shift n"/>
+    </action>
+
+
+    <!-- ========= GHOST PART ========= -->
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetHeadToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetHeadToGhostVisibility"
+            text="Set Head Part To Ghost Visibility" description="Sets head part to ghost mode">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift a"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetBodyToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetBodyToGhostVisibility"
+            text="Set Body Part To Ghost Visibility" description="Shifts pose of body by one frame">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift b"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetLeftThighToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetLeftThighToGhostVisibility"
+            text="Set Left Thigh To Ghost Visibility" description="Set left thigh To Ghost Visibility by one frame">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift c"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetLeftShinToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetLeftShinToGhostVisibility"
+            text="Set Left Shin To Ghost Visibility">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift d"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetLeftFootToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetLeftFootToGhostVisibility"
+            text="Set Left Foot To Ghost Visibility">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift e"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetRightThighToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetRightThighToGhostVisibility"
+            text="Set Right Thigh To Ghost Visibility">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift f"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetRightShinToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetRightShinToGhostVisibility"
+            text="Set Right Shin To Ghost Visibility">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift g"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetRightFootToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetRightFootToGhostVisibility"
+            text="Set Right Foot To Ghost Visibility">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift h"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetLeftHumerusToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetLeftHumerusToGhostVisibility"
+            text="Set Left Humerus To Ghost Visibility">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift i"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetLeftRadiusToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetLeftRadiusToGhostVisibility"
+            text="Set Left Radius Part To Ghost Visibility">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift j"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetRightHumerusToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetRightHumerusToGhostVisibility"
+            text="Set Right Humerus To Ghost Visibility">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift k"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetRightRadiusToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetRightRadiusToGhostVisibility"
+            text="Set Right Radius To Ghost Visibility">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift l"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetTailBaseToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetTailBaseToGhostVisibility"
+            text="Set Tail Base To Ghost Visibility">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift m"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetTailTipToGhostVisibility"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.SetTailTipToGhostVisibility"
+            text="Set Tail Tip To Ghost Visibility">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt shift n"/>
+    </action>
+
+
+    <!-- ========= GHOST PART ========= -->
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideHeadPart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideHeadPart"
+            text="Hide Head Part Part" description="Hides head part">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt a"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideBodyPart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideBodyPart"
+            text="Hide Body Part Part" description="Hides body part">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt b"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideLeftThighPart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideLeftThighPart"
+            text="Hide Left Thigh Part" description="Hides left thigh">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt c"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideLeftShinPart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideLeftShinPart"
+            text="Hide Left Shin Part" description="Hides left shin">>
+      <keyboard-shortcut keymap="$default" first-keystroke="alt d"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideLeftFootPart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideLeftFootPart"
+            text="Hide Left Foot Part" description="Hides left foot">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt e"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideRightThighPart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideRightThighPart"
+            text="Hide Right Thigh Part">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt f"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideRightShinPart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideRightShinPart"
+            text="Hide Right Shin Part">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt g"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideRightFootPart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideRightFootPart"
+            text="Hide Right Foot Part">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt h"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideLeftHumerusPart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideLeftHumerusPart"
+            text="Hide Left Humerus Part">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt i"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideLeftRadiusPart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideLeftRadiusPart"
+            text="Hide Left Radius Part Part">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt j"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideRightHumerusPart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideRightHumerusPart"
+            text="Hide Right Humerus Part">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt k"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideRightRadiusPart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideRightRadiusPart"
+            text="Hide Right Radius Part">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt l"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideTailBasePart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideTailBasePart"
+            text="Hide Tail Base Part">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt m"/>
+    </action>
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideTailTipPart"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.HideTailTipPart"
+            text="Hide Tail Tip Part">
+      <keyboard-shortcut keymap="$default" first-keystroke="alt n"/>
+    </action>
+    
+  </actions>
 </idea-plugin>

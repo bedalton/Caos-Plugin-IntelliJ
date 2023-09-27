@@ -1068,10 +1068,5 @@
             <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"
                           anchor="before"/>
         </action>
-        <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileFromSpritesAction"
-                class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileFromSpritesAction">
-            <add-to-group group-id="NewGroup" anchor="after"
-                          relative-to-action="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction"/>
-        </action>
     </actions>
 </idea-plugin>

@@ -455,6 +455,11 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         });
     }
 
+    @Override
+    public void incrementPartPose(final char part) {
+        poseEditor.incrementPart(part);
+    }
+
     private void initPartVisibilityKeyListener(
             final InputMap inputMap,
             final ActionMap actionMap,
@@ -494,6 +499,11 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
                 }
             });
         }
+    }
+
+    @Override
+    public void togglePartVisibility(final char part, final PartVisibility visibility) {
+        poseEditor.togglePartVisibility(part, visibility);
     }
 
     /**

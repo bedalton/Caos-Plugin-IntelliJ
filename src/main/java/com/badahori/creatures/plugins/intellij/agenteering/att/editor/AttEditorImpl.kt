@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
@@ -118,9 +119,17 @@ internal class AttEditorImpl(
         PopupUtil.showBalloonForComponent(controller.getPopupMessageTarget(), message, messageType, true, null)
     }
 
+    internal fun incrementPartPose(part: Char) {
+        controller.view.incrementPartPose(part)
+    }
+
+    fun togglePartVisibility(part: Char, visibility: PartVisibility) {
+        controller.view.togglePartVisibility(part, visibility)
+    }
+
 
     companion object {
-        private const val NAME = "ATTEditor"
+        internal const val NAME = "ATTEditor"
     }
 }
 
