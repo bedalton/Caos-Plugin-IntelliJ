@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey.
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.PathUtil.getExtension
+import com.bedalton.common.util.formatted
 import com.bedalton.common.util.nullIfEmpty
 import com.bedalton.creatures.common.structs.BreedKey
 import com.intellij.ide.projectView.TreeStructureProvider
@@ -137,15 +138,18 @@ class BreedTreeProvider : TreeStructureProvider {
                 }
             }
             for ((key, children) in groupsBySlot) {
-                out.add(
-                    BreedNodeBySlot(
+                try {
+                    out.add(BreedNodeBySlot(
                         project,
                         parentNode.possibleVirtualFile,
                         key,
                         nodes = children,
                         viewSettings = viewSettings
-                    )
-                )
+                    ))
+                } catch (e: Exception) {
+                    LOGGER.severe("Failed to add breed node by slot; ${e.formatted(true)}")
+                    out.addAll(children)
+                }
             }
         } else {
             out.addAll(breedNodes)
