@@ -308,9 +308,9 @@ object PoseRenderer {
                     tail + leftLeg + rightLeg + bodyPart + leftArm + rightArm + headParts
                 }
                 9 -> if (variant == CaosVariant.C1) {
-                    bodyPart.toListOf() + leftLeg + rightLeg + leftArm + rightArm + tail + headParts
+                    bodyPart.toListOf() + leftLeg.reversed() + rightLeg.reversed() + leftArm.reversed() + rightArm.reversed() + tail + headParts
                 } else {
-                    leftLeg + rightLeg + leftArm + rightArm+ bodyPart + tail + headParts
+                    leftLeg.reversed() + rightLeg.reversed() + leftArm.reversed() + rightArm.reversed() + bodyPart + tail + headParts
                 }
                 else -> null
             }
@@ -319,8 +319,8 @@ object PoseRenderer {
             when (pose.body) {
                 in 0..3 -> leftArm + leftLeg + tail.getOrNull(0) + bodyPart + tail.getOrNull(1) + headParts + rightLeg + rightArm
                 in 4..7 -> rightArm + rightLeg + tail.getOrNull(0) + bodyPart + tail.getOrNull(1) + headParts + leftLeg + leftArm
-                in 8..11 -> tail + leftLeg + rightLeg + leftUpperArm + rightUpperArm + bodyPart + leftForearm + rightForearm + headParts
-                in 12..15 -> leftArm + rightArm + leftLeg + rightLeg + bodyPart + headParts + tail
+                in 8..11 -> tail + leftLeg.reversed() + rightLeg.reversed() + leftUpperArm + rightUpperArm + bodyPart + leftForearm + rightForearm + headParts
+                in 12..15 -> leftArm.reversed() + rightArm.reversed() + leftLeg.reversed() + rightLeg.reversed() + bodyPart + headParts + tail
                 else -> null
             }
         }?.filterNotNull()
