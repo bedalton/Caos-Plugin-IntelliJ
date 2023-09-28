@@ -19,9 +19,13 @@ open class HidePartAction (
         return true
     }
 
+
     override fun update(e: AnActionEvent) {
         super.update(e)
-        e.presentation.isVisible = isVisible(e)
+        val isAttFile = isVisible(e)
+        e.presentation.isVisible = isAttFile
+        e.presentation.isEnabledAndVisible = isAttFile
+        e.presentation.isEnabled = isAttFile
     }
 
     fun isVisible(e: AnActionEvent): Boolean {
