@@ -32,6 +32,7 @@ import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.CoroutineContext
 
 class DumpAgentAction : AnAction(
     AgentMessages.message("actions.dump-agent.title"),
@@ -135,6 +136,7 @@ class DumpAgentAction : AnAction(
                     runBlocking {
                         dumpFile(
                             project,
+                            coroutineContext,
                             it,
                             files,
                             file,
@@ -158,6 +160,7 @@ class DumpAgentAction : AnAction(
 
     private suspend fun dumpFile(
         project: Project,
+        coroutineContext: CoroutineContext,
         progressIndicator: ProgressIndicator,
         files: List<VirtualFile>,
         file: VirtualFile,
@@ -176,7 +179,7 @@ class DumpAgentAction : AnAction(
         // Dump may throw exception on agent parse failure
         val success = try {
             // Returns true if all images were written, false if some were not written
-            dump(progressIndicator, parentFile, file, useChildDirectories, createdFiles)
+            dump(coroutineContext, progressIndicator, parentFile, file, useChildDirectories, createdFiles)
         } catch (e: FileTooBigException) {
             CaosNotifications.showError(
                 project,
@@ -202,6 +205,7 @@ class DumpAgentAction : AnAction(
      * Dumps an agent file to a given parent directory
      */
     private suspend fun dump(
+        coroutineContext: CoroutineContext,
         progressIndicator: ProgressIndicator,
         parentVirtualFile: VirtualFile,
         file: VirtualFile,
@@ -218,7 +222,14 @@ class DumpAgentAction : AnAction(
         val relativeWriter = RelativeFileSystem(LocalFileSystem!!, parentVirtualFile.path)
 
 //        val result = try {
-        val result = parsePrayAgentToFiles(file.name, prefix = prefix, stream, relativeWriter, "*") { i, total, _, _ ->
+        val result = parsePrayAgentToFiles(
+            coroutineContext = coroutineContext,
+            fileName = file.name,
+            prefix = prefix,
+            reader = stream,
+            fileSystem = relativeWriter,
+            whitelist = "*"
+        ) { i, total, _, _ ->
             if (progressIndicator.isIndeterminate) {
                 progressIndicator.isIndeterminate = false
             }
@@ -237,7 +248,7 @@ class DumpAgentAction : AnAction(
 //            return false
 //        }
         createdFiles.add(Pair(file, parentVirtualFile))
-        return result.files().isNotEmpty()
+        return result.files(coroutineContext).isNotEmpty()
     }
 
 
