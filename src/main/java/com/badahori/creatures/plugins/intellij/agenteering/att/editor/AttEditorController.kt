@@ -258,7 +258,7 @@ internal class AttEditorController(
             return mView
         }
         if (DumbService.isDumb(project)) {
-            DumbService.getInstance(project).runWhenSmart(view::init)
+            DumbService.getInstance(project).runWhenSmart(mView::init)
         } else {
             mView.init()
         }
