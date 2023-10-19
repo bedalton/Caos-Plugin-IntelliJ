@@ -239,16 +239,16 @@ EQ_NEW="="|"<>"|">"|">="|"<"|"<="
 CONST_EQ = [=]
 N_CONST = [#][a-zA-Z_0-9]+
 N_VAR = [$][a-zA-Z_0-9]+
-QUOTE_ESCAPE_CHAR="\\"[^\n]
+QUOTE_ESCAPE_CHAR=\\[^\n]
 QUOTE_STRING_CHARS=[^\"\\\n]+
-SINGLE_QUOTE_ESCAPE_CHAR="\\"[^\n]
+SINGLE_QUOTE_ESCAPE_CHAR=\\[^\n]
 SINGLE_QUOTE_STRING_CHARS=[^\'\\\n]+
 WORD_CHAR = [a-zA-Z0-9_$#:!+*]
 ERROR_WORD={WORD_CHAR}{5,100}
 WORD={WORD_CHAR}{4}
 INCOMPLETE_WORD={WORD_CHAR}{1,3}
-CHAR_ESCAPE_CHAR=[\\][^\n]
-CHAR_CHARS= [^\n\\]
+CHAR_ESCAPE_CHAR=\\[^\n]
+CHAR_CHARS= [^\n\\\']
 SWIFT_ESCAPE=\\\([^)]*\)
 CAOS_2_COB=[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb](\s*[Cc][12])?
 CAOS_2_PRAY=[*]{2}[Cc][Aa][Oo][Ss][2][Pp][Rr][Aa][Yy]
