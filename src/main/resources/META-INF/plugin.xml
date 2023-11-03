@@ -249,6 +249,10 @@
                 language="CaosScript"
         />
 
+        <spellchecker.bundledDictionaryProvider
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDictionary"
+        />
+
         <editorNotificationProvider
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor.CaosScriptEditorToolbar"/>
 

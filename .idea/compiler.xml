@@ -12,6 +12,7 @@
       <entry name="!?*.clj" />
       <entry name="!?*.aj" />
       <entry name="?*.dylib" />
+      <entry name="!?*.dic" />
     </wildcardResourcePatterns>
     <bytecodeTargetLevel target="11" />
   </component>
