@@ -36,7 +36,9 @@ class PoseRenderedImagePanel(private val project: Project, defaultDirectory: Str
     private var image: BufferedImage? = null
     private var minSize: Dimension? = null
     var lastDirectory: String? = null
-    private val popUp = PopUp()
+    private val popUp by lazy {
+        PopUp()
+    }
 
     init {
         initHandlers()
@@ -47,13 +49,21 @@ class PoseRenderedImagePanel(private val project: Project, defaultDirectory: Str
     private fun initHandlers() {
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                if (e.button == MouseEvent.BUTTON3)
+                if (e.button == MouseEvent.BUTTON3) {
                     showPopUp(e)
+                }
+            }
+
+            override fun mouseReleased(e: MouseEvent) {
+                if (e.button == MouseEvent.BUTTON3) {
+                    showPopUp(e)
+                }
             }
 
             override fun mousePressed(e: MouseEvent) {
-                if (e.button == MouseEvent.BUTTON3)
+                if (e.button == MouseEvent.BUTTON3) {
                     showPopUp(e)
+                }
             }
         })
     }
@@ -64,7 +74,7 @@ class PoseRenderedImagePanel(private val project: Project, defaultDirectory: Str
     }
 
     private fun showPopUp(e: MouseEvent) {
-        if (e.isPopupTrigger || e.modifiersEx or KeyEvent.CTRL_DOWN_MASK == KeyEvent.CTRL_DOWN_MASK && e.button == 1) {
+        if (e.isPopupTrigger || ((e.modifiersEx and KeyEvent.CTRL_DOWN_MASK) == KeyEvent.CTRL_DOWN_MASK && e.button == MouseEvent.BUTTON1)) {
             popUp.show(e.component, e.x, e.y)
         }
     }
