@@ -1,5 +1,8 @@
+@file:Suppress("UseJBColor")
+
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import com.intellij.ui.JBColor
 import java.awt.Color
 
 /**
@@ -56,4 +59,9 @@ fun Color.darken(factorIn:Int): Color? {
             Math.max((green * factor).toInt(), 0),
             Math.max((blue * factor).toInt(), 0),
             alpha)
+}
+
+val PANEL_TRANSPARENT_BLACK = JBColor {
+    val color = JBColor.PanelBackground
+    Color(color.red, color.green, color.blue, 0)
 }

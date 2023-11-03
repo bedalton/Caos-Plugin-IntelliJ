@@ -1,11 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
 import com.badahori.creatures.plugins.intellij.agenteering.common.saveImageWithDialog
+import com.badahori.creatures.plugins.intellij.agenteering.utils.PANEL_TRANSPARENT_BLACK
 import com.badahori.creatures.plugins.intellij.agenteering.utils.copyToClipboard
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.DialogBuilder
+import com.intellij.ui.JBColor
+import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -35,6 +37,13 @@ class PoseRenderedImagePanel(private val project: Project, defaultDirectory: Str
     private var minSize: Dimension? = null
     var lastDirectory: String? = null
     private val popUp = PopUp()
+
+    init {
+        initHandlers()
+        isOpaque = false
+        background = PANEL_TRANSPARENT_BLACK
+    }
+
     private fun initHandlers() {
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
@@ -130,7 +139,9 @@ class PoseRenderedImagePanel(private val project: Project, defaultDirectory: Str
     public override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
         val g2d = g as Graphics2D
+        g2d.color = IMAGE_BACKGROUND
         g2d.clearRect(0, 0, width, height)
+        g2d.fillRect(0,0, width, height)
         val image = this.image
             ?: return
         g2d.translate(width / 2, height / 2)
@@ -148,9 +159,8 @@ class PoseRenderedImagePanel(private val project: Project, defaultDirectory: Str
             add(item)
         }
     }
-
-    init {
-        initHandlers()
+    companion object {
+        val IMAGE_BACKGROUND = JBColor.PanelBackground
     }
 
 }
