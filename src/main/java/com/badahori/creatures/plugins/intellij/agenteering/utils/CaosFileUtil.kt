@@ -95,7 +95,7 @@ object CaosFileUtil {
     private val DEBUG_PLUGIN_HOME_DIRECTORY: VirtualFile?
         get() {
             val file = PLUGIN_HOME_FILE ?: return null
-            return VfsUtil.findFileByIoFile(file, true)?.findChild(RESOURCES_FOLDER)
+            return VfsUtil.findFileByIoFile(file, false)?.findChild(RESOURCES_FOLDER)
         }
 
     private val PLUGIN_RESOURCES_DIRECTORY: VirtualFile?
