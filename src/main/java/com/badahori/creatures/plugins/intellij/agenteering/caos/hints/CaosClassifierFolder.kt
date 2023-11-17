@@ -108,7 +108,7 @@ class CaosClassifierFolder: FoldingBuilderEx() {
         // Find agent name matches in the index
         var matches = CatalogueEntryElementIndex.Instance[text, element.project]
             .mapNotNull { it.itemsAsStrings.getOrNull(0) }
-            .filter { it.isNotNullOrBlank() }
+            .filter { it.isNotNullOrBlank()  && it.lowercase() !in ENUM_CALLS }
             .distinct()
 
         // If there are no matches, search in comments and stuff
@@ -133,7 +133,14 @@ class CaosClassifierFolder: FoldingBuilderEx() {
 
 private const val CACHE_FOR_IN_SECONDS = 20_000
 private val KEY  = Key<Pair<Long, Pair<TextRange, String>?>?>("bedalton.creatures.ClassifierFolder.RANGE_AND_TEXT")
-
+private val ENUM_CALLS = listOf(
+    "enum",
+    "escn",
+    "etch",
+    "esee",
+    "epas",
+    "econ"
+)
 fun shouldRun(element: PsiElement?): Boolean {
     return shouldRun(element?.project, element)
 }
