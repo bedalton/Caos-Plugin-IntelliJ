@@ -64,7 +64,7 @@ class VirtualFileStreamReaderEx(
     override val size: Long
         get() = mReader.size
 
-    override suspend fun close(): Boolean {
+    override fun close(): Boolean {
         val didClose = mReader.close()
         mClosed = mClosed || didClose
         return mClosed
