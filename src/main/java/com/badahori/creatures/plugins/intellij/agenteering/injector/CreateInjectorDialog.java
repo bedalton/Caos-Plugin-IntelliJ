@@ -481,7 +481,7 @@ public class CreateInjectorDialog extends DialogBuilder {
             path += '/';
         }
         if (injectorKind == WINE) {
-            String prefixPath = ((TextFieldWithBrowseButton)winePrefix).getText().trim();
+            String prefixPath = this.winePrefixText();
             if (prefixPath.contains("\\") && !prefixPath.endsWith("\\")) {
                 prefixPath += '\\';
             } else if (!prefixPath.endsWith("/")) {
@@ -580,7 +580,9 @@ public class CreateInjectorDialog extends DialogBuilder {
             injectorKind.setSelectedItem(WINE);
             final String prefixPath = ((WineInjectorInterface) interfaceName).getPrefix();
 
-            ((TextFieldWithBrowseButton) winePrefix).setText(prefixPath);
+            if (this.winePrefix != null) {
+                ((TextFieldWithBrowseButton) winePrefix).setText(prefixPath);
+            }
             if (gamePath == null || gamePath.isBlank() || !gamePath.startsWith(prefixPath)) {
                 try {
                     gamePath = getWineGamePath(variant, new File(prefixPath));
@@ -650,7 +652,7 @@ public class CreateInjectorDialog extends DialogBuilder {
      */
     @Nullable
     private Pair<String, File> getPrefixDirectory(final boolean raw) {
-        final String path = ((TextFieldWithBrowseButton) winePrefix).getText().trim();
+        final String path = winePrefixText();
         if (path.isBlank()) {
             return null;
         }
@@ -711,7 +713,7 @@ public class CreateInjectorDialog extends DialogBuilder {
                 (event, newText) -> {
                     final String homeText = newText != null && newText.isBlank()
                             ? newText
-                            : (((TextFieldWithBrowseButton)winePrefix).getText());
+                            : winePrefixText();
                     setDefaultWineGameDirectory(homeText);
                     return null;
                 }
@@ -754,6 +756,11 @@ public class CreateInjectorDialog extends DialogBuilder {
         winePrefix = prefix;
     }
 
+    @NotNull
+    private String winePrefixText() {
+        return (winePrefix != null ? (((TextFieldWithBrowseButton)winePrefix).getText()) : "");
+    }
+
     private void initializeWineBinaryField(final File home) {
         this.wineExecutable = createSelectFileField(
                 "Wine Binary",
@@ -763,7 +770,7 @@ public class CreateInjectorDialog extends DialogBuilder {
     }
 
     private void setDefaultWineGameDirectory(@Nullable final String prefix) {
-        final String text = prefix != null && !prefix.isBlank() ? prefix : ((TextFieldWithBrowseButton) winePrefix).getText().trim();
+        final String text = prefix != null && !prefix.isBlank() ? prefix : winePrefixText();
         if (text.isBlank()) {
             return;
         }
