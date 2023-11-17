@@ -8595,7 +8595,7 @@
                     "variableSetToType": null
                 }
             ],
-            "description": "Target now constantly emits an amount of a CA into the room it is in.",
+            "description": "Target now constantly emits an amount of a CA into the room it is in.\nAgents can only emit one CA at a time. Each call replaces the previous emitter",
             "returnTypeId": 8,
             "returnValuesListIds": null,
             "commandGroup": "Map",
