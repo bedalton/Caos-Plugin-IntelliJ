@@ -1,5 +1,5 @@
 {
-    "modDate": 1684621024,
+    "modDate": 1699820455,
     "commands": {
         "722": {
             "id": 722,
@@ -48915,6 +48915,94 @@
                     "value": "100",
                     "name": "Antihistamine",
                     "description": "Combats histamines, stopping sneezing and coughing.",
+                    "beforeRegion": null,
+                    "sub_values": "",
+                    "ignore_non_specific": false,
+                    "require_prev": null
+                },
+                {
+                    "id": 9413,
+                    "valuesListId": 140,
+                    "value": "102",
+                    "name": "ANTIBODY 0",
+                    "description": null,
+                    "beforeRegion": null,
+                    "sub_values": "",
+                    "ignore_non_specific": false,
+                    "require_prev": null
+                },
+                {
+                    "id": 9414,
+                    "valuesListId": 140,
+                    "value": "103",
+                    "name": "ANTIBODY 1",
+                    "description": null,
+                    "beforeRegion": null,
+                    "sub_values": "",
+                    "ignore_non_specific": false,
+                    "require_prev": null
+                },
+                {
+                    "id": 9415,
+                    "valuesListId": 140,
+                    "value": "104",
+                    "name": "ANTIBODY 2",
+                    "description": null,
+                    "beforeRegion": null,
+                    "sub_values": "",
+                    "ignore_non_specific": false,
+                    "require_prev": null
+                },
+                {
+                    "id": 9416,
+                    "valuesListId": 140,
+                    "value": "105",
+                    "name": "ANTIBODY 3",
+                    "description": null,
+                    "beforeRegion": null,
+                    "sub_values": "",
+                    "ignore_non_specific": false,
+                    "require_prev": null
+                },
+                {
+                    "id": 9417,
+                    "valuesListId": 140,
+                    "value": "106",
+                    "name": "ANTIBODY 4",
+                    "description": null,
+                    "beforeRegion": null,
+                    "sub_values": "",
+                    "ignore_non_specific": false,
+                    "require_prev": null
+                },
+                {
+                    "id": 9418,
+                    "valuesListId": 140,
+                    "value": "107",
+                    "name": "ANTIBODY 5",
+                    "description": null,
+                    "beforeRegion": null,
+                    "sub_values": "",
+                    "ignore_non_specific": false,
+                    "require_prev": null
+                },
+                {
+                    "id": 9419,
+                    "valuesListId": 140,
+                    "value": "108",
+                    "name": "ANTIBODY 6",
+                    "description": null,
+                    "beforeRegion": null,
+                    "sub_values": "",
+                    "ignore_non_specific": false,
+                    "require_prev": null
+                },
+                {
+                    "id": 9420,
+                    "valuesListId": 140,
+                    "value": "109",
+                    "name": "ANTIBODY 7",
+                    "description": null,
                     "beforeRegion": null,
                     "sub_values": "",
                     "ignore_non_specific": false,
