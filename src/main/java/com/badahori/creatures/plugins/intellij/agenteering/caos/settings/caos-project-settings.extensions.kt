@@ -74,7 +74,10 @@ fun CaosInjectorApplicationSettingsService.addGameInterfaceName(interfaceName: G
         state.copy(
             gameInterfaceNames = (state.gameInterfaceNames + interfaceName)
                 .distinct()
-                .filter { it != null && (it !is NativeInjectorInterface || !it.isDefault) }
+                .filter {
+                    @Suppress("SENSELESS_COMPARISON") // Sometimes game interface comes back null when it shouldn't
+                    it != null && (it !is NativeInjectorInterface || !it.isDefault)
+                }
         )
     )
 }
@@ -87,7 +90,10 @@ fun CaosInjectorApplicationSettingsService.removeGameInterfaceName(interfaceName
     val state = stateNonNull
     loadState(state.copy(
         gameInterfaceNames = state.gameInterfaceNames
-            .filter { it != null && it != interfaceName }
+            .filter {
+                @Suppress("SENSELESS_COMPARISON") // Sometimes game interface comes back null when it shouldn't
+                it != null && it != interfaceName
+            }
     ))
 }
 
