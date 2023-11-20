@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.commandS
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.parentParameter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.getStringNameRangeInString
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueItemName
+import com.badahori.creatures.plugins.intellij.agenteering.utils.escapeQuotesInQuotedElement
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
@@ -59,7 +60,8 @@ class CatalogueTagNameReference(val element: CatalogueItemName) : PsiPolyVariant
     }
 
     override fun handleElementRename(newElementName: String): PsiElement {
-        return element.setName(newElementName)
+        val nameEscaped = escapeQuotesInQuotedElement(newElementName)
+        return element.setName(nameEscaped)
     }
 
     companion object {

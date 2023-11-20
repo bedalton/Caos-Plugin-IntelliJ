@@ -422,3 +422,17 @@ fun Char.lowercase(): Char {
 fun Char.uppercase(): Char {
     return this.uppercaseChar()
 }
+
+
+internal fun escapeQuotesInQuotedElement(text: String): String {
+    var escapeToken = "@$$$$$$$$$$@"
+    while (text.contains(escapeToken)) {
+        escapeToken = "@$escapeToken@"
+    }
+    return text
+        .replace("\\\"", escapeToken)
+        .ensureNotStartsWith('"')
+        .ensureNotEndsWith('"')
+        .replace("\"", "\\\"")
+        .replace(escapeToken, "\\\"")
+}

@@ -32,4 +32,17 @@ object CatalogueTokenSets {
         CATALOGUE_INVALID_STRING_LITERAL,
         CATALOGUE_INT_STRING_LITERAL
     )
+
+    val LITERALS = TokenSet.create(
+        CATALOGUE_INT,
+        CATALOGUE_WORD,
+        *STRINGS.types
+    )
+
+    val ALL_FIND_USAGES_TOKENS = TokenSet.create(
+        CATALOGUE_ITEM_NAME,
+        CATALOGUE_ERROR_ITEM,
+        CATALOGUE_WORD,
+        *STRINGS.types,
+    )
 }
