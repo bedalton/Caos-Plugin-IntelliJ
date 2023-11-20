@@ -3,11 +3,14 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosBundleSourcesRegistrationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosSdkProjectRootsChangeListener
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
+import com.badahori.creatures.plugins.intellij.agenteering.utils.ENABLE_INTELLIJ_LOGS
+import com.badahori.creatures.plugins.intellij.agenteering.utils.INTELLIJ_LOG
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
 import com.intellij.openapi.application.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.virtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
+import com.bedalton.log.Log
 import com.intellij.AppTopics
 import com.intellij.ProjectTopics
 import com.intellij.openapi.application.ApplicationManager
@@ -90,6 +93,8 @@ class CaosProjectStartupActivity : StartupActivity {
 
     override fun runActivity(project: Project) {
         this.project = project
+
+        Log.setMode(INTELLIJ_LOG, ENABLE_INTELLIJ_LOGS)
 
         if (project.isDisposed) {
             this.project = null
