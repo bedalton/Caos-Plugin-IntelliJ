@@ -66,15 +66,21 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
 
     private val isCatalogueTag by lazy {
         if (valuesListName?.lowercase()?.equals("catalogue.tag") == true) {
-            true
-        } else {
-            val inCatalogueCommand = containingCommand?.command?.uppercase() in listOf(
-                "READ",
-                "REAQ",
-                "REAN"
-            )
-            inCatalogueCommand && parameter?.index == 0
+            return@lazy true
         }
+        val containingCommand = containingCommand
+            ?.command
+            ?.uppercase()
+        val inCatalogueCommand = containingCommand in listOf(
+            "READ",
+            "REAQ",
+            "REAN"
+        )
+        if (!inCatalogueCommand) {
+            return@lazy false
+        }
+        val parameterIndex = myElement.getParentOfType(CaosScriptArgument::class.java)?.index
+        parameterIndex == 0
     }
 
     private val journalData: Pair<String, Int>? by lazy {
@@ -151,6 +157,13 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
         element.getSelfOrParentOfType(CaosScriptNamedGameVar::class.java)?.key
     }
 
+
+    private val isCaos2FileString by lazy {
+        isCaos2FileString(myElement)
+    }
+
+    private val isPrayFileString by lazy {
+        isPrayFileString(myElement)
     }
 
 
@@ -166,7 +179,9 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
 
         // Ensure that variables share the same variant,
         // otherwise the variables cannot be the same
-        if (anElement.variant notLike myElement.variant) {
+        val thisVariant = myElement.variant
+        val otherVariant = anElement.variant
+        if (thisVariant != null && otherVariant != null && otherVariant notLike thisVariant) {
             return false
         }
 
@@ -199,7 +214,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
             return try {
                 resolveToCatalogueTag(project)
             } catch (_: IndexNotReadyException) {
-                return selfOnlyResult
+                selfOnlyResult
             }
         }
 
@@ -257,8 +272,13 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
 
     private fun resolveToCatalogueTag(project: Project): Array<ResolveResult> {
         val name = myElement.stringValue
-        val results = CatalogueEntryElementIndex.Instance[name, project]
+
+        val results = CatalogueEntryElementIndex
+            .Instance[name, project]
             .nullIfEmpty()
+            ?.mapNotNull {
+                it.nameIdentifier
+            }
             ?: return ResolveResult.EMPTY_ARRAY
         return PsiElementResolveResult.createResults(results)
     }
@@ -576,6 +596,20 @@ private fun getFileInfoType(element: CaosScriptStringLike, parameterFileExtensio
         else -> 0
     }
 }
+
+private fun isCaos2FileString(element: PsiElement): Boolean {
+    val command = element.getParentOfType(CaosScriptCaos2Command::class.java)
+        ?.commandName
+        ?.uppercase()
+        ?: return false
+    if (command == "DEPEND" || command == "LINK" || command == "ATTACH") {
+        return true
+    }
+    val stringValue = element.getSelfOrParentOfType(CaosScriptStringLike::class.java)
+        ?.stringValue
+        ?: return false
+    return if (command == "RSCR") {
+        !isPossiblyCaos(stringValue)
     } else {
         0
     }
