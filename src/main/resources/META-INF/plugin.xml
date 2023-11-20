@@ -259,6 +259,10 @@
         <lang.findUsagesProvider language="CaosScript"
                                  implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptUsagesProvider"/>
 
+        <usageTypeProvider
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptUsageTypeProvider"
+        />
+
         <moduleType id="CAOS_MODULE"
                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType"
                     classpathProvider="false"/>
