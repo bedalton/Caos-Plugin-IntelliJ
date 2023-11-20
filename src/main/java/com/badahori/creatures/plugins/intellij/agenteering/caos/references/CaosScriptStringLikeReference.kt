@@ -147,9 +147,10 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
 
     }
 
-    private val key: String by lazy {
-        ((element.parent?.parent as? CaosScriptNamedGameVar)
-            ?: (element.parent?.parent?.parent as? CaosScriptNamedGameVar))?.key ?: UNDEF
+    private val key: String? by lazy {
+        element.getSelfOrParentOfType(CaosScriptNamedGameVar::class.java)?.key
+    }
+
     }
 
 
@@ -222,7 +223,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
 
         // Get named variable references
         if (namedVarType != null) {
-            return resolveToNamedGameVars(project, variant)
+            return resolveToNamedGameVars(project)
         }
 
         // If this is a journal file name return only journal name matches
@@ -309,7 +310,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
             }.distinctBy { it.textRange }
     }
 
-    private fun resolveToNamedGameVars(project: Project, variant: CaosVariant): Array<ResolveResult> {
+    private fun resolveToNamedGameVars(project: Project): Array<ResolveResult> {
 
         // Only get results if named game var is not null
         val namedVarType = namedVarType
@@ -319,24 +320,31 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
         val references = if (namedVarType == MAME || namedVarType == NAME) {
             // MAME AND NAME resolve to the same variables
             // ...if TARG and OWNR are the same; OWNR and TARG classes are not resolved currently
-            getNamed(variant, project, MAME) + getNamed(variant, project, NAME)
+            getNamed(project, MAME) + getNamed(project, NAME)
         } else {
-            getNamed(variant, project, namedVarType)
+            getNamed(project, namedVarType)
         }
+
+
 
         return if (references.isEmpty()) {
             ResolveResult.EMPTY_ARRAY
         } else {
-            PsiElementResolveResult.createResults(references.filter { it != myElement && it != myElement.parent })
+            if (references.size == 1 && (references[0] == myElement || references[0] == myElement.parent)) {
+                return ResolveResult.EMPTY_ARRAY
+            }
+            PsiElementResolveResult.createResults(references)
         }
     }
 
     private fun getNamed(
-        variant: CaosVariant,
         project: Project,
         type: CaosScriptNamedGameVarType,
-    ): List<CaosScriptStringLike> {
-        return CaosScriptNamedGameVarIndex.instance[type, key, project, CaosVariantGlobalSearchScope(project, variant)]
+    ): List<PsiElement> {
+        val key = key
+            ?: return emptyList()
+        return CaosScriptNamedGameVarIndex
+            .instance[type, key, project, GlobalSearchScope.projectScope(project)]
             .filter { anElement ->
                 ProgressIndicatorProvider.checkCanceled()
                 anElement.isValid
@@ -349,7 +357,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
                     } else {
                         null
                     }
-                }
+                } ?: namedGameVar.nameIdentifier
             }
     }
 
@@ -563,8 +571,11 @@ private fun getFileInfoType(element: CaosScriptStringLike, parameterFileExtensio
             else -> 0
         }
     }
-    return if (parameterFileExtensions != null) {
-        NO_EXTENSION
+    return when {
+        parameterFileExtensions.isNotNullOrEmpty() -> NO_EXTENSION
+        else -> 0
+    }
+}
     } else {
         0
     }
