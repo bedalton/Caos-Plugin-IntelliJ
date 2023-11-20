@@ -5,9 +5,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.libs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.notLike
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import kotlinx.serialization.Serializable
-import kotlin.collections.isNullOrEmpty
 import kotlin.math.abs
 
 /**
@@ -38,6 +38,7 @@ data class CaosVariantData(
 /**
  * Holds the max values of a variable type
  */
+@Suppress("PropertyName")
 @Serializable
 data class CaosVarConstraints(
         /** Max variable index for VARx variables */
@@ -125,10 +126,10 @@ data class CaosCommand(
 
 
     fun requiresOwnr(variant:CaosVariant) : Boolean {
-        if (variant.isOld)
-            return requiresOwnr != 0
+        return if (variant.isOld)
+            requiresOwnr != 0
         else
-            return abs(requiresOwnr) == 2
+            abs(requiresOwnr) == 2
     }
 
     fun requiresOwnrIsError(variant:CaosVariant) : Boolean {
@@ -155,7 +156,7 @@ private fun formatNameWithType(name:String, type:CaosExpressionValueType) : Stri
 }
 
 /**
- * Represents a a parameter to a CAOS command
+ * Represents a parameter to a CAOS command
  */
 @Serializable
 data class CaosParameter(
@@ -223,7 +224,7 @@ data class CaosValuesList(
     private val greaterThan = values.filter { it.greaterThan }
 
     /**
-     * Gets command checking both literal value as well as int comparison values
+     * Gets command checking both literal value and int comparison values
      */
     operator fun get(key: String): CaosValuesListValue? {
         key.toIntOrNull()?.let { intValue ->
@@ -301,7 +302,6 @@ enum class CaosCommandType(val value: String) {
 /**
  * Named game var type enum
  */
-@Suppress("SpellCheckingInspection")
 enum class CaosScriptNamedGameVarType(val value: Int, val token: String) {
     UNDEF(-1, com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF),
     NAME(1, "NAME"),
