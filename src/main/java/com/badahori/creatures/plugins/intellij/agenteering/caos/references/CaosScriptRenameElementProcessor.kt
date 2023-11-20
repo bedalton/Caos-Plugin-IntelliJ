@@ -86,8 +86,9 @@ class CaosScriptRenameElementProcessor : RenamePsiElementProcessor() {
         if (element is CaosScriptSubroutine) {
             return element.subroutineHeader.subroutineName
         }
-        if (element is CaosScriptQuoteStringLiteral)
+        if (element is CaosScriptQuoteStringLiteral) {
             return element
+        }
         return super.substituteElementToRename(element, editor)
     }
 

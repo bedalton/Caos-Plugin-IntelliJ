@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.application.QueryExecutorBase
@@ -41,8 +40,6 @@ internal class CaosFileElementsSearchExecutor: QueryExecutorBase<PsiReference, R
         element: PsiFile,
         consumer: Processor<in PsiReference>
     ) {
-
-
         // Get matches as PSI references
         val matchingStrings = FilenameStringCollector
             .collect(project, element.virtualFile.path)
@@ -66,7 +63,8 @@ internal class CaosFileElementsSearchExecutor: QueryExecutorBase<PsiReference, R
         element: CaosScriptStringLike,
         consumer: Processor<in PsiReference>
     ) {
-        val files = CaosStringToFileResolver.resolveToFiles(project, element)
+        val files = CaosStringToFileResolver
+            .resolveToFiles(project, element)
             .nullIfEmpty()
             ?: return
 
