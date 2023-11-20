@@ -3,6 +3,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.bedalton.common.util.ensureNotEndsWith
+import com.bedalton.common.util.ensureNotStartsWith
 import java.util.*
 import kotlin.contracts.contract
 import kotlin.math.ceil
