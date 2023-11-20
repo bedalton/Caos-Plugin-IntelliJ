@@ -173,7 +173,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
             return isCatalogueTag && anElement.name.lowercase() == element.name?.lowercase()
         }
 
-        if (anElement is CaosScriptQuoteStringLiteral && anElement.stringStubKind == StringStubKind.JOURNAL) {
+        if (anElement is CaosScriptStringLike && anElement.stringStubKind == StringStubKind.JOURNAL) {
             return isReferenceToJournal(anElement)
         }
 
@@ -279,6 +279,10 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
             CaosScriptStringLiteralIndex
                 .instance
                 .getAllInScope(project, GlobalSearchScopes.directoryScope(project, parentFolder, false))
+                .nullIfEmpty()
+                ?: CaosScriptStringLiteralIndex
+                    .instance
+                    .getAllInScope(project, GlobalSearchScope.projectScope(project))
         } else {
             // If index is dumb, just gather all sibling file's strings
             element.collectElementsOfTypeInParentChildren(
@@ -390,7 +394,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
     }
 
 
-    private fun isReferenceToJournal(anElement: CaosScriptQuoteStringLiteral): Boolean {
+    private fun isReferenceToJournal(anElement: CaosScriptStringLike): Boolean {
         val (journalName, meta) = journalData
             ?: return false
         val (otherName, otherMeta) = getJournalData(anElement)
