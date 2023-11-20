@@ -6,7 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.inferVariantHard
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.inferVariantHard
 import com.badahori.creatures.plugins.intellij.agenteering.common.MyNewFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex

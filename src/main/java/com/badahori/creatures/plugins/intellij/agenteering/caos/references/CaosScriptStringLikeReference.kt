@@ -15,9 +15,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.notLike
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.parentParameter
-import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVariantGlobalSearchScope
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isPossiblyCaos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.stringTextToAbsolutePath
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueEntryElementIndex
