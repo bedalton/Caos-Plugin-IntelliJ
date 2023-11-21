@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 //
 //import com.badahori.creatures.plugins.intellij.agenteering.caos.completion.caos2PrayFileExtensions
-//import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
+//import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 //import com.intellij.psi.PsiElement
 //import com.intellij.psi.PsiFile
 //import com.intellij.refactoring.rename.naming.AutomaticRenamer
@@ -17,7 +17,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 //    }
 //
 //    override fun getOptionName(): String {
-//        return AgentMessages.message("caos.file-renamer-factory.option")
+//        return CaosBundle.message("caos.file-renamer-factory.option")
 //    }
 //
 //    override fun isEnabled(): Boolean {
