@@ -263,6 +263,10 @@
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptUsageTypeProvider"
         />
 
+<!--        <automaticRenamerFactory-->
+<!--                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptFileStringRenamerFactory"-->
+<!--        />-->
+
         <moduleType id="CAOS_MODULE"
                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType"
                     classpathProvider="false"/>
@@ -424,6 +428,15 @@
                          enabledByDefault="true"
                          displayName="Assigned value is of expected type"
                          shortName="ExpectedAssigmentType"
+        />
+        <localInspection language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptWavFileLengthInspection"
+                         level="WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Wave file name length is valid"
+                         shortName="WavFileLengthValid"
         />
 
         <localInspection language="CaosScript"
