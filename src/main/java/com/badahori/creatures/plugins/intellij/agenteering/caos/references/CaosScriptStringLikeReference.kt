@@ -456,43 +456,43 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
     protected fun handleElementRename(element: CaosScriptStringLike, newElementName: String): PsiElement {
 
         // If is File
-        val newPathOrName = if (fileInfo > 0) {
-            getFileNameString(element, newElementName)
-        } else {
-            newElementName
-        }
-
+//        val newPathOrName = if (fileInfo > 0) {
+//            getFileNameString(element, newElementName)
+//        } else {
+//            newElementName
+//        }
+        val newPathOrName = newElementName
         return (element as? PsiNamedElement)?.setName(newPathOrName) ?: element
 
     }
 
-    private fun getFileNameString(element: CaosScriptStringLike, newElementName: String): String {
-        CaosNotifications.showInfo(
-            myElement.project,
-            "Rename",
-            "New Name: $newElementName"
-        )
-
-        if (fileInfo == NO_EXTENSION) {
-            return getFileNameWithoutExtension(newElementName) ?: newElementName
-        }
-        if (isReferenceToJournal(element)) {
-            return newElementName
-        }
-        if (!isRelativePath(element)) {
-            return PathUtil.getLastPathComponent(newElementName) ?: newElementName
-        }
-        val newPath = CaosStringRenameFileProcessor.createPathFromElement(element, newElementName)
-            ?: return newElementName
-        val parentPath = element.virtualFile?.let { file ->
-            if (file.isDirectory) {
-                file
-            } else {
-                file.parent
-            }
-        } ?: return newElementName
-        return PathUtil.relativePath(parentPath.path, newPath) ?: newElementName
-    }
+//    private fun getFileNameString(element: CaosScriptStringLike, newElementName: String): String {
+//        CaosNotifications.showInfo(
+//            myElement.project,
+//            "Rename",
+//            "New Name: $newElementName"
+//        )
+//
+//        if (fileInfo == NO_EXTENSION) {
+//            return getFileNameWithoutExtension(newElementName) ?: newElementName
+//        }
+//        if (isReferenceToJournal(element)) {
+//            return newElementName
+//        }
+//        if (!isRelativePath(element)) {
+//            return PathUtil.getLastPathComponent(newElementName) ?: newElementName
+//        }
+//        val newPath = CaosStringRenameFileProcessor.createPathFromElement(element, newElementName)
+//            ?: return newElementName
+//        val parentPath = element.virtualFile?.let { file ->
+//            if (file.isDirectory) {
+//                file
+//            } else {
+//                file.parent
+//            }
+//        } ?: return newElementName
+//        return PathUtil.relativePath(parentPath.path, newPath) ?: newElementName
+//    }
 
 }
 
