@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefDocComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefValuesListElement
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParentOfType
@@ -68,56 +68,56 @@ class CaosScriptUsageTypeProvider: UsageTypeProvider {
 
 private val CAOS_DEF_USAGE_TYPE by lazy {
     UsageType {
-        AgentMessages.message("caosdef.usage-type.caosdef")
+        CaosBundle.message("caosdef.usage-type.caosdef")
     }
 }
 
 private val CAOS_DEF_DECLARATION_USAGE_TYPE by lazy {
     UsageType {
-        AgentMessages.message("caosdef.usage-type.declaration")
+        CaosBundle.message("caosdef.usage-type.declaration")
     }
 }
 
 
 private val CAOS_DEF_DOC_COMMENT_USAGE_TYPE by lazy {
     UsageType {
-        AgentMessages.message("caosdef.usage-type.doc-comment")
+        CaosBundle.message("caosdef.usage-type.doc-comment")
     }
 }
 
 private val CAOS_DEF_VALUES_LIST_USAGE_TYPE by lazy {
     UsageType {
-        AgentMessages.message("caosdef.usage-type.values-list")
+        CaosBundle.message("caosdef.usage-type.values-list")
     }
 }
 
 private val CAOS2PRAY_USAGE_TYPE by lazy {
     UsageType {
-        AgentMessages.message("caos.usage-type.caos2pray")
+        CaosBundle.message("caos.usage-type.caos2pray")
     }
 }
 
 private val CAOS2COB_USAGE_TYPE by lazy {
     UsageType {
-        AgentMessages.message("caos.usage-type.caos2cob")
+        CaosBundle.message("caos.usage-type.caos2cob")
     }
 }
 
 
 private val CAOS_STRING_USAGE_TYPE by lazy {
     UsageType {
-        AgentMessages.message("caos.usage-type.string")
+        CaosBundle.message("caos.usage-type.string")
     }
 }
 
 private val CAOS_ENUM_USAGE_TYPE by lazy {
     UsageType {
-        AgentMessages.message("caos.usage-type.enum")
+        CaosBundle.message("caos.usage-type.enum")
     }
 }
 
 private val CAOS_EVENT_SCRIPT_USAGE_TYPE by lazy {
     UsageType {
-        AgentMessages.message("caos.usage-type.script")
+        CaosBundle.message("caos.usage-type.script")
     }
 }
