@@ -31,17 +31,18 @@ class CaosScriptVetoRenameCondition : Condition<PsiElement> {
             return false
         }
         if (element is CaosScriptQuoteStringLiteral) {
-            if (element.hasParentOfType(CaosScriptCaos2Block::class.java)) {
-                return true
-            }
-            val argument = element.getParentOfType(CaosScriptArgument::class.java)
-                ?: return false
-            val parameter = argument.parentParameter
-                ?: return false
-            val variant = element.variant
-            val valuesList = parameter.valuesList[variant ?: CaosVariant.DS]
-                ?: return false
-            return valuesList.name.startsWith("File.")
+//            if (element.hasParentOfType(CaosScriptCaos2Block::class.java)) {
+//                return true
+//            }
+//            val argument = element.getParentOfType(CaosScriptArgument::class.java)
+//                ?: return false
+//            val parameter = argument.parentParameter
+//                ?: return false
+//            val variant = element.variant
+//            val valuesList = parameter.valuesList[variant ?: CaosVariant.DS]
+//                ?: return false
+//            return valuesList.name.startsWith("File.")
+            return false
         }
         if (element is CaosScriptStringText) {
             return false
