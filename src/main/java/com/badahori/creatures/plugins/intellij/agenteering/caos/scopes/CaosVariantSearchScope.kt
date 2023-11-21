@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.scopes
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.UNKNOWN
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.like
@@ -64,7 +64,7 @@ class CaosVariantSearchScope(
     }
 
     override fun getDisplayName(): String {
-        return AgentMessages.message("caos.search-scope.variant-search-scope")
+        return CaosBundle.message("caos.search-scope.variant-search-scope")
     }
 }
 
@@ -113,7 +113,7 @@ class CaosVariantGlobalSearchScope(
     }
 
     override fun getDisplayName(): String {
-        return AgentMessages.message("caos.search-scope.global-variant-search-scope")
+        return CaosBundle.message("caos.search-scope.global-variant-search-scope")
     }
 }
 
