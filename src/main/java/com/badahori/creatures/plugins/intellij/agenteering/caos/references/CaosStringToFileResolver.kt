@@ -27,7 +27,6 @@ internal object CaosStringToFileResolver {
         searchScope: GlobalSearchScope = GlobalSearchScope.projectScope(project)
     ): Collection<VirtualFile>? {
 
-
         // Ensure this string can be resolved
         val stubKind = element
             .stringStubKind

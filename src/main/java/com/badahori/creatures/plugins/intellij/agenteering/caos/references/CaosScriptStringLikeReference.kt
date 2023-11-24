@@ -502,46 +502,73 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(
     }
 
     protected fun handleElementRename(element: CaosScriptStringLike, newElementName: String): PsiElement {
+        if (fileInfo == 0) {
+            // Not filename, needs no conversion
+            return (element as? PsiNamedElement)?.setName(newElementName) ?: element
+        }
 
-        // If is File
-//        val newPathOrName = if (fileInfo > 0) {
-//            getFileNameString(element, newElementName)
-//        } else {
-//            newElementName
-//        }
-        val newPathOrName = newElementName
-        return (element as? PsiNamedElement)?.setName(newPathOrName) ?: element
+        // Get the actual text to use; This will strip extension as needed or qualify path
+        val finalText = getFinalNewFileNameText(element, newElementName)
 
+        return (element as? PsiNamedElement)?.setName(finalText) ?: element
     }
 
-//    private fun getFileNameString(element: CaosScriptStringLike, newElementName: String): String {
-//        CaosNotifications.showInfo(
-//            myElement.project,
-//            "Rename",
-//            "New Name: $newElementName"
-//        )
-//
-//        if (fileInfo == NO_EXTENSION) {
-//            return getFileNameWithoutExtension(newElementName) ?: newElementName
-//        }
-//        if (isReferenceToJournal(element)) {
-//            return newElementName
-//        }
-//        if (!isRelativePath(element)) {
-//            return PathUtil.getLastPathComponent(newElementName) ?: newElementName
-//        }
-//        val newPath = CaosStringRenameFileProcessor.createPathFromElement(element, newElementName)
-//            ?: return newElementName
-//        val parentPath = element.virtualFile?.let { file ->
-//            if (file.isDirectory) {
-//                file
-//            } else {
-//                file.parent
-//            }
-//        } ?: return newElementName
-//        return PathUtil.relativePath(parentPath.path, newPath) ?: newElementName
-//    }
+    private fun getFinalNewFileNameText(element: CaosScriptStringLike, newElementName: String): String {
+        val cachedNewName = element.getUserData(FILE_RENAME_NAME_IN_STRING_KEY)
+            .nullIfEmpty()
+        element.putUserData(FILE_RENAME_NAME_IN_STRING_KEY, null)
+        val newName = if (cachedNewName != null && cachedNewName.endsWith(newElementName)) {
+            cachedNewName
+        } else {
+            val text = element.text
+            val quote = text.getOrNull(0).let {
+                if (it == '"' || it == '\'') {
+                    it
+                } else {
+                    null
+                }
+            } ?: '"'
+            val pathSeparator = getPathSeparator(text)
+            if (text.contains(pathSeparator)) {
+                val range = rangeInElement
 
+                // Get text before this path component
+                val prefix = if (range.startOffset > 0) {
+                    text.substring(0, range.startOffset)
+                        .trimStart(quote)
+                        .nullIfEmpty()
+                        ?.let {
+                            it + pathSeparator
+                        }
+                        ?: ""
+                } else {
+                    ""
+                }
+
+                // Get text after this path component
+                val suffix = if (range.endOffset != text.lastIndex) {
+                    text.substring(range.endOffset)
+                        .trimEnd(quote)
+                        .nullIfEmpty()
+                        ?.let {
+                            pathSeparator + it
+                        }
+                } else {
+                    ""
+                }
+                prefix + newElementName + suffix
+            } else {
+                newElementName
+            }
+        }
+        val trimExtension = fileInfo != NEEDS_EXTENSION &&
+                newName.matches(".+?\\.[a-z0-9_]{3,}".toRegex(RegexOption.IGNORE_CASE))
+        return if (trimExtension) {
+            getFileNameWithoutExtension(newName) ?: newName
+        } else {
+            newName
+        }
+    }
 }
 
 

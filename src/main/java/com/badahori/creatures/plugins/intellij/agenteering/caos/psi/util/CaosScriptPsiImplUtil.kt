@@ -23,11 +23,16 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVaria
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.NUMBER_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.bedalton.common.util.className
+import com.bedalton.common.util.formatted
 import com.bedalton.common.util.stripSurroundingQuotes
+import com.bedalton.log.Log
+import com.bedalton.log.eIf
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.GlobalSearchScopes
@@ -310,15 +315,19 @@ object CaosScriptPsiImplUtil {
                 ?.let { getCommandString(it) }
                 ?: command.getChildOfType(CaosScriptIsCommandToken::class.java)
                     ?.let { getCommandString(it) }
+
             CaosCommandType.RVALUE -> command
                 .getSelfOrParentOfType(CaosScriptRvalue::class.java)
                 ?.let { getCommandString(it) }
+
             CaosCommandType.LVALUE -> command
                 .getSelfOrParentOfType(CaosScriptLvalue::class.java)
                 ?.let { getCommandString(it) }
+
             CaosCommandType.CONTROL_STATEMENT -> (command as? CaosScriptIsCommandToken
                 ?: command.getChildOfType(CaosScriptIsCommandToken::class.java))
                 ?.let { getCommandString(it) }
+
             CaosCommandType.UNDEFINED -> null
         } ?: UNDEF
     }
@@ -744,6 +753,17 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun setName(element: CaosScriptQuoteStringLiteral, newName: String): PsiElement {
+        return when (element.parent) {
+            is CaosScriptRvalue -> setStringValueInRvalue(element, newName)
+            is CaosScriptCaos2Value -> setStringValueInCaos2(element, newName)
+            else -> {
+                Log.e { "Failed to replace quote string name in ${element.parent.className}; Heirarchy unexpected" }
+                element
+            }
+        }
+    }
+
+    private fun setStringValueInRvalue(element: CaosScriptQuoteStringLiteral, newName: String): PsiElement {
         val quoteChar = if (element.text.getOrNull(0) == '\'')
             '\''
         else
@@ -752,10 +772,43 @@ object CaosScriptPsiImplUtil {
         val newNameElement = CaosScriptPsiElementFactory
             .createStringRValue(element.project, newName, quoteChar)
 
+        if (element.parent !is CaosScriptRvalue) {
+            Log.e {
+                "Cannot set quote string; Heirarchy unexpected. " +
+                        "Parent: ${element.parent?.className}; " +
+                        "Parent.Parent: ${element.parent?.parent?.className}"
+            }
+            return element
+        }
         // Actually replace string value
         return (element.parent as? CaosScriptRvalue)
             ?.replace(newNameElement)
             ?: element
+    }
+
+    private fun setStringValueInCaos2(element: CaosScriptQuoteStringLiteral, newName: String): PsiElement {
+        if (element.isInvalid) {
+            return element
+        }
+        val newElement: CaosScriptCaos2Value = CaosScriptPsiElementFactory
+            .createStringCaos2Value(
+                project = element.project,
+                newNameString = newName
+            )
+            ?: return element
+        return try {
+            element.parent.replace(newElement)
+        } catch (e: Exception) {
+            Log.eIf(INTELLIJ_LOG) {
+                "Failed to replace CAOS2 value; ${e.formatted(true)}"
+            }
+            element
+        } catch (e: Error) {
+            Log.eIf(INTELLIJ_LOG) {
+                "Failed (with error) to replace CAOS2 value; ${e.formatted(true)}"
+            }
+            element
+        }
     }
 
     /**
@@ -771,6 +824,10 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun setName(element: CaosScriptStringText, newName: String): PsiElement {
+        if (element.parent is CaosScriptQuoteStringLiteral) {
+            return setName(element.parent as CaosScriptQuoteStringLiteral, newName)
+        }
+
         val quoteChar = if (element.parent.text.getOrNull(0) == '\'')
             '\''
         else
@@ -778,6 +835,11 @@ object CaosScriptPsiImplUtil {
         // Create a new string element
         val newNameElement = CaosScriptPsiElementFactory
             .createStringRValue(element.project, newName, quoteChar)
+
+        if (element.parent?.parent !is CaosScriptRvalue) {
+            Log.e { "Cannot set string text; Heirarchy unexpected. Parent.Parent == ${element.parent?.parent?.className}; Parent.Parent.Parent: ${element.parent?.parent?.parent?.className}" }
+            return element
+        }
 
         // Actually replace string value
         return (element.parent?.parent as? CaosScriptRvalue)
@@ -794,11 +856,38 @@ object CaosScriptPsiImplUtil {
         return element.text
     }
 
+
     /**
      * Sets token value
      */
     @JvmStatic
     fun setName(element: CaosScriptToken, newName: String): PsiElement {
+        return when (element.parent) {
+            is CaosScriptRvalue -> setTokenNameInRValue(element, newName)
+            is CaosScriptCaos2Value -> setTokenNameInCaos2(element, newName)
+            else -> {
+                Log.eIf(INTELLIJ_LOG) { "Failed to rename token in parent: ${element.parent?.className}" }
+                element
+            }
+        }
+    }
+
+    /**
+     * Sets token value
+     */
+    @JvmStatic
+    fun setTokenNameInRValue(element: CaosScriptToken, newName: String): PsiElement {
+        val newNameElement = CaosScriptPsiElementFactory.createTokenElement(element.project, newName)
+            ?: element
+        return element.replace(newNameElement)
+    }
+
+
+    /**
+     * Sets token value
+     */
+    @JvmStatic
+    fun setTokenNameInCaos2(element: CaosScriptToken, newName: String): PsiElement {
         val newNameElement = CaosScriptPsiElementFactory.createTokenElement(element.project, newName)
             ?: element
         return element.replace(newNameElement)
@@ -1381,7 +1470,7 @@ object CaosScriptPsiImplUtil {
     }
 
     /**
-     * Checks for close of C1 string, ie. ']'
+     * Checks for close of C1 string, i.e. ']'
      */
     @JvmStatic
     fun isClosed(stringIn: CaosScriptC1String): Boolean {
@@ -1697,11 +1786,13 @@ object CaosScriptPsiImplUtil {
                     resolveVars,
                     lastChecked = mutableListOf()
                 )
+
                 is CaosScriptTokenRvalue -> listOf(CaosExpressionValueType.TOKEN)
                 is CaosScriptSubroutineName -> listOf(CaosExpressionValueType.TOKEN)
                 is CaosScriptLvalue -> listOf(
                     argument.commandDefinition?.returnType ?: CaosExpressionValueType.VARIABLE
                 )
+
                 else -> emptyList()
             }
         }
@@ -1855,7 +1946,8 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getStringValue(stringIn: CaosScriptQuoteStringLiteral): String {
-        return stringIn.stringText?.text ?: ""
+        return stringIn?.stub?.value
+            ?: stringIn.stringText?.text ?: ""
     }
 
     /**
@@ -1888,7 +1980,8 @@ object CaosScriptPsiImplUtil {
      */
     @JvmStatic
     fun getStringValue(element: CaosScriptCaos2ValueToken): String {
-        return element.text
+        return element.stub?.value
+            ?: element.text ?: ""
     }
 
     @JvmStatic
@@ -1918,6 +2011,7 @@ object CaosScriptPsiImplUtil {
                         ?: -1
                 }
             }
+
             else -> 0
         }
     }
@@ -1991,7 +2085,7 @@ object CaosScriptPsiImplUtil {
 
     /**
      * Gets the assignment of in a CAOS assignment command
-     * ie. SETV/NEGV/ADDV/SUBV
+     * i.e. SETV/NEGV/ADDV/SUBV
      */
     @JvmStatic
     fun getOp(assignment: CaosScriptCAssignment): CaosOp {
@@ -2046,7 +2140,8 @@ object CaosScriptPsiImplUtil {
         return element.rvalue?.stringValue
     }
 
-    private val NAMED_GAME_VAR_KEY_TYPE_KEY = Key<List<CaosExpressionValueType>>("creatures.caos.named-game-var.KEY_TYPE")
+    private val NAMED_GAME_VAR_KEY_TYPE_KEY =
+        Key<List<CaosExpressionValueType>>("creatures.caos.named-game-var.KEY_TYPE")
 
     /**
      * Gets the key or text component for a named game variable
@@ -2544,7 +2639,7 @@ object CaosScriptPsiImplUtil {
         (def.stub?.agentBlockNames)?.let {
             return it
         }
-        val nameRegex = "^(C1|C2|CV|C3|DS|[A-Z]{2})[-]?Name|([a-zA-Z][a-zA-Z0-9]{3})".toRegex(RegexOption.IGNORE_CASE)
+        val nameRegex = "^(C1|C2|CV|C3|DS|[A-Z]{2})-?Name|([a-zA-Z][a-zA-Z0-9]{3})".toRegex(RegexOption.IGNORE_CASE)
         val agentNameFromCobTag = def.tags
             .filter { CobTag.AGENT_NAME.isTag(it.key) }
             .values
@@ -2905,12 +3000,13 @@ object CaosScriptPsiImplUtil {
             return GlobalSearchScope.projectScope(element.project)
         }
         val containingFile = stringElement.containingFile
-        val isLocal = getReference(stringElement)
-            .multiResolve(false)
-            .all {
+        val isLocal = getReferences(stringElement)
+            .firstOrNull()
+            ?.multiResolve(false)
+            ?.all {
                 it.element?.containingFile?.isEquivalentTo(containingFile) == true
             }
-        return if (isLocal) {
+        return if (isLocal == true) {
             LocalSearchScope(containingFile)
         } else {
             return GlobalSearchScope.projectScope(element.project)
@@ -2994,7 +3090,7 @@ val ASTNode.endOffset: Int get() = textRange.endOffset
 
 
 private val CAOS2CobVariantRegex =
-    "^\\s*[*]{2}CAOS2Cob\\s*([C][12])|^\\s*[*][#]\\s*([C][12])[\\- ]?Name".toRegex(RegexOption.IGNORE_CASE)
+    "^\\s*[*]{2}CAOS2Cob\\s*(C[12])|^\\s*[*]#\\s*(C[12])[\\- ]?Name".toRegex(RegexOption.IGNORE_CASE)
 
 val CaosScriptVarToken.isVAxxLike: Boolean get() = varGroup == CaosScriptVarTokenGroup.VAxx || varGroup == CaosScriptVarTokenGroup.VARx
 val CaosScriptVarToken.isOVxxLike: Boolean get() = varGroup == CaosScriptVarTokenGroup.OVxx || varGroup == CaosScriptVarTokenGroup.OBVx

@@ -263,9 +263,9 @@
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptUsageTypeProvider"
         />
 
-<!--        <automaticRenamerFactory-->
-<!--                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptFileStringRenamerFactory"-->
-<!--        />-->
+        <automaticRenamerFactory
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptFileStringRenamerFactory"
+        />
 
         <moduleType id="CAOS_MODULE"
                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType"
@@ -296,6 +296,7 @@
         <renameInputValidator
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameInputValidator"
         />
+
         <lang.refactoringSupport language="CaosScript"
                                  implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameRefactoringSupportProvider"/>
 
