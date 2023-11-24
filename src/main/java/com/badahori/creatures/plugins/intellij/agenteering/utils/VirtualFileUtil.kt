@@ -329,7 +329,12 @@ private fun getFileViewProvider(project: Project, virtualFile: VirtualFile): Fil
 }
 
 internal fun VirtualFile.toNavigableElement(project: Project): NavigatablePsiElement? {
-    return PsiManager.getInstance(project).findFile(this) ?: VirtualFileNavigationElement.create(project, this)
+    return if (this.isDirectory) {
+        PsiManager.getInstance(project).findDirectory(this)
+    } else {
+        PsiManager.getInstance(project).findFile(this)
+            ?: VirtualFileNavigationElement.create(project, this)
+    }
 }
 
 data class FileAttributeWithKey<T>(
