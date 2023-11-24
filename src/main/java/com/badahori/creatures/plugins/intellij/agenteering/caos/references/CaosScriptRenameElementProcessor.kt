@@ -16,9 +16,9 @@ class CaosScriptRenameElementProcessor : RenamePsiElementProcessor() {
     override fun canProcessElement(element: PsiElement): Boolean {
         return element is CaosScriptSubroutine
                 || element is CaosScriptSubroutineName
-                || element is CaosScriptNamedGameVar
-                || element is CaosScriptQuoteStringLiteral
-                || element is CaosScriptStringLike
+        /*|| element is CaosScriptNamedGameVar
+        || element is CaosScriptQuoteStringLiteral
+        || element is CaosScriptStringLike*/
     }
 
     override fun isInplaceRenameSupported(): Boolean {
@@ -86,9 +86,9 @@ class CaosScriptRenameElementProcessor : RenamePsiElementProcessor() {
         if (element is CaosScriptSubroutine) {
             return element.subroutineHeader.subroutineName
         }
-        if (element is CaosScriptQuoteStringLiteral) {
-            return element
-        }
+//        if (element is CaosScriptQuoteStringLiteral) {
+//            return element
+//        }
         return super.substituteElementToRename(element, editor)
     }
 
