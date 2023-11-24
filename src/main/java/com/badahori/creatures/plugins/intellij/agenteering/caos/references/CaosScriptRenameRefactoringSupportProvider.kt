@@ -1,15 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptQuoteStringLiteral
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptSubroutineName
 import com.intellij.lang.refactoring.NamesValidator
 import com.intellij.lang.refactoring.RefactoringSupportProvider
-import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiNamedElement
-import com.intellij.refactoring.rename.inplace.VariableInplaceRenamer
 
 class CaosScriptRenameRefactoringSupportProvider : RefactoringSupportProvider() {
 
@@ -34,9 +30,10 @@ class CaosScriptRenameRefactoringSupportProvider : RefactoringSupportProvider() 
             ?: return false
         val parent = element.containingFile
         return element
-            .reference
-            .multiResolve(false)
-        .all { it.element?.containingFile?.isEquivalentTo(parent) == true }
+            .references
+            .firstOrNull()
+            ?.multiResolve(false)
+            ?.all { it.element?.containingFile?.isEquivalentTo(parent) == true } == true
     }
 }
 

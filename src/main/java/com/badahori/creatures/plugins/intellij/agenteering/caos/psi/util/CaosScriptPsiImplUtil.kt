@@ -1055,10 +1055,6 @@ object CaosScriptPsiImplUtil {
         return element.parent?.useScope ?: LocalSearchScope(element.containingFile)
     }
 
-    @JvmStatic
-    fun getReference(element: CaosScriptQuoteStringLiteral): CaosScriptQuoteStringReference {
-        return CaosScriptQuoteStringReference(element)
-    }
 
     @JvmStatic
     fun getReference(element: CaosScriptStringText): CaosScriptStringTextReference {
@@ -1066,8 +1062,88 @@ object CaosScriptPsiImplUtil {
     }
 
     @JvmStatic
+    fun getReferences(element: CaosScriptQuoteStringLiteral): Array<CaosScriptQuoteStringReference> {
+        return getFileReferenceRanges(element).map {
+            CaosScriptQuoteStringReference(element, it)
+        }.toTypedArray()
+    }
+
+    @JvmStatic
+    fun getReference(element: CaosScriptQuoteStringLiteral): CaosScriptQuoteStringReference {
+        return CaosScriptQuoteStringReference(element)
+    }
+
+    @JvmStatic
+    fun getReferences(element: CaosScriptCaos2ValueToken): Array<CaosScriptCaos2ValueTokenReference> {
+        return getFileReferenceRanges(element).map {
+            CaosScriptCaos2ValueTokenReference(element, it)
+        }.toTypedArray()
+    }
+
+    @JvmStatic
     fun getReference(element: CaosScriptCaos2ValueToken): CaosScriptCaos2ValueTokenReference {
         return CaosScriptCaos2ValueTokenReference(element)
+    }
+
+
+    private fun getFileReferenceRanges(element: CaosScriptStringLike): List<TextRange> {
+        val range = getStringNameRangeInString(element)
+        if (range.length == 0) {
+            return listOf()
+        }
+
+        val text = element.text
+
+        CaosStringToFileResolver.resolveToFiles(
+            project = element.project,
+            element = element,
+            searchScope = GlobalSearchScope.projectScope(element.project)
+        )
+            ?: return listOf(
+                range
+            )
+
+        val out = mutableListOf<TextRange>()
+
+        val separator = getPathSeparator(text)
+
+        val ranges = element.text.substring(range.startOffset, range.endOffset).split(separator)
+
+        if (ranges.all { it.isEmpty() }) {
+            return listOf(range)
+        }
+
+        var lastRangeEnd: Int = range.endOffset
+        for (i in ranges.indices.reversed()) {
+            val component = ranges[i]
+            if (component.isEmpty()) {
+                lastRangeEnd--
+                continue
+            }
+
+            val start = lastRangeEnd - component.length
+            val end = lastRangeEnd
+
+            lastRangeEnd = start - 1 // Go back past slash after get
+
+            // Make sure start is greater than or equal to zero; Mostly debug until right length is found
+            if (start < 0) {
+                continue
+            }
+            if (start < range.startOffset) {
+                continue
+            }
+
+            if (end <= start) {
+                continue
+            }
+            if (component != text.substring(start, end)) {
+                continue
+            }
+
+            out.add(TextRange(start, end))
+        }
+        return out
     }
 
     // ============================== //
