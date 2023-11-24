@@ -1,20 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.catalogue.support
 
-import com.bedalton.common.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.annotators.newErrorAnnotation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.DeleteElementFix
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.lexer.CatalogueTypes
-import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueArray
-import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueCount
-import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueErrorItem
-import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueItemName
-import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueOverride
-import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueTag
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.levenshteinDistance
 import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
+import com.bedalton.common.util.stripSurroundingQuotes
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.openapi.project.DumbAware
@@ -47,13 +41,13 @@ class CatalogueErrorAnnotator : Annotator, DumbAware {
         if (text == text.uppercase()) {
             return
         }
-        holder.newErrorAnnotation(AgentMessages.message("catalogue.errors.not-upper-case", text.uppercase()))
+        holder.newErrorAnnotation(CaosBundle.message("catalogue.errors.not-upper-case", text.uppercase()))
             .range(element)
             .withFix(
                 CaosScriptReplaceElementFix(
                     element,
                     text.uppercase(),
-                    AgentMessages.message("catalogue.errors.not-upper-case.fix", text),
+                    CaosBundle.message("catalogue.errors.not-upper-case.fix", text),
                     false
                 )
             )
@@ -65,14 +59,14 @@ class CatalogueErrorAnnotator : Annotator, DumbAware {
             return
         }
         val error = when (element) {
-            is CatalogueOverride -> AgentMessages.message("catalogue.errors.override-not-allowed-in-tag")
-            is CatalogueCount -> AgentMessages.message("catalogue.errors.count-not-allowed-in-tag")
+            is CatalogueOverride -> CaosBundle.message("catalogue.errors.override-not-allowed-in-tag")
+            is CatalogueCount -> CaosBundle.message("catalogue.errors.count-not-allowed-in-tag")
             else -> return
         }
         holder.newErrorAnnotation(error)
             .range(element)
             .withFix(DeleteElementFix(
-                AgentMessages.message("catalogue.errors.remove-invalid-element"),
+                CaosBundle.message("catalogue.errors.remove-invalid-element"),
                 element
             ))
             .create()
@@ -101,12 +95,12 @@ class CatalogueErrorAnnotator : Annotator, DumbAware {
             "ARRAY"
         }
         val value = if (element.parent is CatalogueItemName) {
-            AgentMessages.message("catalogue.component-names.item-name", parent)
+            CaosBundle.message("catalogue.component-names.item-name", parent)
         } else {
-            AgentMessages.message("catalogue.component-names.item", parent)
+            CaosBundle.message("catalogue.component-names.item", parent)
         }
-        val error = AgentMessages.message("catalogue.errors.must-be-quoted", value)
-        val fixMessage = AgentMessages.message("catalogue.errors.must-be-quoted.fix")
+        val error = CaosBundle.message("catalogue.errors.must-be-quoted", value)
+        val fixMessage = CaosBundle.message("catalogue.errors.must-be-quoted.fix")
         val replacementText = "\"$text\""
         holder.newErrorAnnotation(error)
             .range(element)
@@ -132,11 +126,11 @@ class CatalogueErrorAnnotator : Annotator, DumbAware {
         val fixText: String
 
         if (text.startsWith('\'')) {
-            errorText = AgentMessages.message("catalogue.errors.incorrect-quote")
-            fixText = AgentMessages.message("catalogue.errors.incorrect-quote.fix")
+            errorText = CaosBundle.message("catalogue.errors.incorrect-quote")
+            fixText = CaosBundle.message("catalogue.errors.incorrect-quote.fix")
         } else {
-            errorText = AgentMessages.message("catalogue.errors.unclosed-string")
-            fixText = AgentMessages.message("catalogue.errors.unclosed-string.fix")
+            errorText = CaosBundle.message("catalogue.errors.unclosed-string")
+            fixText = CaosBundle.message("catalogue.errors.unclosed-string.fix")
         }
         holder.newErrorAnnotation(errorText)
             .range(element)
@@ -154,8 +148,8 @@ class CatalogueErrorAnnotator : Annotator, DumbAware {
 
     private fun annotateErrorInt(element: PsiElement, holder: AnnotationHolder) {
         val text = element.text
-        val errorText: String = AgentMessages.message("catalogue.errors.unquoted-number")
-        val fixMessage: String = AgentMessages.message("catalogue.errors.unquoted-number.fix")
+        val errorText: String = CaosBundle.message("catalogue.errors.unquoted-number")
+        val fixMessage: String = CaosBundle.message("catalogue.errors.unquoted-number.fix")
         holder.newErrorAnnotation(errorText)
             .range(element)
             .afterEndOfLine()
@@ -175,12 +169,12 @@ class CatalogueErrorAnnotator : Annotator, DumbAware {
             return false
         }
         val text = element.text
-        val errorText: String = AgentMessages.message("catalogue.errors.unexpected-word", text)
+        val errorText: String = CaosBundle.message("catalogue.errors.unexpected-word", text)
         val possibleIntention = getSimilar(text)
         var annotation = holder.newErrorAnnotation(errorText)
             .range(element)
         if (possibleIntention != null) {
-            val fixMessage = AgentMessages.message("fix.replace-with", possibleIntention)
+            val fixMessage = CaosBundle.message("fix.replace-with", possibleIntention)
             annotation = annotation.withFix(CaosScriptReplaceElementFix(
                 element,
                 possibleIntention,
@@ -189,7 +183,7 @@ class CatalogueErrorAnnotator : Annotator, DumbAware {
             ))
         }
         annotation.create()
-        return false
+        return true
     }
 
     private fun getSimilar(text: String): String? {
@@ -209,8 +203,6 @@ class CatalogueErrorAnnotator : Annotator, DumbAware {
                 }
             }
     }
-
-    companion object {
-        val keywords = listOf("ARRAY", "OVERRIDE", "TAG")
-    }
 }
+
+val keywords = listOf("ARRAY", "OVERRIDE", "TAG")

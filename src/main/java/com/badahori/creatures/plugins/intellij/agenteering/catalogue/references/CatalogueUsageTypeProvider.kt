@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.catalogue.references
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueArray
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueItemName
@@ -44,12 +44,12 @@ class CatalogueUsageTypeProvider: UsageTypeProvider {
 
 val ARRAY_USAGE by lazy {
     UsageType {
-        AgentMessages.message("catalogue.usage-types.array")
+        CaosBundle.message("catalogue.usage-types.array")
     }
 }
 
 val TAG_USAGE by lazy {
     UsageType {
-        AgentMessages.message("catalogue.usage-types.tag")
+        CaosBundle.message("catalogue.usage-types.tag")
     }
 }
