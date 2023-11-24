@@ -880,7 +880,7 @@ loop_statement
 	;
 
 loop_terminator
-	::= cEver
+	::= c_ever
 	|	untl_terminator
 	{
 		pin=1
@@ -1129,7 +1129,7 @@ c_loop
 	}
 	;
 
-cEver
+c_ever
 	::= K_EVER
 	{
 		implements = [
