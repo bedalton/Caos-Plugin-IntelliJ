@@ -2581,6 +2581,7 @@ quote_string_literal
 			getName
 			setName
 			getReference
+			getReferences
 			getPresentation
 			getStringStubKind
 			getMeta
@@ -2601,7 +2602,6 @@ string_text
 			isClosed
 			getName
 			setName
-			getReference
 			getPresentation
 			getUseScope
 			getStringStubKind
