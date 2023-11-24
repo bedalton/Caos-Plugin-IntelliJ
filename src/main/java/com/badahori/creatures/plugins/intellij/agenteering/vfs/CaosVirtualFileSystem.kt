@@ -429,7 +429,6 @@ class CaosVirtualFileEvent(requester: Any?, file: CaosVirtualFile, parent: Virtu
 typealias CaosVirtualFileSaveListener = (e: CaosVirtualFileEvent) -> Unit
 
 interface CaosVirtualFileListener : VirtualFileListener {
-    @JvmDefault
     fun onFileSave(e: CaosVirtualFileEvent) {
 
     }
