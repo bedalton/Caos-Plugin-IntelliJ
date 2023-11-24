@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2ValueToken
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.stubs.StubElement
@@ -166,4 +167,9 @@ interface CaosScriptQuoteStringLiteralStub: StubElement<CaosScriptQuoteStringLit
     val kind: StringStubKind?
     val value: String
     val meta: Int
+}
+
+interface CaosScriptCaos2ValueTokenStub: StubElement<CaosScriptCaos2ValueTokenImpl> {
+    val kind: StringStubKind?
+    val value: String
 }
