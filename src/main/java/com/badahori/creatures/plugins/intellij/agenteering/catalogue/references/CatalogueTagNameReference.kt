@@ -14,7 +14,11 @@ import com.intellij.psi.PsiElementResolveResult
 import com.intellij.psi.PsiPolyVariantReferenceBase
 import com.intellij.psi.ResolveResult
 
-class CatalogueTagNameReference(val element: CatalogueItemName) : PsiPolyVariantReferenceBase<CatalogueItemName>(element, getStringNameRangeInString(element.text)) {
+class CatalogueTagNameReference(
+    val element: CatalogueItemName
+) : PsiPolyVariantReferenceBase<CatalogueItemName>(
+    element, getStringNameRangeInString(element)
+) {
 
     private val selfOnlyResult by lazy {
         if (myElement.isValid) {
