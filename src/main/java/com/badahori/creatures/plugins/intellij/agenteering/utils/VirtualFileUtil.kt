@@ -554,3 +554,15 @@ internal fun getFileIcon(fileName: String, nonNullDefault: Boolean = true): Icon
         }
     }
 }
+
+
+internal fun getPathSeparator(text: String): Char {
+    if (text.contains('/')) {
+        return '/'
+    }
+    return if (text.contains("\\\\[^\"]".toRegex())) {
+        '\\'
+    } else {
+        pathSeparatorChar
+    }
+}
