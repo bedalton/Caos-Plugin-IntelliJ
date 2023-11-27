@@ -49,6 +49,8 @@
                 <ul>
                     <li>Relative path completion in CAOS2Pray directives</li>
                     <li>Journal name autocomplete</li>
+                    <li>Filename rename in CAOS2Pray</li>
+                    <li>Rename NAME|GAME|EAME variable strings</li>
                 </ul>
             </li>
             <li>
