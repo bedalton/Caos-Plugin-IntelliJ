@@ -214,12 +214,12 @@
          on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
-    <depends config-file="att-support-plugin.xml">com.intellij.modules.lang</depends>
-    <depends config-file="catalogue-support-plugin.xml">com.intellij.modules.lang</depends>
-    <depends config-file="cob-support-plugin.xml">com.intellij.modules.lang</depends>
-    <depends config-file="idea-project-plugin.xml">com.intellij.modules.lang</depends>
-    <depends config-file="pray-support-plugin.xml">com.intellij.modules.lang</depends>
-    <depends config-file="sprite-support-plugin.xml">com.intellij.modules.lang</depends>
+    <depends config-file="att-support-plugin.xml"/>
+    <depends config-file="catalogue-support-plugin.xml"/>
+    <depends config-file="cob-support-plugin.xml"/>
+    <depends config-file="idea-project-plugin.xml"/>
+    <depends config-file="pray-support-plugin.xml"/>
+    <depends config-file="sprite-support-plugin.xml"/>
 
 
     <extensions defaultExtensionNs="com.intellij">
