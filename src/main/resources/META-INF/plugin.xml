@@ -51,6 +51,7 @@
                     <li>Journal name autocomplete</li>
                     <li>Filename rename in CAOS2Pray</li>
                     <li>Rename NAME|GAME|EAME variable strings</li>
+                    <li>Fix error on expand CAOS in C1e scripts</li>
                 </ul>
             </li>
             <li>
