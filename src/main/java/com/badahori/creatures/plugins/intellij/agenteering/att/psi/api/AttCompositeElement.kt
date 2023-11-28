@@ -10,11 +10,11 @@ interface AttCompositeElement : PsiElement, NavigationItem {
     fun <PsiT: PsiElement> getChildOfType(childType:Class<PsiT>):PsiT? = PsiTreeUtil.getChildOfType(this, childType)
     fun <PsiT: PsiElement> getChildrenOfType(childType:Class<PsiT>):List<PsiT> = PsiTreeUtil.getChildrenOfTypeAsList(this, childType)
     fun <PsiT: PsiElement> getParentOfType(parentClass:Class<PsiT>):PsiT? = PsiTreeUtil.getParentOfType(this, parentClass)
-    @JvmDefault
+
     val descriptiveText:String? get() = null
-    @JvmDefault
+
     val locationString:String? get() = null
-    @JvmDefault
+
     val icon:Icon? get() = null
 }
 

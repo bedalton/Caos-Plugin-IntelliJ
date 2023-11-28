@@ -3,7 +3,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.references
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.stringTextToAbsolutePath
 import com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.virtualFile
@@ -28,9 +27,9 @@ internal object CaosStringToFileResolver {
         searchScope: GlobalSearchScope = GlobalSearchScope.projectScope(project)
     ): Collection<VirtualFile>? {
 
-
         // Ensure this string can be resolved
-        val stubKind = element.stringStubKind
+        val stubKind = element
+            .stringStubKind
             ?: return null
 
         // Make sure it can be resolved to a file
@@ -39,7 +38,8 @@ internal object CaosStringToFileResolver {
         }
 
         // Get possible extensions
-        val extensions = stubKind.extensions
+        val extensions = stubKind
+            .extensions
             .nullIfEmpty()
             ?: return null
 
@@ -100,7 +100,7 @@ internal object CaosStringToFileResolver {
 
     /**
      * Resolves a relative path in a string to a virtual file
-     * This is made possble by using the element's containing file's parent
+     * This is made possible by using the element's containing file's parent
      */
     private fun resolveToFileRelative(element: CaosScriptStringLike): VirtualFile? {
         val absolutePath = element.stringTextToAbsolutePath()

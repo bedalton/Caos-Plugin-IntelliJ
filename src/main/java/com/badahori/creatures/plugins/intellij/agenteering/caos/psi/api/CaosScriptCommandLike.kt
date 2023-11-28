@@ -12,13 +12,11 @@ import com.intellij.psi.util.elementType
 interface CaosScriptCommandLike : CaosScriptCompositeElement {
     val commandString:String?
 
-    @JvmDefault
     val commandTokenElement:CaosScriptIsCommandToken? get() = when (this) {
         is CaosScriptIsCommandToken -> this
         else -> this.getChildOfType(CaosScriptIsCommandToken::class.java)
     }
 
-    @JvmDefault
     val commandTokenElementType: IElementType? get() = when (this) {
         is CaosScriptIsCommandToken -> CaosScriptPsiImplUtil.getCommandTokenElementType(this)
         else -> CaosScriptPsiImplUtil.getCommandTokenElementType(this.getChildOfType(CaosScriptIsCommandToken::class.java))

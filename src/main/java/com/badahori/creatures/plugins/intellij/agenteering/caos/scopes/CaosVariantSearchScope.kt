@@ -1,16 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.scopes
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.UNKNOWN
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.like
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.inferVariantHard
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.openapi.module.Module
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
@@ -20,7 +20,7 @@ import com.intellij.psi.search.SearchScope
 /**
  * Search Scope to filter files by variant
  */
-class CaosVariantSearchScope constructor(
+class CaosVariantSearchScope(
     private val myVariant: CaosVariant?,
     private val myProject: Project,
     private val strict: Boolean = true
@@ -64,14 +64,14 @@ class CaosVariantSearchScope constructor(
     }
 
     override fun getDisplayName(): String {
-        return "CAOS Variant Search Scope"
+        return CaosBundle.message("caos.search-scope.variant-search-scope")
     }
 }
 
 /**
  * Search Scope to filter files by variant
  */
-class CaosVariantGlobalSearchScope constructor(
+class CaosVariantGlobalSearchScope(
     private val myProject: Project,
     private val myVariant: CaosVariant?,
     private val strict: Boolean = false,
@@ -82,16 +82,11 @@ class CaosVariantGlobalSearchScope constructor(
         myVariant?.isC3DS == true
     }
 
-//    override fun intersectWith(otherScope: SearchScope): GlobalSearchScope {
-//        return MyGlobalSearchScope { file ->
-//            this.contains(file) && otherScope.contains(file)
-//        }
-//    }
-
     override fun contains(file: VirtualFile): Boolean {
         val variant = (file as? CaosVirtualFile)?.variant
             ?: file.getPsiFile(myProject)?.variant
             ?: file.getModule(myProject)?.variant
+            ?: project?.inferVariantHard()
 
         if (strict) {
             // False because we already checked if variants were equal
@@ -118,7 +113,7 @@ class CaosVariantGlobalSearchScope constructor(
     }
 
     override fun getDisplayName(): String {
-        return "CAOS Variant Search Scope"
+        return CaosBundle.message("caos.search-scope.global-variant-search-scope")
     }
 }
 
