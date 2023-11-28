@@ -880,8 +880,9 @@
         <fileBasedIndex
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameIndex"/>
 
-        <editorTypedHandler
-                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEndWordIndenter"
+        <typedHandler
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEndWordIndenter"
+
         />
 
         <!-- INTENTION ACTIONS -->

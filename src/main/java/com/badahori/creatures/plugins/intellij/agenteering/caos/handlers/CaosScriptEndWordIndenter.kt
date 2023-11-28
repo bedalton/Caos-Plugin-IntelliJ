@@ -4,14 +4,18 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.token
-import com.badahori.creatures.plugins.intellij.agenteering.utils.document
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.bedalton.common.util.className
+import com.bedalton.common.util.formatted
+import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
 import com.intellij.codeInsight.template.impl.editorActions.TypedActionHandlerBase
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.actionSystem.TypedActionHandler
+import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -19,29 +23,13 @@ import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiUtilBase
 import com.intellij.psi.util.elementType
 
-class CaosScriptEndWordIndenter(private val originalHandler: TypedActionHandler?) :
-    TypedActionHandlerBase(originalHandler) {
+class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
 
-    override fun execute(editor: Editor, c: Char, dataContext: DataContext) {
-        try {
-            originalHandler?.execute(editor, c, dataContext)
-        } catch (_: Exception) {
-        }
-        handle(editor, c, dataContext)
-    }
-
-    private fun handle(editor: Editor, c: Char, dataContext: DataContext): Boolean {
-        val project = CommonDataKeys.PROJECT.getData(dataContext)
-            ?: return false
+    override fun charTyped(c: Char, project: Project, editor: Editor, file: PsiFile): Result {
 
         if (PsiUtilBase.getLanguageInEditor(editor, project) != CaosScriptLanguage) {
-            return false
-        }
-        val file = CommonDataKeys.PSI_FILE.getData(dataContext)
-            ?: return false
-
-        if (file !is CaosScriptFile) {
-            return false
+            LOGGER.info("CaosScriptEndWordIndenter not called on NON-CAOS language")
+            return Result.CONTINUE
         }
 
         val blockToReformat = when (c) {
@@ -59,7 +47,7 @@ class CaosScriptEndWordIndenter(private val originalHandler: TypedActionHandler?
                 getElementIfPrefixed(file, editor, RETN, NSCN)?.let {
                     if (it.elementType == CaosScriptTypes.CaosScript_C_KW_RETN) {
                         it.parent.parent
-                            ?: return false
+                            ?: return Result.CONTINUE
                     } else {
                         it.parent
                     }
@@ -96,15 +84,20 @@ class CaosScriptEndWordIndenter(private val originalHandler: TypedActionHandler?
 
             else -> null
 
-        } ?: return false
-
-        return try {
-            CodeStyleManager.getInstance(project)
-                .reformatText(file, blockToReformat.startOffset, editor.caretModel.offset)
-            true
-        } catch (e: Exception) {
-            false
+        } ?: return Result.CONTINUE.also {
+            LOGGER.info("Is not a CAOS de-dent token; Char: $c; Element: ${editor.element?.let { it.className +  "[${it.text}]" } }")
         }
+
+
+
+        try {
+            LOGGER.info("IS CAOS de-dent token; \n\tChar: $c;\n\tElement: ${blockToReformat.className}[${blockToReformat.text}]\nReformatting...")
+            CodeStyleManager.getInstance(project)
+                .reformatText(file, blockToReformat.startOffset, blockToReformat.endOffset)
+        } catch (e: Exception) {
+            LOGGER.severe("Failed to de-dent at token;\n\tChar: $c;\n\tElement: ${blockToReformat.className}[${blockToReformat.text}]\n${e.formatted(true)}")
+        }
+        return Result.CONTINUE
     }
 
     private fun commitAndUnblockDocument(file: PsiFile): Boolean {
