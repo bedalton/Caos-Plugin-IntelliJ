@@ -13,7 +13,7 @@ import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.invokeAndWaitIfNeeded
+import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
@@ -72,7 +72,7 @@ fun expandCommasInCaosScript(project: Project, fileIn: PsiFile?) {
     // Makes sure in proper context
     val application = ApplicationManager.getApplication()
     if (!application.isDispatchThread) {
-        invokeAndWaitIfNeeded {
+        invokeAndWait(ModalityState.defaultModalityState()) {
             expandCommasInCaosScript(project, fileIn)
         }
         return

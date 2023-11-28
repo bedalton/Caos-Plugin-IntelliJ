@@ -12,14 +12,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartFiles
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BodyPartsIndex
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.executeOnPooledThread
-import com.badahori.creatures.plugins.intellij.agenteering.utils.filterNotNull
-import com.badahori.creatures.plugins.intellij.agenteering.utils.now
-import com.badahori.creatures.plugins.intellij.agenteering.utils.randomString
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem.Companion.instance
-import com.intellij.openapi.application.invokeAndWaitIfNeeded
+import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.progress.EmptyProgressIndicator
 import com.intellij.openapi.progress.ProcessCanceledException
@@ -243,7 +240,7 @@ class PoseEditorModel(
             return false
         }
         progressIndicator.checkCanceled()
-        val updatedPose: Pose = invokeAndWaitIfNeeded {
+        val updatedPose: Pose = invokeAndWait(ModalityState.defaultModalityState()) {
             try {
                 if (id < renderId.get()) {
                     progressIndicator.cancel()

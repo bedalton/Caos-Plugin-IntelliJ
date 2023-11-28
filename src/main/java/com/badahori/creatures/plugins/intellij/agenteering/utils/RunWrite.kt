@@ -2,12 +2,11 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
-import com.intellij.openapi.application.invokeAndWaitIfNeeded
 import java.util.concurrent.Callable
 import java.util.concurrent.Future
 
-fun <T> invokeAndWait (modality:ModalityState, runnable:() -> T): T {
-    return invokeAndWaitIfNeeded(modality, runnable)
+fun <T> invokeAndWait (modality:ModalityState? = ModalityState.defaultModalityState(), runnable:() -> T): T {
+    return invokeAndWait(modality, runnable)
 }
 
 @Deprecated("Use IntelliJ official invokeLater",
