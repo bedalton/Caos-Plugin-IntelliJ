@@ -14,7 +14,9 @@ import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runUndoTransparentWriteAction
+import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -26,9 +28,14 @@ import com.intellij.psi.util.PsiTreeUtil
  * Object class for expanding commas and newline-like spaces into newlines
  */
 class CaosScriptExpandCommasIntentionAction : PsiElementBaseIntentionAction(), IntentionAction, LocalQuickFix {
-    override fun startInWriteAction(): Boolean = true
+
+    override fun startInWriteAction(): Boolean = false
 
     override fun getFamilyName(): String = CAOSScript
+
+    override fun getElementToMakeWritable(currentFile: PsiFile): PsiElement? {
+        return null
+    }
 
     override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
         return element.containingFile is CaosScriptFile
@@ -72,7 +79,7 @@ fun expandCommasInCaosScript(project: Project, fileIn: PsiFile?) {
     // Makes sure in proper context
     val application = ApplicationManager.getApplication()
     if (!application.isDispatchThread) {
-        invokeAndWait(ModalityState.defaultModalityState()) {
+        invokeLater(ModalityState.defaultModalityState()) {
             expandCommasInCaosScript(project, fileIn)
         }
         return
@@ -80,11 +87,14 @@ fun expandCommasInCaosScript(project: Project, fileIn: PsiFile?) {
 
     runUndoTransparentWriteAction {
         try {
-            val virtualFile: VirtualFile? = fileIn.virtualFile ?: fileIn.originalFile.virtualFile
-            val isWritable = virtualFile?.isWritable == true
-            virtualFile?.isWritable = true
+
+            val virtualFile: VirtualFile = fileIn.virtualFile
+                ?: return@runUndoTransparentWriteAction
+
+            val isWritable = virtualFile.isWritable
+            virtualFile.isWritable = true
             runnable(project, fileIn)
-            virtualFile?.isWritable = isWritable
+            virtualFile.isWritable = isWritable
         } catch (e: Throwable) {
             LOGGER.severe("Failed to run expandCommas on '${fileIn.name}' in runUndoTransparentAction with throwable: ${e.message}")
             e.printStackTrace()
@@ -104,6 +114,7 @@ fun expandCommasInCaosScript(project: Project, fileIn: PsiFile?) {
 private fun runnable(project: Project, fileIn: PsiFile?): Boolean {
     val file = fileIn as? CaosScriptFile
         ?: return false
+
     val variant = fileIn.variant
         .nullIfUnknown()
 
@@ -117,8 +128,11 @@ private fun runnable(project: Project, fileIn: PsiFile?): Boolean {
         return true
     }
 
+    val document = file.document
+        ?: return false
+
     // Commit it so we can alter it
-    commit(project, file)
+    commit(project, document)
 
     // Get all possible newline elements
     PsiTreeUtil.collectElementsOfType(file, PsiWhiteSpace::class.java)
@@ -137,23 +151,25 @@ private fun runnable(project: Project, fileIn: PsiFile?): Boolean {
         }
         .forEach { it.element?.replace(CaosScriptPsiElementFactory.newLine(project)) }
 
-    commit(project, file)
+    commit(project, document)
 
     PsiTreeUtil.collectElementsOfType(file, PsiWhiteSpace::class.java)
         .filter { it.textContains(',') }
         .map { SmartPointerManager.createPointer(it) }
         .forEach { it.element?.replace(CaosScriptPsiElementFactory.spaceLikeOrNewlineSpace(project)) }
 
-    commit(project, file)
+    commit(project, document)
 
     if (!file.isValid || file.isInvalid || file.firstChild?.isValid != true) {
         return false
     }
+
     try {
-        val readonly = (file.document?.isWritable == false)
-        file.document?.setReadOnly(false)
+        val readonly = (!document.isWritable)
+        document.setReadOnly(false)
+        commit(project, document)
         CodeStyleManager.getInstance(project).reformat(file)
-        file.document?.setReadOnly(readonly)
+        document.setReadOnly(readonly)
     } catch (e: Exception) {
         LOGGER.severe("Reformat threw error: ${e.message}")
         e.printStackTrace()
@@ -167,22 +183,15 @@ private fun runnable(project: Project, fileIn: PsiFile?): Boolean {
     return true
 }
 
-private fun commit(project: Project, file: PsiFile) {
-    if (ApplicationManager.getApplication().isDispatchThread) {
-        LOGGER.info("Cannot commit file, is not dispatch thread")
+private fun commit(project: Project, document: Document) {
+    if (!ApplicationManager.getApplication().isDispatchThread) {
+        LOGGER.severe("Cannot commit file, is not dispatch thread")
         return
     }
     try {
         val manager = PsiDocumentManager.getInstance(project)
-        val document = file.document
-            ?: return
-        val readonly = !document.isWritable
-        document.setReadOnly(false)
-        PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
         manager.commitDocument(document)
-        if (readonly) {
-            document.setReadOnly(true)
-        }
+        manager.doPostponedOperationsAndUnblockDocument(document)
     } catch (e: Throwable) {
         LOGGER.severe("Failed to commit document with throwable; ${e.className}: ${e.message ?: ""}")
     } catch (e: Error) {
