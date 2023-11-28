@@ -17,7 +17,7 @@
 	psiImplClassSuffix="Impl"
 	psiPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api"
 	psiImplPackage="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl"
-	elementTypeFactory("macro|expression|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|rvalue|lvalue|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script|quote_string_literal|subroutine_name|caos_2_tag|caos_2_command|caos_2_block")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
+	elementTypeFactory("macro|expression|event_script|command_call|var_token|subroutine|c_assignment|c_targ|c_rndv|rvalue|lvalue|named_game_var|rvalue_prime|token_rvalue|install_script|removal_script|quote_string_literal|caos_2_value_token|subroutine_name|caos_2_tag|caos_2_command|caos_2_block")="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptElementTypeFactory.factory"
 	psiImplUtilClass="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil"
 	generateTokenAccessors=true
 	generateTokens=true
@@ -480,12 +480,17 @@ caos_2_value
 caos_2_value_token
 	::= ID
 	{
-		implements = [
-			"com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
-			"com.intellij.psi.PsiNamedElement"
-		]
+	    pin=1
+	    stubClass="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptCaos2ValueTokenStub"
+        extends="com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptStubBasedElementImpl<?>"
+        implements = [
+            "com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement"
+            "com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptStringLike"
+            "com.intellij.psi.PsiNamedElement"
+        ]
 		methods = [
 			getStringValue
+			getReferences
 			getReference
 			getName
 			setName
@@ -875,7 +880,7 @@ loop_statement
 	;
 
 loop_terminator
-	::= cEver
+	::= c_ever
 	|	untl_terminator
 	{
 		pin=1
@@ -1124,7 +1129,7 @@ c_loop
 	}
 	;
 
-cEver
+c_ever
 	::= K_EVER
 	{
 		implements = [
@@ -2576,6 +2581,7 @@ quote_string_literal
 			getName
 			setName
 			getReference
+			getReferences
 			getPresentation
 			getStringStubKind
 			getMeta
@@ -2596,7 +2602,6 @@ string_text
 			isClosed
 			getName
 			setName
-			getReference
 			getPresentation
 			getUseScope
 			getStringStubKind

@@ -74,6 +74,19 @@ object CaosScriptPsiElementFactory {
         return createRValue(project, script, variant)
     }
 
+    fun createStringCaos2Value(project: Project, newNameString: String): CaosScriptCaos2Value? {
+        val script = "**CAOS2PRAY\n*# tag = \"$newNameString\"\n"
+        val file = try {
+            createFileFromText(project, script, CaosVariant.DS)
+        } catch (e: Exception) {
+            return null
+        } catch (_: Error) {
+            return null
+        }
+        return file.collectElementsOfType(CaosScriptCaos2Value::class.java)
+            .firstOrNull()
+    }
+
     fun createNumber(project: Project, number: Int) : CaosScriptRvalue {
         return createRValue(project, "$number")
     }

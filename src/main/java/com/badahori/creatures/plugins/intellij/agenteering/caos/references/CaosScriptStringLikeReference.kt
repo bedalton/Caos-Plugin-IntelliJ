@@ -15,10 +15,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.notLike
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.parentParameter
-import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVariantGlobalSearchScope
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isPossiblyCaos
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.stringTextToAbsolutePath
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueEntryElementIndex
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.lang.CatalogueFile
@@ -39,8 +38,10 @@ import com.intellij.psi.util.PsiTreeUtil
 /**
  * Checks that a string literal is reference to other named game vars
  */
-abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: T) :
-    PsiPolyVariantReferenceBase<T>(element, getStringNameRangeInString(element.text)) {
+abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(
+    element: T,
+    range: TextRange = getStringNameRangeInString(element)
+) : PsiPolyVariantReferenceBase<T>(element, range) {
 
     private val selfOnlyResult by lazy {
         if (myElement.isValid)
@@ -66,15 +67,21 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
 
     private val isCatalogueTag by lazy {
         if (valuesListName?.lowercase()?.equals("catalogue.tag") == true) {
-            true
-        } else {
-            val inCatalogueCommand = containingCommand?.command?.uppercase() in listOf(
-                "READ",
-                "REAQ",
-                "REAN"
-            )
-            inCatalogueCommand && parameter?.index == 0
+            return@lazy true
         }
+        val containingCommand = containingCommand
+            ?.command
+            ?.uppercase()
+        val inCatalogueCommand = containingCommand in listOf(
+            "READ",
+            "REAQ",
+            "REAN"
+        )
+        if (!inCatalogueCommand) {
+            return@lazy false
+        }
+        val parameterIndex = myElement.getParentOfType(CaosScriptArgument::class.java)?.index
+        parameterIndex == 0
     }
 
     private val journalData: Pair<String, Int>? by lazy {
@@ -100,9 +107,11 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
         // Get values list name if any for string parameter
         val name = valuesListName
             ?: return@lazy null
+
         // Ensure this values list is files kind list
-        if (!name.startsWith("File.", ignoreCase = true))
+        if (!name.startsWith("File.", ignoreCase = true)) {
             return@lazy null
+        }
 
         // Get file extensions from values list name
         name.lowercase()
@@ -147,9 +156,17 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
 
     }
 
-    private val key: String by lazy {
-        ((element.parent?.parent as? CaosScriptNamedGameVar)
-            ?: (element.parent?.parent?.parent as? CaosScriptNamedGameVar))?.key ?: UNDEF
+    private val key: String? by lazy {
+        element.getSelfOrParentOfType(CaosScriptNamedGameVar::class.java)?.key
+    }
+
+
+    private val isCaos2FileString by lazy {
+        isCaos2FileString(myElement)
+    }
+
+    private val isPrayFileString by lazy {
+        isPrayFileString(myElement)
     }
 
 
@@ -165,7 +182,9 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
 
         // Ensure that variables share the same variant,
         // otherwise the variables cannot be the same
-        if (anElement.variant notLike myElement.variant) {
+        val thisVariant = myElement.variant
+        val otherVariant = anElement.variant
+        if (thisVariant != null && otherVariant != null && otherVariant notLike thisVariant) {
             return false
         }
 
@@ -173,7 +192,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
             return isCatalogueTag && anElement.name.lowercase() == element.name?.lowercase()
         }
 
-        if (anElement is CaosScriptQuoteStringLiteral && anElement.stringStubKind == StringStubKind.JOURNAL) {
+        if (anElement is CaosScriptStringLike && anElement.stringStubKind == StringStubKind.JOURNAL) {
             return isReferenceToJournal(anElement)
         }
 
@@ -198,7 +217,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
             return try {
                 resolveToCatalogueTag(project)
             } catch (_: IndexNotReadyException) {
-                return selfOnlyResult
+                selfOnlyResult
             }
         }
 
@@ -222,7 +241,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
 
         // Get named variable references
         if (namedVarType != null) {
-            return resolveToNamedGameVars(project, variant)
+            return resolveToNamedGameVars(project)
         }
 
         // If this is a journal file name return only journal name matches
@@ -247,8 +266,51 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
             .nullIfEmpty()
             ?: return ResolveResult.EMPTY_ARRAY
 
-        val resolved = files.mapNotNull {
-            it.toNavigableElement(project)
+
+        val text = myElement.text
+        val range = rangeInElement
+        var substring = myElement.text.substring(range.startOffset)
+        if (substring.endsWith('"') && !substring.endsWith("\\\"")) {
+            substring = substring.substringFromEnd(0, 1)
+        }
+
+        val pathSeparatorChar = getPathSeparator(text)
+
+        val resolved = if (!text.contains(pathSeparatorChar)) {
+            files.mapNotNull {
+                it.toNavigableElement(project)
+            }
+        } else {
+            files.mapNotNull { file ->
+                val split = substring
+                    .split(pathSeparatorChar)
+                    .reversed()
+
+                if (split.size == 1) {
+                    return@mapNotNull file.toNavigableElement(project)
+                }
+
+                var theFile = file
+                var lastComponentWasJumpUp = false
+                for (component in split.drop(1)) {
+                    theFile = when (component) {
+                        ".." -> theFile.parent?.also {
+                            lastComponentWasJumpUp = true
+                        }
+
+                        "." -> continue
+                        else -> {
+                            if (lastComponentWasJumpUp) {
+                                lastComponentWasJumpUp = false
+                                theFile.findChild(component)
+                            } else {
+                                theFile.parent?.parent?.findChild(component)
+                            }
+                        }
+                    } ?: return@mapNotNull null
+                }
+                theFile.toNavigableElement(project)
+            }
         }
 
         return PsiElementResolveResult.createResults(resolved)
@@ -256,8 +318,13 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
 
     private fun resolveToCatalogueTag(project: Project): Array<ResolveResult> {
         val name = myElement.stringValue
-        val results = CatalogueEntryElementIndex.Instance[name, project]
+
+        val results = CatalogueEntryElementIndex
+            .Instance[name, project]
             .nullIfEmpty()
+            ?.mapNotNull {
+                it.nameIdentifier
+            }
             ?: return ResolveResult.EMPTY_ARRAY
         return PsiElementResolveResult.createResults(results)
     }
@@ -279,6 +346,10 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
             CaosScriptStringLiteralIndex
                 .instance
                 .getAllInScope(project, GlobalSearchScopes.directoryScope(project, parentFolder, false))
+                .nullIfEmpty()
+                ?: CaosScriptStringLiteralIndex
+                    .instance
+                    .getAllInScope(project, GlobalSearchScope.projectScope(project))
         } else {
             // If index is dumb, just gather all sibling file's strings
             element.collectElementsOfTypeInParentChildren(
@@ -305,7 +376,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
             }.distinctBy { it.textRange }
     }
 
-    private fun resolveToNamedGameVars(project: Project, variant: CaosVariant): Array<ResolveResult> {
+    private fun resolveToNamedGameVars(project: Project): Array<ResolveResult> {
 
         // Only get results if named game var is not null
         val namedVarType = namedVarType
@@ -315,24 +386,31 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
         val references = if (namedVarType == MAME || namedVarType == NAME) {
             // MAME AND NAME resolve to the same variables
             // ...if TARG and OWNR are the same; OWNR and TARG classes are not resolved currently
-            getNamed(variant, project, MAME) + getNamed(variant, project, NAME)
+            getNamed(project, MAME) + getNamed(project, NAME)
         } else {
-            getNamed(variant, project, namedVarType)
+            getNamed(project, namedVarType)
         }
+
+
 
         return if (references.isEmpty()) {
             ResolveResult.EMPTY_ARRAY
         } else {
-            PsiElementResolveResult.createResults(references.filter { it != myElement && it != myElement.parent })
+            if (references.size == 1 && (references[0] == myElement || references[0] == myElement.parent)) {
+                return ResolveResult.EMPTY_ARRAY
+            }
+            PsiElementResolveResult.createResults(references)
         }
     }
 
     private fun getNamed(
-        variant: CaosVariant,
         project: Project,
         type: CaosScriptNamedGameVarType,
-    ): List<CaosScriptStringLike> {
-        return CaosScriptNamedGameVarIndex.instance[type, key, project, CaosVariantGlobalSearchScope(project, variant)]
+    ): List<PsiElement> {
+        val key = key
+            ?: return emptyList()
+        return CaosScriptNamedGameVarIndex
+            .instance[type, key, project, GlobalSearchScope.projectScope(project)]
             .filter { anElement ->
                 ProgressIndicatorProvider.checkCanceled()
                 anElement.isValid
@@ -345,11 +423,16 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
                     } else {
                         null
                     }
-                }
+                } ?: namedGameVar.nameIdentifier
             }
     }
 
     private fun isReferenceToFile(anElement: PsiElement): Boolean {
+
+        if (anElement is PsiDirectory && fileInfo > 0) {
+            val range = rangeInElement
+            return myElement.text.substring(range.startOffset, range.endOffset).lowercase() == anElement.name
+        }
 
         if (anElement !is PsiFile) {
             return false
@@ -359,7 +442,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
             ?: return false
 
         if (fileInfo != NO_EXTENSION) {
-            resolvesWithRelativePath(otherVirtualFile)
+            return resolvesWithRelativePath(otherVirtualFile)
         }
 
         val extensions = parameterFileExtensions
@@ -390,7 +473,7 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
     }
 
 
-    private fun isReferenceToJournal(anElement: CaosScriptQuoteStringLiteral): Boolean {
+    private fun isReferenceToJournal(anElement: CaosScriptStringLike): Boolean {
         val (journalName, meta) = journalData
             ?: return false
         val (otherName, otherMeta) = getJournalData(anElement)
@@ -418,19 +501,81 @@ abstract class CaosScriptStringLikeReference<T : CaosScriptStringLike>(element: 
             ?.toSet()
     }
 
-    protected fun handleElementRename(element: PsiNamedElement, newElementName: String): PsiElement {
-        val newName = if (fileInfo == NEEDS_EXTENSION) {
-            newElementName
-        } else {
-            getFileNameWithoutExtension(newElementName) ?: newElementName
+    protected fun handleElementRename(element: CaosScriptStringLike, newElementName: String): PsiElement {
+        if (fileInfo == 0) {
+            // Not filename, needs no conversion
+            return (element as? PsiNamedElement)?.setName(newElementName) ?: element
         }
-        return element.setName(newName)
+
+        // Get the actual text to use; This will strip extension as needed or qualify path
+        val finalText = getFinalNewFileNameText(element, newElementName)
+
+        return (element as? PsiNamedElement)?.setName(finalText) ?: element
+    }
+
+    private fun getFinalNewFileNameText(element: CaosScriptStringLike, newElementName: String): String {
+        val cachedNewName = element.getUserData(FILE_RENAME_NAME_IN_STRING_KEY)
+            .nullIfEmpty()
+        element.putUserData(FILE_RENAME_NAME_IN_STRING_KEY, null)
+        val newName = if (cachedNewName != null && cachedNewName.endsWith(newElementName)) {
+            cachedNewName
+        } else {
+            val text = element.text
+            val quote = text.getOrNull(0).let {
+                if (it == '"' || it == '\'') {
+                    it
+                } else {
+                    null
+                }
+            } ?: '"'
+            val pathSeparator = getPathSeparator(text)
+            if (text.contains(pathSeparator)) {
+                val range = rangeInElement
+
+                // Get text before this path component
+                val prefix = if (range.startOffset > 0) {
+                    text.substring(0, range.startOffset)
+                        .trimStart(quote)
+                        .nullIfEmpty()
+                        ?.let {
+                            it + pathSeparator
+                        }
+                        ?: ""
+                } else {
+                    ""
+                }
+
+                // Get text after this path component
+                val suffix = if (range.endOffset != text.lastIndex) {
+                    text.substring(range.endOffset)
+                        .trimEnd(quote)
+                        .nullIfEmpty()
+                        ?.let {
+                            pathSeparator + it
+                        }
+                } else {
+                    ""
+                }
+                prefix + newElementName + suffix
+            } else {
+                newElementName
+            }
+        }
+        val trimExtension = fileInfo != NEEDS_EXTENSION &&
+                newName.matches(".+?\\.[a-z0-9_]{3,}".toRegex(RegexOption.IGNORE_CASE))
+        return if (trimExtension) {
+            getFileNameWithoutExtension(newName) ?: newName
+        } else {
+            newName
+        }
     }
 }
 
 
-class CaosScriptQuoteStringReference(element: CaosScriptQuoteStringLiteral) :
-    CaosScriptStringLikeReference<CaosScriptQuoteStringLiteral>(element) {
+class CaosScriptQuoteStringReference(element: CaosScriptQuoteStringLiteral, range: TextRange) :
+    CaosScriptStringLikeReference<CaosScriptQuoteStringLiteral>(element, range) {
+    constructor(element: CaosScriptQuoteStringLiteral) : this(element, getStringNameRangeInString(element))
+
     override fun handleElementRename(newElementName: String): PsiElement {
         return handleElementRename(myElement, newElementName)
     }
@@ -440,7 +585,12 @@ class CaosScriptStringTextReference(element: CaosScriptStringText) :
     CaosScriptStringLikeReference<CaosScriptStringText>(element) {
 
     override fun handleElementRename(newElementName: String): PsiElement {
-        return handleElementRename(myElement, newElementName)
+        val newName = if (myElement.parent is CaosScriptQuoteStringLiteral) {
+            escapeQuotesInQuotedElement(newElementName)
+        } else {
+            newElementName
+        }
+        return handleElementRename(myElement, newName)
     }
 }
 
@@ -455,8 +605,13 @@ class PrayQuoteStringReference(element: PrayString) : CaosScriptStringLikeRefere
     }
 }
 
-class CaosScriptCaos2ValueTokenReference(element: CaosScriptCaos2ValueToken) :
-    CaosScriptStringLikeReference<CaosScriptCaos2ValueToken>(element) {
+class CaosScriptCaos2ValueTokenReference(
+    element: CaosScriptCaos2ValueToken,
+    range: TextRange
+) : CaosScriptStringLikeReference<CaosScriptCaos2ValueToken>(element, range) {
+
+    constructor(element: CaosScriptCaos2ValueToken) : this(element, getStringNameRangeInString(element))
+
     override fun handleElementRename(newElementName: String): PsiElement {
         return handleElementRename(myElement, newElementName)
     }
@@ -465,13 +620,17 @@ class CaosScriptCaos2ValueTokenReference(element: CaosScriptCaos2ValueToken) :
 const val NEEDS_EXTENSION = 1
 const val NO_EXTENSION = 2
 
-internal fun getStringNameRangeInString(text: String): TextRange {
+internal fun getStringNameRangeInString(element: PsiElement): TextRange {
+    if (element.isInvalid) {
+        return element.textRange
+    }
+    val text = element.text
     if (text.isEmpty()) {
         return TextRange(0, 0)
     }
 
     if (text.length == 1 && (text[0] == '"' || text[0] == '\'')) {
-        return TextRange(0,0)
+        return TextRange(0, 0)
     }
 
     val firstChar = text[0]
@@ -480,34 +639,24 @@ internal fun getStringNameRangeInString(text: String): TextRange {
     } else {
         null
     }
-    var firstSlash = text.lastIndexOf('/')
-    if (firstSlash < 0) {
-        firstSlash = text
-            // Remove possible string escapes
-            .replace("\\\\['\"]".toRegex(), "xx")
-            .lastIndexOf('\\')
-    }
 
     val lastChar = text.last()
 
-
-
-    val startIndex = if (firstSlash >= 0) {
-        firstSlash
-    } else if (startQuote != null) {
+    val startIndex = if (startQuote != null) {
         1
     } else {
         0
     }
     val endOffset = if (startQuote != null && lastChar == firstChar) {
         1
-    } else if (lastChar == '"' || lastChar == '\'') {
+    } else if (startQuote == null && (lastChar == '"' || lastChar == '\'')) {
         1
     } else {
         0
     }
 
     val endIndex = text.length - endOffset
+
     return TextRange(startIndex, endIndex)
 
 }
@@ -526,7 +675,6 @@ private fun getJournalData(element: CaosScriptCompositeElement): Pair<String, In
     val meta = quoteStringLiteral.meta
     return Pair(quoteStringLiteral.stringValue, meta)
 }
-
 
 private fun PrayTag.needsExtensionType(): Int {
     return if (tagName.lowercase() == "thumbnail") {
@@ -559,9 +707,34 @@ private fun getFileInfoType(element: CaosScriptStringLike, parameterFileExtensio
             else -> 0
         }
     }
-    return if (parameterFileExtensions != null) {
-        NO_EXTENSION
-    } else {
-        0
+    return when {
+        parameterFileExtensions.isNotNullOrEmpty() -> NO_EXTENSION
+        else -> 0
     }
+}
+
+private fun isCaos2FileString(element: PsiElement): Boolean {
+    val command = element.getParentOfType(CaosScriptCaos2Command::class.java)
+        ?.commandName
+        ?.uppercase()
+        ?: return false
+    if (command == "DEPEND" || command == "LINK" || command == "ATTACH") {
+        return true
+    }
+    val stringValue = element.getSelfOrParentOfType(CaosScriptStringLike::class.java)
+        ?.stringValue
+        ?: return false
+    return if (command == "RSCR") {
+        !isPossiblyCaos(stringValue)
+    } else {
+        false
+    }
+}
+
+
+private fun isPrayFileString(element: PsiElement): Boolean {
+    if (element.containingFile !is PrayFile) {
+        return false
+    }
+    return element.hasParentOfType(PrayInputFileName::class.java)
 }

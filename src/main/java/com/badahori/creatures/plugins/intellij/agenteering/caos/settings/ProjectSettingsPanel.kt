@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnkno
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService.CaosApplicationSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInjectorApplicationSettingsService.CaosWineSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsService.CaosProjectSettings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.inferVariantHard
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CreateInjectorDialog
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*

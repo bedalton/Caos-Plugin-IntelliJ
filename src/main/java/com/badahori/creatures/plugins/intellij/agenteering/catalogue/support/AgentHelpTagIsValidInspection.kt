@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.catalogue.support
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueItemName
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueVisitor
 import com.intellij.codeInspection.LocalInspectionTool
@@ -31,11 +31,11 @@ class AgentHelpTagIsValidInspection : LocalInspectionTool(), DumbAware {
                 val errorMessage: String
                 val fixText: String
                 if (parts[0] != "Agent Help") {
-                    errorMessage = AgentMessages.message("catalogue.errors.invalid-agent-help-tag-case")
-                    fixText = AgentMessages.message("catalogue.errors.invalid-agent-help-tag-case-fix", parts[0])
+                    errorMessage = CaosBundle.message("catalogue.errors.invalid-agent-help-tag-case")
+                    fixText = CaosBundle.message("catalogue.errors.invalid-agent-help-tag-case-fix", parts[0])
                 } else {
-                    errorMessage = AgentMessages.message("catalogue.errors.invalid-agent-help-tag-invalid-formatting")
-                    fixText = AgentMessages.message("catalogue.errors.invalid-agent-help-tag-invalid-formatting.fix", expected)
+                    errorMessage = CaosBundle.message("catalogue.errors.invalid-agent-help-tag-invalid-formatting")
+                    fixText = CaosBundle.message("catalogue.errors.invalid-agent-help-tag-invalid-formatting.fix", expected)
                 }
                 holder.registerProblem(
                     element,

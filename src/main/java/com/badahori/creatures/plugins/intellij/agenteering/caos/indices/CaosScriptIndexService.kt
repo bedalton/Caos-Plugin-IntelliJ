@@ -9,5 +9,6 @@ interface CaosScriptIndexService {
     fun indexEventScript(stub: CaosScriptEventScriptStub, indexSink: IndexSink)
     fun indexNamedGameVar(stub: CaosScriptNamedGameVarStub, indexSink: IndexSink)
     fun indexString(stub: CaosScriptQuoteStringLiteralStub, indexSink: IndexSink)
+    fun indexString(stub: CaosScriptCaos2ValueTokenStub, indexSink: IndexSink)
     fun indexToken(stub: CaosScriptTokenRValueStub, indexSink: IndexSink)
 }

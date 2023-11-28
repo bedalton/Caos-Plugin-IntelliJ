@@ -22,6 +22,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosFileTreeChangedListener
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.inferVariantHard
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*

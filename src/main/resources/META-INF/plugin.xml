@@ -49,6 +49,8 @@
                 <ul>
                     <li>Relative path completion in CAOS2Pray directives</li>
                     <li>Journal name autocomplete</li>
+                    <li>Filename rename in CAOS2Pray</li>
+                    <li>Rename NAME|GAME|EAME variable strings</li>
                 </ul>
             </li>
             <li>
@@ -259,6 +261,14 @@
         <lang.findUsagesProvider language="CaosScript"
                                  implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptUsagesProvider"/>
 
+        <usageTypeProvider
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptUsageTypeProvider"
+        />
+
+        <automaticRenamerFactory
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptFileStringRenamerFactory"
+        />
+
         <moduleType id="CAOS_MODULE"
                     implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType"
                     classpathProvider="false"/>
@@ -288,6 +298,7 @@
         <renameInputValidator
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameInputValidator"
         />
+
         <lang.refactoringSupport language="CaosScript"
                                  implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosScriptRenameRefactoringSupportProvider"/>
 
@@ -420,6 +431,15 @@
                          enabledByDefault="true"
                          displayName="Assigned value is of expected type"
                          shortName="ExpectedAssigmentType"
+        />
+        <localInspection language="CaosScript"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptWavFileLengthInspection"
+                         level="WARNING"
+                         groupName="CaosScript"
+                         groupPath="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Wave file name length is valid"
+                         shortName="WavFileLengthValid"
         />
 
         <localInspection language="CaosScript"

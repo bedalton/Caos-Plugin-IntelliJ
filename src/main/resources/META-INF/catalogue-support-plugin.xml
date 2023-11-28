@@ -29,6 +29,10 @@
         <colorSettingsPage
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.catalogue.highlighting.CatalogueColorSettingsPage"/>
 
+        <lang.findUsagesProvider
+            implementationClass="com.badahori.creatures.plugins.intellij.agenteering.catalogue.references.CatalogueUsagesProvider"
+            language="Catalogue"
+            />
 
         <applicationService
                 serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueStubIndexService"
@@ -38,6 +42,10 @@
                 externalIdPrefix="catalogue."
                 class="com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.types.CatalogueStubTypes"
         />
+
+        <usageTypeProvider
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.catalogue.references.CatalogueUsageTypeProvider"
+            />
 
         <stubIndex
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueEntryElementIndex"/>

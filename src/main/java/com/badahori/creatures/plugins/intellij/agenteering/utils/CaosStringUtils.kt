@@ -3,6 +3,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.bedalton.common.util.ensureNotEndsWith
+import com.bedalton.common.util.ensureNotStartsWith
 import java.util.*
 import kotlin.contracts.contract
 import kotlin.math.ceil
@@ -421,4 +423,18 @@ fun Char.lowercase(): Char {
 
 fun Char.uppercase(): Char {
     return this.uppercaseChar()
+}
+
+
+internal fun escapeQuotesInQuotedElement(text: String): String {
+    var escapeToken = "@$$$$$$$$$$@"
+    while (text.contains(escapeToken)) {
+        escapeToken = "@$escapeToken@"
+    }
+    return text
+        .replace("\\\"", escapeToken)
+        .ensureNotStartsWith('"')
+        .ensureNotEndsWith('"')
+        .replace("\"", "\\\"")
+        .replace(escapeToken, "\\\"")
 }

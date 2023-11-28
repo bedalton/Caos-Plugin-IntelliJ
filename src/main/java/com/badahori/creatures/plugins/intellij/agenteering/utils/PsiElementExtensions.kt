@@ -5,6 +5,7 @@ import com.intellij.openapi.editor.ex.FoldingModelEx
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDirectory
 import com.intellij.psi.PsiElement
+import com.intellij.psi.PsiFile
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
@@ -132,9 +133,17 @@ val PsiElement.isNotFolded: Boolean
 
 val PsiElement.virtualFile: VirtualFile?
     get() = containingFile?.virtualFile
+        ?: if (this is PsiDirectory) {
+            this.virtualFile
+        } else if (this is PsiFile) {
+            this.virtualFile
+        } else {
+            null
+        }
         ?: containingFile.originalFile.virtualFile
         ?: originalElement.containingFile?.virtualFile
         ?: originalElement.containingFile?.originalFile?.virtualFile
+
 
 fun <T: PsiElement> PsiElement.collectElementsOfTypeInParentChildren(clazz: Class<T>, recursive: Boolean): List<T> {
     return containingFile.parent
