@@ -28,18 +28,45 @@ import icons.CaosScriptIcons
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
+import kotlin.coroutines.coroutineContext
 
 class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("Compile PRAY Agent") {
 
 
     override fun update(e: AnActionEvent) {
         super.update(e)
-        val project = e.project
-        e.presentation.icon = CaosScriptIcons.BUILD
-        val visible = !transient || (project != null && e.files.any { file -> isPrayOrCaos2Pray(project, file) })
-        e.presentation.isVisible = visible
 
+        // Establish visibility
+        val visible = isVisible(e)
+        e.presentation.isEnabledAndVisible = visible
+
+        if (!visible) {
+            return
+        }
+        e.presentation.icon = CaosScriptIcons.BUILD
     }
+
+    private fun isVisible(e: AnActionEvent): Boolean {
+        if (!transient) {
+            return true
+        }
+        val project = e.project
+            ?: return false
+        if (project.isDisposed) {
+            return false
+        }
+        val files = e.files
+
+        if (e.files.size > 7) {
+            if (e.files.size < 15) {
+                return e.files.any { it.extension?.lowercase() in prayFileExtensions }
+            }
+            return true
+        }
+
+        return files.any { file -> isPrayOrCaos2Pray(project, file) }
+    }
+
 
     override fun actionPerformed(e: AnActionEvent) {
         val project: Project = e.project
@@ -51,6 +78,13 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("C
 
     companion object {
         private var lastCLIOptions: PrayCompileOptions? = null
+
+        private val prayFileExtensions = listOf(
+            "txt",
+            "ps",
+            "cos"
+        )
+
         private fun isPrayOrCaos2Pray(project: Project, virtualFile: VirtualFile): Boolean {
             val psiFile = virtualFile.getPsiFile(project)
                 ?: return false
@@ -136,7 +170,7 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("C
                 .withCompressionLevel(opts.compressionLevel)
             logProgress(true)
             try {
-                return compilePrayAndWrite(LocalFileSystem!!, fileOpts, false)
+                return compilePrayAndWrite(coroutineContext = coroutineContext, LocalFileSystem!!, fileOpts, false)
             } catch (e: Exception) {
                 invokeLater {
                     if (e is PrayParseValidationFailException) {

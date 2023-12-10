@@ -21,9 +21,7 @@ open class IncrementPartPoseAction (
     override fun update(e: AnActionEvent) {
         super.update(e)
         val isAttFile = isVisible(e)
-        e.presentation.isVisible = isAttFile
         e.presentation.isEnabledAndVisible = isAttFile
-        e.presentation.isEnabled = isAttFile
     }
 
     fun isVisible(e: AnActionEvent): Boolean {

@@ -40,12 +40,18 @@ class DumpSpriteAction : AnAction(
     override fun isDumbAware(): Boolean = true
 
     override fun update(e: AnActionEvent) {
+        e.presentation.isVisible = isVisible(e)
+    }
+
+    private fun isVisible(e: AnActionEvent): Boolean {
         val files = e.files
-        if (files.isEmpty() || files.none { it.fileType in spriteFileTypes }) {
-            e.presentation.isVisible = false
-            return
+        val fileCount = files.size
+
+        return when {
+            fileCount == 0 -> false
+            fileCount > 15 -> true
+            else -> files.any { it.fileType in spriteFileTypes }
         }
-        e.presentation.isVisible = true
     }
 
     override fun actionPerformed(e: AnActionEvent) {

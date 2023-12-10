@@ -49,13 +49,15 @@ class AttNewFileFromSpritesAction : AnAction(
 
         val bodyPartSprites = files(e)
         val bodyPartSpriteCount = bodyPartSprites.size
+
         val hasSprites = bodyPartSpriteCount > 0
-        e.presentation.isVisible = hasSprites
-        e.presentation.isEnabledAndVisible = hasSprites
-        e.presentation.isEnabled = hasSprites
         if (!hasSprites) {
+            e.presentation.isEnabledAndVisible = false
             return
         }
+
+        e.presentation.isEnabledAndVisible = true
+
         e.presentation.text = if (bodyPartSpriteCount == 1) {
             CaosBundle.message("att.actions.new-file-from-sprites.single.title", bodyPartSprites[0].name)
         } else {
@@ -69,6 +71,38 @@ class AttNewFileFromSpritesAction : AnAction(
         }
     }
 
+    private fun isValid(e: AnActionEvent): Boolean {
+        val files = e.files
+        val fileCount = files.size
+        if (fileCount == 0) {
+            return false
+        }
+
+        // Evaluate single file if any
+        if (fileCount == 1) {
+            val file = files[0]
+            if (!file.isValid) {
+                return false
+            }
+
+            // Return true if a single directory is selected
+            if (file.isDirectory) {
+                return true
+            }
+            return file.extension?.lowercase() in SpriteParser.VALID_SPRITE_EXTENSIONS
+        }
+
+
+        val directories = files.filter { it.isDirectory }
+        if (directories.size > 1) {
+            return false
+        }
+        return when {
+            fileCount <= 15 -> files.any { file -> isOrHasBodyPartSprite(file, true) }
+            else -> false
+        }
+    }
+
     override fun actionPerformed(e: AnActionEvent) {
 
         val project = e.project
@@ -79,33 +113,11 @@ class AttNewFileFromSpritesAction : AnAction(
 
         val files = files(e).nullIfEmpty()
             ?: return
-        val parents = files.map { it.parent }.distinct()
-        val parentCounts = parents.map { it.path }.distinct().size
-        val targetDirectory = if (parentCounts == 1) {
-            val hasAtts = VirtualFileUtil
-                .childrenWithExtensions(parents[0]!!, true, "att")
-                .isNotEmpty()
-            if (!hasAtts) {
-                val descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor()
-                    .apply {
-                        roots = listOf(parents[0])
-                        description = if (files.size == 1) {
-                            CaosBundle.message("att.actions.new-file-from-sprites.single.file-chooser-description",
-                                files[0].nameWithoutExtension + ".att")
-                        } else {
-                            CaosBundle.message("att.actions.new-file-from-sprites.multi.file-chooser-description")
-                        }
-                    }
-                FileChooser.chooseFiles(descriptor, e.project, parents[0])
-                    .firstOrNull()
-            } else {
-                null
-            }
-        } else {
-            null
-        }
+
 
         val projectVariant = project.inferVariantHard() ?: CaosVariant.UNKNOWN
+
+        val targetDirectory = getTargetDirectory(project, files)
 
         val targetParentFile: PsiDirectory? = targetDirectory?.getPsiFile(project) as? PsiDirectory
         var okay = 0
@@ -134,9 +146,11 @@ class AttNewFileFromSpritesAction : AnAction(
                         okay++
                     } else {
                         error++
-                        CaosNotifications.showError(project,
+                        CaosNotifications.showError(
+                            project,
                             "ATT File",
-                            "Failed to create ATT ${file.nameWithoutExtension}.att")
+                            "Failed to create ATT ${file.nameWithoutExtension}.att"
+                        )
                     }
                 }
                 val newFilesParents = if (targetDirectory != null) {
@@ -151,70 +165,143 @@ class AttNewFileFromSpritesAction : AnAction(
             }
     }
 
+}
 
-    companion object {
 
-        private val atomicId = AtomicInteger(0)
-        const val NEW_FILE_ACTION_ID = "Att-New-From-Sprites-"
+private val EMPTY_FILE_LIST = emptyList<VirtualFile>()
 
-        fun files(e: AnActionEvent): List<VirtualFile> {
-            return e.files
-                .filter {
-                    it.extension?.lowercase() in SpriteParser.VALID_SPRITE_EXTENSIONS && BreedPartKey.isPartName(it.nameWithoutExtension)
-                }
+private val atomicId = AtomicInteger(0)
+const val NEW_FILE_ACTION_ID = "Att-New-From-Sprites-"
+
+fun files(e: AnActionEvent): List<VirtualFile> {
+    return e.files
+        .flatMap { file ->
+            files(file)
         }
+}
 
-        fun init(project: Project, projectVariant: CaosVariant, targetParentFile: PsiDirectory?, file: VirtualFile, navigate: Boolean): Boolean {
-            val fileName = file.nameWithoutExtension + ".att"
 
-            val parent = (targetParentFile ?: file.getPsiFile(project)?.containingDirectory)!!
-            if (parent.findFile(fileName) != null) {
-                return true
-            }
-            var variant = file.cachedVariantExplicitOrImplicit
-                ?: file.getModule(project)?.inferVariantHard()
-            val closest = SpriteLocator.findClosest(variant, file.nameWithoutExtension, file.parent)
-
-            if (variant == null && closest != null) {
-                variant = SpriteParser.getBodySpriteVariant(closest, projectVariant)
-            }
-            val (trueVariant, data) = closest?.let {
-                AttAutoFill.paddedData(file.nameWithoutExtension, it, variant ?: projectVariant)
-            } ?: Pair(variant, AttAutoFill.blankAttData(fileName, variant ?: projectVariant))
-
-            if (trueVariant == null) {
-                return true
-            }
-            val text = data?.toFileText(trueVariant) ?: ""
-            val newFile: PsiFile = try {
-                PsiFileFactory.getInstance(project)
-                    .createFileFromText(fileName, AttFileType, text)
-            } catch (e: Exception) {
-                if (e is ProcessCanceledException) {
-                    throw e
-                }
-                LOGGER.severe("Failed to create ATT file for ${file.name}")
-                e.printStackTrace()
-                return false
-            }
-            return try {
-                parent.add(newFile)
-                invokeLater {
-                    if (navigate && newFile.canNavigate()) {
-                        newFile.navigate(true)
-                    }
-                }
-                true
-            } catch (e: Exception) {
-                if (e is ProcessCanceledException) {
-                    throw e
-                }
-                LOGGER.severe("Failed to add new ATT to parent directory")
-                e.printStackTrace()
-                false
-            }
+private fun files(file: VirtualFile): List<VirtualFile> {
+    if (file.isDirectory) {
+        return file.children.orEmpty().flatMap {
+            files(it)
         }
     }
+    if (file.extension?.lowercase() !in SpriteParser.VALID_SPRITE_EXTENSIONS) {
+        return EMPTY_FILE_LIST
+    }
+    if (BreedPartKey.isPartName(file.nameWithoutExtension)) {
+        return listOf(file)
+    } else {
+        return EMPTY_FILE_LIST
+    }
+}
 
+fun init(
+    project: Project,
+    projectVariant: CaosVariant,
+    targetParentFile: PsiDirectory?,
+    file: VirtualFile,
+    navigate: Boolean
+): Boolean {
+    val fileName = file.nameWithoutExtension + ".att"
+
+    val parent = (targetParentFile ?: file.getPsiFile(project)?.containingDirectory)!!
+    if (parent.findFile(fileName) != null) {
+        return true
+    }
+
+    var variant = file.cachedVariantExplicitOrImplicit
+        ?: file.getModule(project)?.inferVariantHard()
+
+    val closest = SpriteLocator.findClosest(variant, file.nameWithoutExtension, file.parent)
+
+    if (variant == null && closest != null) {
+        variant = SpriteParser.getBodySpriteVariant(closest, projectVariant)
+    }
+    val (trueVariant, data) = closest?.let {
+        AttAutoFill.paddedData(file.nameWithoutExtension, it, variant ?: projectVariant)
+    } ?: Pair(variant, AttAutoFill.blankAttData(fileName, variant ?: projectVariant))
+
+    if (trueVariant == null) {
+        return true
+    }
+    val text = data?.toFileText(trueVariant) ?: ""
+    val newFile: PsiFile = try {
+        PsiFileFactory.getInstance(project)
+            .createFileFromText(fileName, AttFileType, text)
+    } catch (e: Exception) {
+        if (e is ProcessCanceledException) {
+            throw e
+        }
+        LOGGER.severe("Failed to create ATT file for ${file.name}")
+        e.printStackTrace()
+        return false
+    }
+    return try {
+        parent.add(newFile)
+        invokeLater {
+            if (navigate && newFile.canNavigate()) {
+                newFile.navigate(true)
+            }
+        }
+        true
+    } catch (e: Exception) {
+        if (e is ProcessCanceledException) {
+            throw e
+        }
+        LOGGER.severe("Failed to add new ATT to parent directory")
+        e.printStackTrace()
+        false
+    }
+}
+
+
+private fun getTargetDirectory(project: Project, files: List<VirtualFile>): VirtualFile? {
+    val parents = files.map { it.parent }
+        .distinct()
+        .nullIfEmpty()
+        ?: return null
+
+    val parentCounts = parents.map { it.path }.distinct().size
+
+    // Return single parent
+    if (parentCounts != 1) {
+        return null
+    }
+
+    val hasAtts = VirtualFileUtil
+        .childrenWithExtensions(parents[0]!!, true, "att")
+        .isNotEmpty()
+
+    if (!hasAtts) {
+        return null
+    }
+    val descriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor()
+        .apply {
+            roots = listOf(parents[0])
+            description = if (files.size == 1) {
+                CaosBundle.message(
+                    "att.actions.new-file-from-sprites.single.file-chooser-description",
+                    files[0].nameWithoutExtension + ".att"
+                )
+            } else {
+                CaosBundle.message("att.actions.new-file-from-sprites.multi.file-chooser-description")
+            }
+        }
+    return FileChooser.chooseFiles(descriptor, project, parents[0])
+        .firstOrNull()
+}
+
+private val breedPartRegex = "[a-qA-Q][0-7][0-7]([0-9]\\.[Ss][Pp][Rr]|[a-zA-Z]\\.[CcSs]16)".toRegex()
+
+private fun isOrHasBodyPartSprite(file: VirtualFile, checkChildren: Boolean): Boolean {
+    if (!file.isDirectory) {
+        return breedPartRegex.matches(file.name)
+    }
+    if (!checkChildren) {
+        return false
+    }
+    return file.children.orEmpty().any { isOrHasBodyPartSprite(file, false) }
 
 }

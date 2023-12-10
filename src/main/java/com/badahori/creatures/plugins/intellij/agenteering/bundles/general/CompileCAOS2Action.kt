@@ -26,9 +26,24 @@ class CompileCAOS2Action: AnAction(
 
     override fun update(e: AnActionEvent) {
         super.update(e)
-        val project = e.project
-        e.presentation.isVisible = project != null && (file != null || e.files.any { isCompilable(it) })
+        e.presentation.isVisible = isVisible(e)
     }
+
+    private fun isVisible(e: AnActionEvent): Boolean {
+        val project = e.project
+                ?: return false
+        if (project.isDisposed) {
+            return false
+        }
+        val files = e.files
+        val fileCount = files.size
+        return when {
+            fileCount <= 7 -> files.any { isCompilable(it) }
+            else -> true
+        }
+    }
+
+
     override fun actionPerformed(e: AnActionEvent) {
 
         LOGGER.info("Compiling CAOS2Pray")

@@ -40,17 +40,43 @@ class AutoPreview : AnAction() {
 
     override fun update(e: AnActionEvent) {
         super.update(e)
-        val project = e.project
-        if (project == null || !CaosApplicationSettingsService.getInstance().isAutoPoseEnabled) {
-            e.presentation.isVisible = false
-            return
+        val visible = isVisible(e)
+        e.presentation.isEnabledAndVisible = visible
+    }
+
+    private fun isVisible(e: AnActionEvent): Boolean {
+
+        if (e.project?.isDisposed != false) {
+            return false
         }
 
-        e.presentation.isVisible =
-            e.files.any { headSpriteRegex.matches(it.name) } || e.files.filter { it.isDirectory }.any {
-                VirtualFileUtil.childrenWithExtensions(it, true, "spr", "s16", "c16")
-                    .any { child -> headSpriteRegex.matches(child.name) }
+        if (!CaosApplicationSettingsService.getInstance().isAutoPoseEnabled) {
+            return false
+        }
+
+        val files = e.files
+        val fileCount = files.size
+
+        return when {
+            fileCount < 13 -> e.files.any { isOrHasHeadFile(it, searchChildren = true) }
+            fileCount < 20 -> e.files.any { isOrHasHeadFile(it, searchChildren = false) }
+            else -> true
+        }
+    }
+
+    private fun isOrHasHeadFile(file: VirtualFile, searchChildren: Boolean): Boolean {
+        if (!file.isDirectory) {
+            return headSpriteRegex.matches(file.name)
+        }
+        if (!searchChildren) {
+            return true
+        }
+        for (child in file.children.orEmpty()) {
+            if (isOrHasHeadFile(child, searchChildren = false)) {
+                return true
             }
+        }
+        return false
     }
 
     private fun getZoom(project: Project, defaultZoom: Int): Int {

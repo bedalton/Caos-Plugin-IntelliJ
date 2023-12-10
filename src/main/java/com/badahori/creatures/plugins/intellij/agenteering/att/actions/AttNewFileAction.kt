@@ -48,14 +48,18 @@ class AttNewFileAction :  MyNewFileAction(
 
     override fun update(e: AnActionEvent) {
         super.update(e)
+
         val project = e.project
             ?: return
+
         if (project.isDisposed) {
             return
         }
+
         if (DumbService.isDumb(project)) {
             return
         }
+
         val hasCaosModule = ModuleManager.getInstance(project).modules.any {
             ModuleType.`is`(it, CaosScriptModuleType.INSTANCE)
         }

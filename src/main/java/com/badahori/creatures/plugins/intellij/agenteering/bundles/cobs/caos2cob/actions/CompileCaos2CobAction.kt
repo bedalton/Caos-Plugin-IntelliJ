@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2co
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobCompiler
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobCompiler.CompilationResults
+import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
@@ -20,6 +21,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import icons.CaosScriptIcons
 import kotlinx.coroutines.runBlocking
+import kotlin.math.min
 
 /**
  * Creates a file
@@ -41,15 +43,45 @@ class CompileCaos2CobAction : AnAction(
         compile(project, files)
     }
 
+    /**
+     * Determine if this action should be visible or hidden
+     */
+    private fun isVisible(e: AnActionEvent): Boolean {
 
-    override fun update(event: AnActionEvent) {
-        val enabled = event.files.any { file ->
+        val project = e.project
+            ?: return false
+
+        if (project.isDisposed) {
+            return false
+        }
+
+        val files = e.files
+        val fileCount = files.size
+
+        return when {
+            fileCount < 7 -> isCaos2Cob(files)
+            fileCount in 7 .. 15 -> files.any { it.extension?.lowercase() == "cos" }
+            else -> true
+        }
+    }
+
+    fun isCaos2Cob(files: Array<VirtualFile>): Boolean {
+        return files.any { file ->
             hasCaos2Cob(file)
         }
+    }
+
+
+    override fun update(event: AnActionEvent) {
+        val visible = isVisible(event)
         val presentation = event.presentation
-        presentation.isVisible = enabled
-        presentation.text = AgentMessages.message("cob.caos2cob.compile.title")
-        presentation.description = AgentMessages.message("cob.caos2cob.compile.description")
+        if (!visible) {
+            presentation.isEnabledAndVisible = false
+            return
+        }
+        presentation.isEnabledAndVisible = true
+//        presentation.text = AgentMessages.message("cob.caos2cob.compile.title")
+//        presentation.description = AgentMessages.message("cob.caos2cob.compile.description")
     }
 
     // Static Methods

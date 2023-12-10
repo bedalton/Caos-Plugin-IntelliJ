@@ -94,6 +94,7 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
     }
 
     override fun setState(state: FileEditorState) {}
+
     override fun isModified(): Boolean {
         return false
     }
@@ -103,7 +104,9 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
     }
 
     override fun addPropertyChangeListener(listener: PropertyChangeListener) {}
+
     override fun removePropertyChangeListener(listener: PropertyChangeListener) {}
+
     override fun getCurrentLocation(): FileEditorLocation? {
         return null
     }
