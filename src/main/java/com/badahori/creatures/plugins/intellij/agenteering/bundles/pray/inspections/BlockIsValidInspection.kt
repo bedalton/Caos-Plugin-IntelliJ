@@ -26,6 +26,7 @@ import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiPlainTextFile
 import com.intellij.psi.util.PsiTreeUtil
 import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 import kotlin.math.min
 
@@ -56,7 +57,7 @@ open class PrayBlockIsValidInspection : LocalInspectionTool(), DumbAware {
         if (blockText.isNullOrBlank())
             return
         val errors = try {
-            PrayDataValidator.validate(LocalFileSystem!!, containingFile.virtualFile.path, blockText, false)
+            PrayDataValidator.validate(coroutineContext, LocalFileSystem!!, containingFile.virtualFile.path, blockText, false)
                 .ifEmpty { null }
         } catch (e: Exception) {
             holder.registerProblem(
