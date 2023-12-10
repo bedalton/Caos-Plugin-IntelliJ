@@ -1945,9 +1945,10 @@ object CaosScriptPsiImplUtil {
      * Gets the string value between the quotes of a double quote string
      */
     @JvmStatic
-    fun getStringValue(stringIn: CaosScriptQuoteStringLiteral): String {
+    fun getStringValue(stringIn: CaosScriptQuoteStringLiteral?): String {
         return stringIn?.stub?.value
-            ?: stringIn.stringText?.text ?: ""
+            ?: stringIn?.stringText?.text
+            ?: ""
     }
 
     /**
