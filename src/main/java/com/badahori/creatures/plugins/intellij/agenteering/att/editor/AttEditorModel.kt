@@ -46,6 +46,9 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Logger
 import kotlin.math.abs
 
+/**
+ * Model to handle changes to the ATT file
+ */
 internal class AttEditorModel(
     project: Project,
     val disposable: Disposable,
@@ -683,101 +686,6 @@ internal class AttEditorModel(
         return true
     }
 
-    companion object {
-
-        private const val COMMAND_GROUP_ID = "ATTEditor"
-        private val LOGGER: Logger = Logger.getLogger("#AttEditorModel")
-
-        @JvmStatic
-        fun assumedLinesAndPoints(variant: CaosVariant, part: Char): Pair<Int, Int> {
-            val lines = if (variant.isOld) 10 else 16
-            val columns = when (part.lowercase()) {
-                'a' -> when {
-                    variant.isOld -> 2
-                    else -> 5
-                }
-
-                'b' -> 6
-                'q' -> 1
-                'z' -> 1
-                else -> 2
-            }
-            return Pair(lines, columns)
-        }
-
-        @JvmStatic
-        fun cacheVariant(virtualFile: VirtualFile, variant: CaosVariant) {
-            if (!virtualFile.isValid) {
-                return
-            }
-            ExplicitVariantFilePropertyPusher.writeToStorage(virtualFile, variant)
-            ImplicitVariantFilePropertyPusher.writeToStorage(virtualFile, variant)
-            virtualFile.putUserData(CaosScriptFile.ExplicitVariantUserDataKey, variant)
-            virtualFile.putUserData(CaosScriptFile.ImplicitVariantUserDataKey, variant)
-            for (sibling in virtualFile.parent?.children.orEmpty()) {
-                if (!sibling.isDirectory) {
-                    sibling.setCachedIfNotCached(variant, false)
-                }
-            }
-        }
-
-
-        internal fun pointNames(part: Char): List<String> {
-            return when (part.lowercaseChar()) {
-                'a' -> listOf(
-                    "Neck",
-                    "Mouth",
-                    "(L)Ear",
-                    "(R)Ear",
-                    "Hair"
-                )
-
-                'b' -> listOf(
-                    "Neck",
-                    "(L)Thigh",
-                    "(R)Thigh",
-                    "(L)Arm",
-                    "(R)Arm",
-                    "Tail"
-                )
-
-                'c', 'f' -> listOf(
-                    "Hip",
-                    "Knee"
-                )
-
-                'd', 'g' -> listOf(
-                    "Knee",
-                    "Ankle"
-                )
-
-                'e', 'h' -> listOf(
-                    "Ankle",
-                    "Toe"
-                )
-
-                'i', 'k' -> listOf(
-                    "Shoulder",
-                    "Elbow"
-                )
-
-                'j', 'l' -> listOf(
-                    "Elbow",
-                    "Hand"
-                )
-
-                'q' -> listOf("Head")
-                'z' -> listOf("Center")
-
-                else -> listOf(
-                    "Start",
-                    "End"
-                )
-            }
-        }
-
-
-    }
 
     override fun setSelected(index: Int, sender: Any?): Int {
         var targetIndex: Int
@@ -985,6 +893,101 @@ internal class AttEditorModel(
     }
 
 
+    companion object {
+        internal const val enableShiftRelativeAtt = false
+        private const val COMMAND_GROUP_ID = "ATTEditor"
+        private val LOGGER: Logger = Logger.getLogger("#AttEditorModel")
+
+        @JvmStatic
+        fun assumedLinesAndPoints(variant: CaosVariant, part: Char): Pair<Int, Int> {
+            val lines = if (variant.isOld) 10 else 16
+            val columns = when (part.lowercase()) {
+                'a' -> when {
+                    variant.isOld -> 2
+                    else -> 5
+                }
+
+                'b' -> 6
+                'q' -> 1
+                'z' -> 1
+                else -> 2
+            }
+            return Pair(lines, columns)
+        }
+
+        @JvmStatic
+        fun cacheVariant(virtualFile: VirtualFile, variant: CaosVariant) {
+            if (!virtualFile.isValid) {
+                return
+            }
+            ExplicitVariantFilePropertyPusher.writeToStorage(virtualFile, variant)
+            ImplicitVariantFilePropertyPusher.writeToStorage(virtualFile, variant)
+            virtualFile.putUserData(CaosScriptFile.ExplicitVariantUserDataKey, variant)
+            virtualFile.putUserData(CaosScriptFile.ImplicitVariantUserDataKey, variant)
+            for (sibling in virtualFile.parent?.children.orEmpty()) {
+                if (!sibling.isDirectory) {
+                    sibling.setCachedIfNotCached(variant, false)
+                }
+            }
+        }
+
+
+        internal fun pointNames(part: Char): List<String> {
+            return when (part.lowercaseChar()) {
+                'a' -> listOf(
+                    "Neck",
+                    "Mouth",
+                    "(L)Ear",
+                    "(R)Ear",
+                    "Hair"
+                )
+
+                'b' -> listOf(
+                    "Neck",
+                    "(L)Thigh",
+                    "(R)Thigh",
+                    "(L)Arm",
+                    "(R)Arm",
+                    "Tail"
+                )
+
+                'c', 'f' -> listOf(
+                    "Hip",
+                    "Knee"
+                )
+
+                'd', 'g' -> listOf(
+                    "Knee",
+                    "Ankle"
+                )
+
+                'e', 'h' -> listOf(
+                    "Ankle",
+                    "Toe"
+                )
+
+                'i', 'k' -> listOf(
+                    "Shoulder",
+                    "Elbow"
+                )
+
+                'j', 'l' -> listOf(
+                    "Elbow",
+                    "Hand"
+                )
+
+                'q' -> listOf("Head")
+                'z' -> listOf("Center")
+
+                else -> listOf(
+                    "Start",
+                    "End"
+                )
+            }
+        }
+
+
+    }
 }
 
 
@@ -1075,7 +1078,6 @@ private data class RelativeAtt(
         } catch (_: Exception) {
             false
         }
-
     }
 
     private fun initWatcher() {
