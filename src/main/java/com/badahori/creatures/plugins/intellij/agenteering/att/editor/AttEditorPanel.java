@@ -238,17 +238,21 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         menu.add(lockYMenuItem);
         menu.addSeparator();
 
-        final JMenuItem shiftRelativeAtt = new JCheckBoxMenuItem("Shift Relative ATT points");
-        shiftRelativeAtt.setSelected(this.controller.getShiftRelativeAtt());
-        shiftRelativeAtt.addActionListener(new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                controller.setShiftRelativeAtt(!controller.getShiftRelativeAtt());
-            }
-        });
 
-        menu.add(shiftRelativeAtt);
-        menu.addSeparator();
+        // Only add shift relative option if it is enabled for the plugin at build time
+        if (AttEditorModel.enableShiftRelativeAtt) {
+            final JMenuItem shiftRelativeAtt = new JCheckBoxMenuItem("Shift Relative ATT points");
+            shiftRelativeAtt.setSelected(this.controller.getShiftRelativeAtt());
+            shiftRelativeAtt.addActionListener(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    controller.setShiftRelativeAtt(!controller.getShiftRelativeAtt());
+                }
+            });
+
+            menu.add(shiftRelativeAtt);
+            menu.addSeparator();
+        }
 
         final JMenuItem mirrorPose = new JCheckBoxMenuItem("Mirror part poses");
         mirrorPose.addActionListener((e) -> poseEditor.setMirrorPose(mirrorPose.isSelected()));

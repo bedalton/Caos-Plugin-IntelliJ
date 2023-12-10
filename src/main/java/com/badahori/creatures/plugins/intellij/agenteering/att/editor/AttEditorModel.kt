@@ -944,6 +944,9 @@ internal class AttEditorModel(
     }
 
     fun shiftRelative(thisDeltaX: Int, thisDeltaY: Int) {
+        if (!enableShiftRelativeAtt) {
+            return
+        }
         if (!shiftAttachmentPointInRelatedAtt || !shiftPointInRelatedAttAllowed) {
             return
         }
