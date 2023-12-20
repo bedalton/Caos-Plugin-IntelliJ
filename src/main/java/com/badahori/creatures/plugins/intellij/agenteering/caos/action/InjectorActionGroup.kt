@@ -56,7 +56,7 @@ class InjectorActionGroup(file: CaosScriptFile) : ActionGroup(
             .distinct()
             .sortedBy { it.name }
             .map {
-                CaosInjectorAction(it, pointer, makeText(it))
+                CaosInjectFileAction(it, pointer, makeText(it))
             }
         val addInterfaceName = AddGameInterfaceAction(file.project, file.variant)
         return (interfaceActions + addInterfaceName).toTypedArray()
@@ -103,7 +103,7 @@ class InjectorActionGroup(file: CaosScriptFile) : ActionGroup(
                 .distinct()
                 .sortedBy { it.name }
                 .map {
-                    CaosInjectorAction(it, pointer, makeText(it))
+                    CaosInjectFileAction(it, pointer, makeText(it))
                 }
             val addInterfaceName = AddGameInterfaceAction(file.project, file.variant)
             return (interfaceActions + addInterfaceName).toTypedArray()
@@ -122,7 +122,7 @@ class InjectorActionGroup(file: CaosScriptFile) : ActionGroup(
                 .distinct()
                 .sortedBy { it.name }
                 .map {
-                    CaosInjectorAction(it, pointer, makeText(it))
+                    CaosInjectFileAction(it, pointer, makeText(it))
                 }
             if (!OsUtil.isWindows) {
                 interfaceActions = interfaceActions.filter {
@@ -136,7 +136,7 @@ class InjectorActionGroup(file: CaosScriptFile) : ActionGroup(
 
 }
 
-internal class CaosInjectorAction(
+internal class CaosInjectFileAction(
     internal val gameInterfaceName: GameInterfaceName,
     private val pointer: SmartPsiElementPointer<CaosScriptFile>,
     title: String = gameInterfaceName.defaultDisplayName(),

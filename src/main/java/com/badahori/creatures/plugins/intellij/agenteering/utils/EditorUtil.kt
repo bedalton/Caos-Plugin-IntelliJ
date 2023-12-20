@@ -17,7 +17,13 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
+import com.intellij.ide.DataManager
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.fileEditor.FileEditorStateLevel
+import com.intellij.openapi.fileEditor.TextEditor
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.psi.PsiFile
@@ -141,16 +147,27 @@ object EditorUtil {
 
     fun editor(element:PsiElement) : Editor?  {
         val document = document(element) ?: return null
-        return EditorFactory.getInstance()
+        val editors = EditorFactory.getInstance()
                 .getEditors(document, element.project)
-                .firstOrNull {editor ->
-                    editor.psiFile == element.containingFile
+                .filter {editor ->
+//                    editor.psiFile == element.containingFile
+                    true
                 }
+        return editors.firstOrNull { editor ->
+            editor.component.isVisible.also {
+                LOGGER.info("Is Editor Visible: $it")
+            }
+        } ?: return editors.firstOrNull()
     }
 
     fun tabSize(psiElement: PsiElement) : Int? {
         val editor = psiElement.editor ?: return null
         return tabSize(editor)
+    }
+
+    fun getDataContext(editor: Editor): DataContext {
+        val component = editor.contentComponent
+        return DataManager.getInstance().getDataContext(component)
     }
 
     fun tabSize(editor:Editor) : Int? {
