@@ -891,6 +891,12 @@
             </className>
             <category>CAOS</category>
         </intentionAction>
+        <intentionAction>
+            <className>
+                com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectSingleCaosScriptIntentionAction
+            </className>
+            <category>CAOS</category>
+        </intentionAction>
 
         <intentionAction>
             <className>
@@ -1068,6 +1074,16 @@
                 text="Dump Creatures Sprite" description="Dumps a creatures sprite file into a project directory"
         >
             <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"
+                          anchor="before"/>
+        </action>
+
+        <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectSingleCaosScriptAction"
+                class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectSingleCaosScriptAction"
+                text="Inject Selected Script"
+                description="Injects the currently focused script"
+        >
+            <add-to-group group-id="ProjectViewPopupMenu"
+                          relative-to-action="ProjectViewPopupMenuRunGroup"
                           anchor="before"/>
         </action>
         <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions.DumpAgentAction"

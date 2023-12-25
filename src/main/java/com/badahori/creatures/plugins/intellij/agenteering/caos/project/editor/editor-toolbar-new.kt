@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CompileCAOS2Action
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.AddGameInterfaceAction
-import com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosInjectorAction
+import com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosInjectFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectorActionGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
@@ -44,12 +44,19 @@ import com.intellij.psi.text.BlockSupport
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil
+import kotlinx.coroutines.selects.select
 import java.awt.*
 import java.awt.event.ItemEvent
 import java.awt.event.MouseEvent
 import java.util.*
 import java.util.Timer
 import javax.swing.*
+
+
+
+private val KEY: Key<EditorNotificationPanel> = Key.create("creatures.caos.CaosEditorToolbar")
+internal val EDITOR_INJECTOR_KEY: Key<GameInterfaceName?> = Key.create("creatures.caos.CaosEditorInjector")
+internal val EDITOR_VARIANT_KEY: Key<CaosVariant?> = Key.create("creatures.caos.CaosEditorVariant")
 
 
 /**
@@ -59,6 +66,8 @@ import javax.swing.*
 class CaosScriptEditorToolbar(
     val project: Project
 ) : EditorNotifications.Provider<EditorNotificationPanel>(), DumbAware, Disposable {
+
+
 
     override fun getKey(): Key<EditorNotificationPanel> = KEY
 
@@ -99,8 +108,6 @@ class CaosScriptEditorToolbar(
     override fun dispose() {
     }
 }
-
-private val KEY: Key<EditorNotificationPanel> = Key.create("creatures.caos.CaosEditorToolbar")
 
 internal fun createCaosScriptHeaderComponent(
     project: Project,
@@ -211,14 +218,14 @@ private fun populate(
         val newActions: List<AnAction> = InjectorActionGroup
             .getActions(pointer)
             .filter {
-                it !is CaosInjectorAction || (OsUtil.isWindows || it.gameInterfaceName !is NativeInjectorInterface)
+                it !is CaosInjectFileAction || (OsUtil.isWindows || it.gameInterfaceName !is NativeInjectorInterface)
             }
-        val injectorActions = newActions.filterIsInstance<CaosInjectorAction>()
+        val injectorActions = newActions.filterIsInstance<CaosInjectFileAction>()
         val injectorNames = injectorActions.map { it.gameInterfaceName }
         if ((injectorNames + injectorList).distinct().isEmpty())
             return@update
 
-        val targetInterface = newGameInterface ?: (injectors.selectedItem as? CaosInjectorAction)?.gameInterfaceName
+        val targetInterface = newGameInterface ?: (injectors.selectedItem as? CaosInjectFileAction)?.gameInterfaceName
         injectorModel.removeAllElements()
         injectorModel.addAll(newActions.toList())
         val newSelection = injectorActions.firstOrNull { it.gameInterfaceName == targetInterface }
@@ -231,6 +238,8 @@ private fun populate(
         naturalInjectorSelect.value = true
         runInjectorAction.setAction(newSelection)
         injectors.updateUI()
+        fileEditor.putUserData(EDITOR_INJECTOR_KEY, newGameInterface)
+        virtualFile.putUserData(EDITOR_INJECTOR_KEY, newGameInterface)
 
     }
     injectorsContainer.add(JLabel("Inject:"))
@@ -274,6 +283,9 @@ private fun populate(
         val canInject = selected != null && Injector.canConnectToVariant(selected)
 
         injectorsContainer.isVisible = canInject
+
+        fileEditor.putUserData(EDITOR_VARIANT_KEY, selected)
+        virtualFile.putUserData(EDITOR_VARIANT_KEY, selected)
 
         invokeLater {
             naturalInjectorSelect.value = false
@@ -354,6 +366,7 @@ private fun populate(
             return@variant
         }
         assignVariant(selected, true)
+
     }
 
     // If variant is unknown, allow for variant selection
@@ -377,20 +390,20 @@ private fun populate(
             val newActions: Array<AnAction> = InjectorActionGroup
                 .getActions(pointer)
                 .filter {
-                    it !is CaosInjectorAction || OsUtil.isWindows || it.gameInterfaceName !is NativeInjectorInterface
+                    it !is CaosInjectFileAction || OsUtil.isWindows || it.gameInterfaceName !is NativeInjectorInterface
                 }
                 .toTypedArray()
             injectorModel.removeAllElements()
             injectorModel.addAll(newActions.toList())
             injectors.updateUI()
-            lastInjector = newActions.filterIsInstance<CaosInjectorAction>()
+            lastInjector = newActions.filterIsInstance<CaosInjectFileAction>()
                 .firstOrNull { anInterface ->
                     anInterface.gameInterfaceName == initialLastInterfaceName
                 }
                 ?: newActions.firstOrNull {
-                    (it as? CaosInjectorAction)?.gameInterfaceName?.variant == initialVariant
+                    (it as? CaosInjectFileAction)?.gameInterfaceName?.variant == initialVariant
                 } ?: newActions.firstOrNull {
-                    (it as? CaosInjectorAction)?.gameInterfaceName?.isVariant(initialVariant) == true
+                    (it as? CaosInjectFileAction)?.gameInterfaceName?.isVariant(initialVariant) == true
                 }
             naturalInjectorSelect.value = false
             injectors.selectedItem = lastInjector
@@ -414,7 +427,7 @@ private fun populate(
                                 injectorModel.removeAllElements()
                                 injectorModel.addAll(action.toList())
                                 val thisAction = action
-                                    .filterIsInstance<CaosInjectorAction>()
+                                    .filterIsInstance<CaosInjectFileAction>()
                                     .firstOrNull { it.gameInterfaceName == created }
                                     ?: lastInjector
                                 lastInjector = thisAction
@@ -424,11 +437,11 @@ private fun populate(
                             }
                         }
                         return@addItemListener
-                    } else if (selected is CaosInjectorAction) {
+                    } else if (selected is CaosInjectFileAction) {
                         val file: CaosScriptFile = pointer.element
                             ?: return@addItemListener
                         val gameInterface = selected.gameInterfaceName
-                        val lastInterface = (lastInjector as? CaosInjectorAction)?.gameInterfaceName
+                        val lastInterface = (lastInjector as? CaosInjectFileAction)?.gameInterfaceName
                         if (gameInterface != lastInterface) {
                             lastInjector = selected
                             if (naturalInjectorSelect.value) {
@@ -622,7 +635,7 @@ private class RunInjectorAction(
     }
 
     fun setAction(action: AnAction?, presentation: Presentation? = null) {
-        if (action !is CaosInjectorAction) {
+        if (action !is CaosInjectFileAction) {
             LOGGER.severe("RunInjector action is not CAOS injector")
             return
         }
