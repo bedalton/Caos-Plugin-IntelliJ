@@ -119,7 +119,7 @@ internal fun CaosScriptScriptElement.toStruct(variant: CaosVariant?): CaosScript
     }
 }
 
-private fun CaosScriptScriptElement.getDescriptor(): String {
+internal fun CaosScriptScriptElement.getDescriptor(): String {
     return when (this) {
         is CaosScriptRemovalScript -> "Removal script"
         is CaosScriptEventScript -> "SCRP $family $genus $species $eventNumber"
