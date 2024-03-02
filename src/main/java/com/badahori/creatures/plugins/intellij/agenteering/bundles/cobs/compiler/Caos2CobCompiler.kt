@@ -1,15 +1,17 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import com.bedalton.common.util.PathUtil
-import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineIntentionAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CollapseChar
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2CobVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.bedalton.common.util.PathUtil
+import com.bedalton.common.util.className
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
@@ -20,8 +22,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.util.io.write
-import java.nio.file.Paths
+import java.io.File
 
 object Caos2CobCompiler {
 
@@ -427,10 +428,10 @@ object Caos2CobCompiler {
         if (!directory.isDirectory)
             throw Caos2CobException("Cannot write COB '${targetFile}'. File '${directory.name}' is not a directory")
         return try {
-            val targetIoFile = Paths.get(VfsUtil.virtualToIoFile(directory).path, targetFile)
-            targetIoFile.write(data)
+            val targetIoFile = File(VfsUtil.virtualToIoFile(directory).path, targetFile)
+            targetIoFile.writeBytes(data)
             try {
-                VfsUtil.findFile(targetIoFile, true)?.let { thisFile ->
+                VfsUtil.findFile(targetIoFile.toPath(), true)?.let { thisFile ->
                     VfsUtil.markDirtyAndRefresh(true, false, true, thisFile)
                 }
             } catch (_: Exception) {
