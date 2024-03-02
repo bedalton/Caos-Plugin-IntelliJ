@@ -157,7 +157,7 @@ class DumpSpriteAction : AnAction(
         }
     }
 
-    private suspend fun dumpFile(
+    private fun dumpFile(
         files: Array<VirtualFile>,
         file: VirtualFile,
         parentPath: String,
