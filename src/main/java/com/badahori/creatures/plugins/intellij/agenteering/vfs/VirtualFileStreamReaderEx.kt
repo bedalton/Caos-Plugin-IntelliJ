@@ -2,39 +2,26 @@ package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.bedalton.common.util.className
-import com.bedalton.io.bytes.AbstractByteStreamReader
-import com.bedalton.io.bytes.ByteStreamReaderEx
-import com.bedalton.io.bytes.internal.InputStreamByteReaderEx
-import com.bedalton.io.bytes.internal.MemoryByteStreamReaderEx
+import com.bedalton.io.bytes.ByteStreamReader
+import com.bedalton.io.bytes.InputStreamByteReader
+import com.bedalton.io.bytes.MemoryByteStreamReader
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.vfs.VirtualFile
 
-class VirtualFileStreamReader(
-    private val virtualFile: VirtualFile,
-    private val start: Long? = null,
-    private val end: Long? = null
-) : AbstractByteStreamReader() {
-    override suspend fun createReader(): ByteStreamReaderEx {
-        return VirtualFileStreamReaderEx(virtualFile, start, end)
-    }
-
-}
-
-class VirtualFileStreamReaderEx(
+internal class VirtualFileStreamReader(
     private val virtualFile: VirtualFile,
     private val start: Long?,
     private val end: Long?
-) : ByteStreamReaderEx {
+) : ByteStreamReader() {
 
     constructor(virtualFile: VirtualFile) : this(virtualFile, null, null)
-    constructor(virtualFile: VirtualFile, start: Long?) : this(virtualFile, start, null)
 
     private var mClosed = false
 
-    private val mReader: ByteStreamReaderEx by lazy {
+    private val mReader: ByteStreamReader by lazy {
         if (virtualFile !is CaosVirtualFile && virtualFile.length > MAX_IN_MEMORY_STREAM_LENGTH) {
             try {
-                    return@lazy InputStreamByteReaderEx(start, end) {
+                    return@lazy InputStreamByteReader(start, end) {
                         try {
                             virtualFile.inputStream
                         } catch (e: Exception) {
@@ -55,7 +42,7 @@ class VirtualFileStreamReaderEx(
         if (start != null || end != null) {
             rawBytes = rawBytes.sliceArray((start?.toInt() ?: 0)..(end?.toInt() ?: rawBytes.lastIndex))
         }
-        MemoryByteStreamReaderEx(rawBytes)
+        MemoryByteStreamReader(rawBytes)
     }
 
     override val closed: Boolean
@@ -70,21 +57,21 @@ class VirtualFileStreamReaderEx(
         return mClosed
     }
 
-    override suspend fun copyOfBytes(start: Long, end: Long): ByteArray {
+    override fun copyOfBytes(start: Long, end: Long): ByteArray {
         return mReader.copyOfBytes(start, end)
     }
 
-    override suspend fun copyOfRange(start: Long, end: Long): ByteStreamReaderEx {
-        return VirtualFileStreamReaderEx(virtualFile, (this.start ?: 0) + start, (this.start ?: 0) + end)
+    override fun copyOfRange(start: Long, end: Long): ByteStreamReader {
+        return VirtualFileStreamReader(virtualFile, (this.start ?: 0) + start, (this.start ?: 0) + end)
     }
 
-    override suspend fun duplicate(): ByteStreamReaderEx {
-        return VirtualFileStreamReaderEx(virtualFile, start, end).apply {
+    override fun copy(): ByteStreamReader {
+        return VirtualFileStreamReader(virtualFile, start, end).apply {
             this.setPosition(position())
         }
     }
 
-    override suspend fun get(): Byte {
+    override fun get(): Byte {
         return mReader.get()
     }
 
@@ -98,11 +85,11 @@ class VirtualFileStreamReaderEx(
         }
     }
 
-    override suspend fun setPosition(newPosition: Long): ByteStreamReaderEx {
+    override fun setPosition(newPosition: Long): ByteStreamReader {
         return mReader.setPosition(newPosition)
     }
 
-    override suspend fun toByteArray(): ByteArray {
+    override fun toByteArray(): ByteArray {
         return mReader.toByteArray()
     }
 
@@ -110,9 +97,9 @@ class VirtualFileStreamReaderEx(
         return virtualFile.isValid && !virtualFile.isDirectory && virtualFile.exists()
     }
 
-    override suspend fun copyAsOpened(): VirtualFileStreamReaderEx? {
+    override fun copyAsOpened(): VirtualFileStreamReader? {
         return if (canReopen()) {
-            VirtualFileStreamReaderEx(virtualFile, start, end)
+            VirtualFileStreamReader(virtualFile, start, end)
         } else {
             null
         }

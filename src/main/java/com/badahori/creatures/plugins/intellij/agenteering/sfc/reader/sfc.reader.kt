@@ -8,9 +8,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SFC_DECOMPIL
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcDecompiledFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcObjectPtr
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcSceneryPtr
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
-import com.bedalton.io.bytes.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.filterNotNull
+import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
+import com.bedalton.io.bytes.ByteStreamReader
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.File
 import java.io.IOException
@@ -19,7 +22,7 @@ import java.io.IOException
 /**
  * A reader class for SFC Files.
  */
-internal class SfcReader(internal val byteBuffer: ByteStreamReaderEx, private val sfcFilePath: String? = null) {
+internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val sfcFilePath: String? = null) {
     lateinit var variant: CaosVariant
     // Ptr objects are required as objects are accessed by child creation calls
     // while still being constructed by decompiler.
@@ -116,7 +119,7 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReaderEx, private va
     /**
      * Method to skip all empty blocks until start of Object data definitions
      */
-    private suspend fun seekToObjectsBlock() {
+    private fun seekToObjectsBlock() {
         var x = 0
         while (x == 0)
             x = uInt8()
@@ -127,7 +130,7 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReaderEx, private va
      * Helper method to read list of favorite places.
      * There can be up to 6 favorite places in Creatures 1 and 2
      */
-    private suspend fun readFavoritePlaces(): List<SfcFavoritePlace> {
+    private fun readFavoritePlaces(): List<SfcFavoritePlace> {
         val favoritePlaces = mutableListOf<SfcFavoritePlace>()
         var hasNext = true
         while (hasNext && favoritePlaces.size < 6) {
@@ -164,23 +167,23 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReaderEx, private va
 
     // ==== Convenience methods ==== //
 
-    suspend fun uInt8() = byteBuffer.uInt8()
+    fun uInt8() = byteBuffer.uInt8()
     @Suppress("MemberVisibilityCanBePrivate")
-    suspend fun peakUInt8(): Int? = byteBuffer.peakUInt8()
-    suspend fun uInt16() = byteBuffer.uInt16()
-    suspend fun uInt32() = byteBuffer.uInt32().toInt()
-    suspend fun skip(bytes: Int) = byteBuffer.skip(bytes)
-    suspend fun variantSkip(c1Bytes: Int, c2Bytes: Int) = byteBuffer.skip(if (variant == C1) c1Bytes else c2Bytes)
+    fun peakUInt8(): Int? = byteBuffer.peakUInt8()
+    fun uInt16() = byteBuffer.uInt16()
+    fun uInt32() = byteBuffer.uInt32().toInt()
+    fun skip(bytes: Int) = byteBuffer.skip(bytes)
+    fun variantSkip(c1Bytes: Int, c2Bytes: Int) = byteBuffer.skip(if (variant == C1) c1Bytes else c2Bytes)
 
     /**
      * Reads in a string with a given length
      */
-    suspend fun string(length: Int): String = byteBuffer.string(length).trim(' ', 0x00.toChar())
+    fun string(length: Int): String = byteBuffer.string(length).trim(' ', 0x00.toChar())
 
     /**
      * Reads in a string given a variable string length
      */
-    suspend fun sfcString(): String {
+    fun sfcString(): String {
             return byteBuffer.string(sfcStringLength()).trim(' ', 0x00.toChar())
         }
 
@@ -188,7 +191,7 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReaderEx, private va
      * SFC string lengths can be variable, defined by a byte, short or int
      * They are read cascading to the next numeric type as needed
      */
-    private suspend fun sfcStringLength(): Int {
+    private fun sfcStringLength(): Int {
             return uInt8().let { small ->
                 if (small == 0xFF)
                     uInt16().let { medium ->
@@ -250,7 +253,7 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReaderEx, private va
         }
 
         private suspend fun readRaw(virtualFile: VirtualFile): SfcFileDataHolder {
-            val byteBuffer = VirtualFileStreamReaderEx(virtualFile)
+            val byteBuffer = VirtualFileStreamReader(virtualFile)
             val dumper = SfcReader(byteBuffer, virtualFile.path)
             val data = dumper.readFile()
             return SfcFileDataHolder(data)
@@ -294,7 +297,7 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReaderEx, private va
 /**
  * Convenience method to read in bounds objects
  */
-internal suspend fun SfcReader.bounds() = Bounds(
+internal fun SfcReader.bounds() = Bounds(
             left = uInt32(),
             top = uInt32(),
             right = uInt32(),
@@ -304,12 +307,12 @@ internal suspend fun SfcReader.bounds() = Bounds(
 /**
  * Convenience method to read in file name tokens
  */
-internal suspend fun SfcReader.fileNameToken() = string(4)
+internal fun SfcReader.fileNameToken() = string(4)
 
 /**
  * Convenience method to read in vector 2 objects
  */
-internal suspend fun SfcReader.vector2() = Vector2(uInt32(), uInt32())
+internal fun SfcReader.vector2() = Vector2(uInt32(), uInt32())
 
 
 /**

@@ -2,11 +2,11 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcScript
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcObjectPtr
 
 
-internal suspend fun SfcReader.readScript(): SfcScript {
+internal fun SfcReader.readScript(): SfcScript {
     if (!variant.isOld) {
         throw OutOfVariantException(variant)
     }
@@ -34,7 +34,7 @@ internal suspend fun SfcReader.readScript(): SfcScript {
     )
 }
 
-internal suspend fun SfcReader.readMacro() : PointerSfcMacro {
+internal fun SfcReader.readMacro() : PointerSfcMacro {
     skip(12)
     val script = sfcString()
     if (variant == C1) {

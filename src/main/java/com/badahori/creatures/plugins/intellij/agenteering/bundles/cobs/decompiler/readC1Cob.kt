@@ -4,11 +4,12 @@ import com.bedalton.io.bytes.*
 import com.bedalton.creatures.sprite.util.ColorPalette
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
+import com.bedalton.io.bytes.ByteStreamReader
 import korlibs.image.awt.toAwt
 import java.util.*
 
 
-internal suspend fun ByteStreamReaderEx.readC1Cob(fileName: String?): CobBlock.AgentBlock {
+internal fun ByteStreamReader.readC1Cob(fileName: String?): CobBlock.AgentBlock {
     val quantityAvailable = uInt16()
 
     val expiresMonth = int32()

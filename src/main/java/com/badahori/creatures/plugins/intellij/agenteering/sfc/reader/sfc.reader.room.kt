@@ -5,7 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 
 
-internal suspend fun SfcReader.readC1Room(id: Int): PointerSfcRoomImpl {
+internal fun SfcReader.readC1Room(id: Int): PointerSfcRoomImpl {
     val bounds = bounds()
     val roomType = uInt32()
     assert(roomType < 3) { "Invalid C1 room type '$roomType' should be between 0 and 3" }
@@ -16,7 +16,7 @@ internal suspend fun SfcReader.readC1Room(id: Int): PointerSfcRoomImpl {
     )
 }
 
-internal suspend fun SfcReader.readGroundLevels(): List<Int>? {
+internal fun SfcReader.readGroundLevels(): List<Int>? {
     if (variant == CaosVariant.C2)
         return null
 
@@ -25,7 +25,7 @@ internal suspend fun SfcReader.readGroundLevels(): List<Int>? {
     }
 }
 
-internal suspend fun SfcReader.readDoor(): SfcDoor {
+internal fun SfcReader.readDoor(): SfcDoor {
     val openness = uInt8()
     val otherRoom = uInt16()
     assert(uInt16() == 0)
@@ -35,7 +35,7 @@ internal suspend fun SfcReader.readDoor(): SfcDoor {
     )
 }
 
-internal suspend fun SfcReader.readC2Room() : PointerSfcC2Room {
+internal fun SfcReader.readC2Room() : PointerSfcC2Room {
     val id = uInt32()
     assert(uInt16() == 2)
     val bounds = bounds()

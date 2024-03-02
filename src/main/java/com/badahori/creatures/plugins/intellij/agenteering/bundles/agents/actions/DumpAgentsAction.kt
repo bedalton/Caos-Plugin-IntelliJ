@@ -8,7 +8,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifica
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
 import com.bedalton.common.structs.Pointer
 import com.bedalton.creatures.agents.pray.parser.parsePrayAgentToFiles
 import com.bedalton.creatures.agents.util.RelativeFileSystem
@@ -213,7 +212,7 @@ class DumpAgentAction : AnAction(
         createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>
     ): Boolean {
         // Parse Agent and write files
-        val stream = if (file.length < VirtualFileStreamReaderEx.MAX_IN_MEMORY_STREAM_LENGTH) {
+        val stream = if (file.length < VirtualFileStreamReader.MAX_IN_MEMORY_STREAM_LENGTH) {
             MemoryByteStreamReader(file.contentsToByteArray())
         } else {
             VirtualFileStreamReader(file)

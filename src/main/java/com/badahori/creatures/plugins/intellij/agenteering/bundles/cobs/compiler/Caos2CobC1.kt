@@ -7,17 +7,8 @@ import com.bedalton.common.util.ensureEndsWith
 import com.bedalton.common.util.nullIfEmpty
 import com.bedalton.common.util.pathSeparatorChar
 import com.bedalton.io.bytes.ByteStreamWriter
-import com.bedalton.io.bytes.writeNullByte
-import com.bedalton.io.bytes.writeSfcString
 import korlibs.image.bitmap.Bitmap32
 import kotlinx.serialization.Serializable
-import kotlin.ByteArray
-import kotlin.Exception
-import kotlin.Int
-import kotlin.String
-import kotlin.getValue
-import kotlin.lazy
-import kotlin.let
 
 @Serializable
 data class Caos2CobC1(

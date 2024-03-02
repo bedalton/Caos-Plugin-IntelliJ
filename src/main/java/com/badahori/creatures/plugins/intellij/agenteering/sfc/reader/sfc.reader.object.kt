@@ -7,7 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 
-internal suspend fun SfcReader.readObject(): PointerSfcObject<*> {
+internal fun SfcReader.readObject(): PointerSfcObject<*> {
     val family: Int
     val genus: Int
     val species: Int
@@ -93,7 +93,7 @@ internal suspend fun SfcReader.readObject(): PointerSfcObject<*> {
     )
 }
 
-internal suspend fun SfcReader.readScripts(): List<SfcScript> {
+internal fun SfcReader.readScripts(): List<SfcScript> {
     return (0 until uInt32()).map {
         readScript()
     }

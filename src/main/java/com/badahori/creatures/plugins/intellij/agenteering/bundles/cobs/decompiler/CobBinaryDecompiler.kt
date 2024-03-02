@@ -10,8 +10,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.bedalton.common.util.PathUtil
 import com.bedalton.io.bytes.MemoryByteStreamReader
-import com.bedalton.io.bytes.internal.MemoryByteStreamReaderEx
-import com.bedalton.io.bytes.string
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileTypes.BinaryFileDecompiler
 import com.intellij.openapi.project.Project
@@ -36,9 +34,9 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
         private val DATE_FORMAT = SimpleDateFormat("MM/dd/YYYY")
 
         internal suspend fun decompileToString(fileName: String, byteArray: ByteArray): String {
-            return MemoryByteStreamReader(byteArray).readAtCurrentPositionReturning {
+            return MemoryByteStreamReader(byteArray).readAtCurrentPosition {
                 if (this.string(4) == "****") {
-                    return@readAtCurrentPositionReturning byteArray.contentToString()
+                    return@readAtCurrentPosition byteArray.contentToString()
                 }
                 val cobData =
                     CobToDataObjectDecompiler.decompile(this, PathUtil.getFileNameWithoutExtension(fileName))
@@ -49,7 +47,7 @@ class CobBinaryDecompiler : BinaryFileDecompiler {
         fun decompileToPsiFile(project: Project, fileName: String, byteArray: ByteArray): PsiFile {
             val cobData = runBlocking {
                 CobToDataObjectDecompiler.decompile(
-                    MemoryByteStreamReaderEx(byteArray),
+                    MemoryByteStreamReader(byteArray),
                     PathUtil.getFileNameWithoutExtension(fileName)
                 )
             }

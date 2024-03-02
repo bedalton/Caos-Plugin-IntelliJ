@@ -1,11 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import com.bedalton.io.bytes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C2
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.Vector2
 
 
-internal suspend fun SfcReader.readVehicle(): PointerSfcVehicle<*> {
+internal fun SfcReader.readVehicle(): PointerSfcVehicle<*> {
     val base = readCompoundObject()
     val directionVector = Vector2(uInt32(), uInt32())
     val bump = uInt8()
@@ -29,7 +28,7 @@ internal suspend fun SfcReader.readVehicle(): PointerSfcVehicle<*> {
 
 private val LIFT_CHECK_BYTE_SEQUENCE = byteArrayOf(0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0xFF.toByte(), 0x00)
 
-internal suspend fun SfcReader.readLift(): PointerSfcLift {
+internal fun SfcReader.readLift(): PointerSfcLift {
     val base = readVehicle()
     val numberOfButtons = uInt32()
     val currentButton = uInt32()

@@ -1,11 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.*
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.Bounds
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcHotspot
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.Vector2
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcEntityPtr
 
 
-internal suspend fun SfcReader.readCompoundObject() : PointerSfcCompoundObject<*> {
+internal fun SfcReader.readCompoundObject() : PointerSfcCompoundObject<*> {
 
     val base = readObject()
     val numberOfParts = uInt32()
@@ -29,7 +31,7 @@ internal suspend fun SfcReader.readCompoundObject() : PointerSfcCompoundObject<*
 
 }
 
-internal suspend fun SfcReader.readHotspots() : List<SfcHotspot> {
+internal fun SfcReader.readHotspots() : List<SfcHotspot> {
 
     val indices = 0 until 6
 

@@ -5,7 +5,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.bedalton.common.util.formatted
 import com.bedalton.common.util.trySilent
 import com.bedalton.io.bytes.*
-import com.bedalton.io.bytes.internal.MemoryByteStreamReaderEx
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -18,7 +17,7 @@ object CobToDataObjectDecompiler {
     fun decompile(virtualFile: VirtualFile): CobFileData? {
         return runBlocking {
             try {
-                MemoryByteStreamReader(virtualFile.contentsToByteArray()).readAtCurrentPositionReturning {
+                MemoryByteStreamReader(virtualFile.contentsToByteArray()).readAtCurrentPosition {
                     decompile(this, virtualFile.nameWithoutExtension)
                 }
             } catch (e: Exception) {
@@ -28,7 +27,7 @@ object CobToDataObjectDecompiler {
         }
     }
 
-    suspend fun decompile(buffer: ByteStreamReaderEx, fileName: String?): CobFileData {
+    suspend fun decompile(buffer: ByteStreamReader, fileName: String?): CobFileData {
         val header = buffer.string(4)
         buffer.setPosition(0)
         if (header == "cob2") {
@@ -52,7 +51,7 @@ object CobToDataObjectDecompiler {
     }
 
 
-    private suspend fun decompressed(buffer: ByteStreamReaderEx): ByteStreamReaderEx? {
+    private suspend fun decompressed(buffer: ByteStreamReader): ByteStreamReader? {
         return try {
             val decompressed = ByteArrayOutputStream()
             val decompressor = InflaterOutputStream(decompressed)
@@ -60,13 +59,13 @@ object CobToDataObjectDecompiler {
                 decompressor.write(buffer.toByteArray())
             }
             val decompressedBytes = decompressed.toByteArray()
-            MemoryByteStreamReaderEx(decompressedBytes)
+            MemoryByteStreamReader(decompressedBytes)
         } catch (e: Exception) {
             return null
         }
     }
 
-    private suspend fun decompileC1Cob(buffer: ByteStreamReaderEx, fileName: String?): CobFileData {
+    private suspend fun decompileC1Cob(buffer: ByteStreamReader, fileName: String?): CobFileData {
         buffer.setPosition(0)
         val version = buffer.uInt16()
         if (version > 4) {
@@ -81,7 +80,7 @@ object CobToDataObjectDecompiler {
         return CobFileData.C1CobData(buffer.readC1Cob(fileName))
     }
 
-    private suspend fun decompileC2Cob(buffer: ByteStreamReaderEx): CobFileData {
+    private suspend fun decompileC2Cob(buffer: ByteStreamReader): CobFileData {
         buffer.setPosition(0)
         val header = buffer.string(4)
         if (header != "cob2")

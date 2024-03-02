@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcBiochemistry
 
-internal suspend fun SfcReader.readBiochemistry() : SfcBiochemistry {
+internal fun SfcReader.readBiochemistry() : SfcBiochemistry {
     // Only C1 variant has been checked at all
     assert (variant == CaosVariant.C1)
     skip(14)

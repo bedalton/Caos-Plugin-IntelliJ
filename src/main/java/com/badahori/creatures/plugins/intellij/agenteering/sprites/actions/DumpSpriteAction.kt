@@ -10,9 +10,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileTy
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
+import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.bedalton.creatures.sprite.parsers.BlkParser
-import com.bedalton.io.bytes.ByteStreamReaderBase
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.UndoConfirmationPolicy
@@ -204,7 +203,7 @@ class DumpSpriteAction : AnAction(
 
         if (blk) {
             return try {
-                val stream = ByteStreamReaderBase(VirtualFileStreamReaderEx(file))
+                val stream = VirtualFileStreamReader(file)
                 val png = BlkParser.parse(stream).toAwt()
                 write(parentVirtualFile, file.nameWithoutExtension + ".png", png, createdFiles)
                 true

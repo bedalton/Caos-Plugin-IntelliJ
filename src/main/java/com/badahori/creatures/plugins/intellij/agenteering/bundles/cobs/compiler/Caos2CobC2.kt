@@ -1,17 +1,15 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import com.bedalton.creatures.sprite.compilers.S16Compiler
-import com.bedalton.creatures.sprite.util.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CobTag
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toIntSafe
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeNullTerminatedString
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt16
 import com.badahori.creatures.plugins.intellij.agenteering.utils.writeUInt8
 import com.bedalton.common.util.PathUtil
+import com.bedalton.creatures.sprite.compilers.S16Compiler
+import com.bedalton.creatures.sprite.util.ColorEncoding
 import com.bedalton.io.bytes.ByteStreamWriter
-import com.bedalton.io.bytes.ByteStreamWriterEx
 import com.bedalton.io.bytes.CREATURES_CHARACTER_ENCODING
-import com.bedalton.io.bytes.writeNullTerminatedString
 import com.intellij.openapi.vfs.VirtualFile
 import korlibs.image.bitmap.Bitmap32
 import java.io.ByteArrayOutputStream
@@ -95,7 +93,7 @@ data class Caos2CobC2(
         }
     }
 
-    private suspend fun writeAgent(outputStream: ByteStreamWriterEx) {
+    private fun writeAgent(outputStream: ByteStreamWriter) {
         val chunk = ByteStreamWriter.writeBytes {
             val buffer = this
             buffer.writeUInt16(quantityAvailable ?: -1)
@@ -138,7 +136,7 @@ data class Caos2CobC2(
 
     }
 
-    private suspend fun writeAuthor(outputStream: ByteStreamWriterEx) {
+    private fun writeAuthor(outputStream: ByteStreamWriter) {
         if (!hasAuthProperties)
             return
         val buffer = ByteArrayOutputStream()
@@ -160,7 +158,7 @@ data class Caos2CobC2(
         writeChunk(outputStream, AUTH_HEADER, buffer.toByteArray())
     }
 
-    private suspend fun writeFiles(outputStream: ByteStreamWriterEx) {
+    private fun writeFiles(outputStream: ByteStreamWriter) {
         if (filesToInline.isEmpty())
             return
         for (file in filesToInline) {
@@ -183,7 +181,7 @@ data class Caos2CobC2(
         }
     }
 
-    private suspend fun writeChunk(outputStream: ByteStreamWriterEx, blockType: ByteArray, data: ByteArray) {
+    private fun writeChunk(outputStream: ByteStreamWriter, blockType: ByteArray, data: ByteArray) {
         outputStream.write(blockType)
         outputStream.writeUInt32(data.size)
         outputStream.write(data)

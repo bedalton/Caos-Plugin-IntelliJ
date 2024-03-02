@@ -1,10 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
+import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcGalleryPtr
 
 
-internal suspend fun SfcReader.readEntity(): PointerSfcEntity {
+internal fun SfcReader.readEntity(): PointerSfcEntity {
 
     val sprite = readClass(SfcType.GALLERY) as SfcGalleryPtr
     val currentFrame = uInt8()

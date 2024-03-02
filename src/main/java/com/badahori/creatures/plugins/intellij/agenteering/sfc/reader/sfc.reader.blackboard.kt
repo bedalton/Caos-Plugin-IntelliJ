@@ -1,12 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.reader
 
-import com.bedalton.io.bytes.string
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.Vector2
 
-internal suspend fun SfcReader.readBlackBoard() : PointerSfcBlackboard {
+internal fun SfcReader.readBlackBoard() : PointerSfcBlackboard {
     val baseObject = readCompoundObject()
-    val readColor: suspend ()->Int  = {
+    val readColor: ()->Int  = {
         if (variant == C1) {
             uInt8()
         } else {

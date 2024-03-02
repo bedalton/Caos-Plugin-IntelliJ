@@ -12,7 +12,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReaderEx
 import com.bedalton.io.bytes.*
 import com.bedalton.log.*
 import com.intellij.openapi.vfs.VirtualFile
@@ -28,17 +27,17 @@ object SpriteParser {
 
 
     @JvmStatic
-    suspend fun parse(virtualFile: VirtualFile): SpriteFileHolder {
+    fun parse(virtualFile: VirtualFile): SpriteFileHolder {
         return parse(virtualFile, null, null)
     }
 
     @JvmStatic
-    suspend fun parse(virtualFile: VirtualFile, bodyPart: Boolean? = null): SpriteFileHolder {
+    fun parse(virtualFile: VirtualFile, bodyPart: Boolean? = null): SpriteFileHolder {
         return parse(virtualFile, bodyPart, null)
     }
 
     @JvmStatic
-    suspend fun parse(
+    fun parse(
         virtualFile: VirtualFile,
         callback: ((i: Int, total: Int) -> Boolean?)?,
     ): SpriteFileHolder {
@@ -46,7 +45,7 @@ object SpriteParser {
     }
 
     @JvmStatic
-    suspend fun parse(
+    fun parse(
         virtualFile: VirtualFile,
         bodyPart: Boolean? = null,
         callback: ((i: Int, total: Int) -> Boolean?)?,
@@ -59,7 +58,7 @@ object SpriteParser {
     }
 
     @JvmStatic
-    suspend fun parse(
+    fun parse(
         extension: String,
         stream: ByteStreamReader,
         fileName: String,
@@ -71,7 +70,7 @@ object SpriteParser {
     }
 
     @JvmStatic
-    suspend fun parse(
+    fun parse(
         spriteType: SpriteType,
         stream: ByteStreamReader,
         fileName: String,
@@ -116,9 +115,9 @@ object SpriteParser {
     }
 
     @JvmStatic
-    suspend fun imageCount(virtualFile: VirtualFile): Int? {
+    fun imageCount(virtualFile: VirtualFile): Int? {
         return try {
-            val bytesBuffer = VirtualFileStreamReaderEx(virtualFile)
+            val bytesBuffer = VirtualFileStreamReader(virtualFile)
             if (virtualFile.extension?.lowercase() != "spr") {
                 bytesBuffer.skip(4)
             }
@@ -137,7 +136,7 @@ object SpriteParser {
         }
     }
 
-    private suspend fun getBodySpriteVariantSuspending(
+    private fun getBodySpriteVariantSuspending(
         spriteFile: VirtualFile,
         defaultVariant: CaosVariant
     ): CaosVariant {

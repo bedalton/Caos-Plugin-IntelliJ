@@ -8,11 +8,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.Agent
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.bedalton.common.util.ensureEndsWith
+import com.bedalton.io.bytes.ByteStreamReader
 import korlibs.image.awt.toAwt
 import java.util.*
 
 
-internal suspend fun ByteStreamReaderEx.readC2CobBlock() : CobBlock? {
+internal fun ByteStreamReader.readC2CobBlock() : CobBlock? {
     val type = try {
         string(4)
     } catch (e: Exception) {
@@ -27,7 +28,7 @@ internal suspend fun ByteStreamReaderEx.readC2CobBlock() : CobBlock? {
     }
 }
 
-private suspend fun ByteStreamReaderEx.readC2AgentBlock() : CobBlock.AgentBlock {
+private fun ByteStreamReader.readC2AgentBlock() : CobBlock.AgentBlock {
     val quantityAvailable = uInt16().let { if (it == 0xffff) -1 else it }
     val lastUsageDate = uInt32()
     val reuseInterval = uInt32()
@@ -80,7 +81,7 @@ private suspend fun ByteStreamReaderEx.readC2AgentBlock() : CobBlock.AgentBlock 
     )
 }
 
-private suspend fun ByteStreamReaderEx.readC2AuthorBlock() : CobBlock.AuthorBlock {
+private fun ByteStreamReader.readC2AuthorBlock() : CobBlock.AuthorBlock {
     val creationDay = uInt8()
     val creationMonth = uInt8()
     val creationYear = uInt16()
@@ -104,7 +105,7 @@ private suspend fun ByteStreamReaderEx.readC2AuthorBlock() : CobBlock.AuthorBloc
     )
 }
 
-private suspend fun ByteStreamReaderEx.readC2FileBlock() : CobBlock.FileBlock {
+private fun ByteStreamReader.readC2FileBlock() : CobBlock.FileBlock {
     val type = when (val typeInt = uInt16()) {
         0 -> CobFileBlockType.SPRITE
         1 -> CobFileBlockType.SOUND

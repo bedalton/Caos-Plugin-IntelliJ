@@ -5,7 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcRoo
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 
-internal suspend fun SfcReader.readMapData(): PointerSfcMapData {
+internal fun SfcReader.readMapData(): PointerSfcMapData {
     variant = when (val version = uInt32()) {
         0 -> C1
         1 -> CaosVariant.C2
@@ -25,7 +25,7 @@ internal suspend fun SfcReader.readMapData(): PointerSfcMapData {
             groundLevels = groundLevels
     )
 }
-private suspend fun SfcReader.readRooms(numberOfRoomsIn: Int): List<SfcRoomPtr> {
+private fun SfcReader.readRooms(numberOfRoomsIn: Int): List<SfcRoomPtr> {
     var numberOfRooms = numberOfRoomsIn
 
     // Read C1 rooms in
