@@ -1,13 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
-import com.bedalton.io.bytes.*
-import com.bedalton.creatures.sprite.parsers.parseS16FrameAtCurrentPosition
-import com.bedalton.creatures.sprite.util.ColorEncoding
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.transparentBlack
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.bedalton.common.util.ensureEndsWith
+import com.bedalton.creatures.sprite.parsers.parseS16FrameAtCurrentPosition
+import com.bedalton.creatures.sprite.util.ColorEncoding
 import com.bedalton.io.bytes.ByteStreamReader
 import korlibs.image.awt.toAwt
 import java.util.*
@@ -60,7 +58,9 @@ private fun ByteStreamReader.readC2AgentBlock() : CobBlock.AgentBlock {
     val thumbWidth = uInt16()
     val thumbHeight = uInt16()
     val image = if (thumbWidth > 0 && thumbHeight > 0) {
-        parseS16FrameAtCurrentPosition(this, thumbWidth, thumbHeight, ColorEncoding.X_565, transparentBlack).toAwt()
+        parseS16FrameAtCurrentPosition(this, thumbWidth, thumbHeight)
+            .withPalette(ColorEncoding.X_565.toRgbWithTables(false))
+            .toAwt()
     } else {
         null
     }

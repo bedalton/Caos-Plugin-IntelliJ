@@ -1,9 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompiler
 
-import com.bedalton.io.bytes.*
-import com.bedalton.creatures.sprite.util.ColorPalette
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
+import com.bedalton.creatures.sprite.util.ColorPalette
 import com.bedalton.io.bytes.ByteStreamReader
 import korlibs.image.awt.toAwt
 import java.util.*
@@ -52,8 +51,8 @@ internal fun ByteStreamReader.readC1Cob(fileName: String?): CobBlock.AgentBlock 
             position(),
             pictureWidth,
             pictureHeight,
-            ColorPalette.C1TransparentBlack
         )
+            .withPalette(ColorPalette.C1TransparentBlack)
             .flipY()
             .toAwt()
     } else {

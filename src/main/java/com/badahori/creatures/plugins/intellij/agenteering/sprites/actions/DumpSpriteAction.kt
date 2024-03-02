@@ -193,7 +193,7 @@ class DumpSpriteAction : AnAction(
     /**
      * Dumps a sprite file to a given parent directory
      */
-    private suspend fun dump(
+    private fun dump(
         parentVirtualFile: VirtualFile,
         file: VirtualFile,
         createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>,

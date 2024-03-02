@@ -131,7 +131,7 @@ object SprCompiler : SpriteCompiler {
     @Suppress("unused")
     @JvmStatic
     @Throws
-    suspend fun previewCompilerResult(imageIn:BufferedImage, dither:Boolean) : BufferedImage {
+    fun previewCompilerResult(imageIn:BufferedImage, dither:Boolean) : BufferedImage {
         val bytes = ByteArrayOutputStream(imageIn.width * imageIn.height)
         writeCompiledSprite(imageIn, bytes, dither)
         return readSprFrame(
@@ -139,7 +139,8 @@ object SprCompiler : SpriteCompiler {
             offset = 0L,
             width = imageIn.width,
             height = imageIn.height,
-            ColorPalette.C1TransparentBlack
-        ).toAwt()
+        )
+            .withPalette(ColorPalette.C1TransparentBlack)
+            .toAwt()
     }
 }

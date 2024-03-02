@@ -105,7 +105,7 @@ object SpriteParser {
             C16 -> C16SpriteFile(stream, false, null, progressEvery, callback)
                 .toListOf()
 
-            BLK -> BlkSpriteFile(stream, BLK_ASYNC_DEFAULT, progressEvery, callback)
+            BLK -> BlkSpriteFile(stream, progressEvery, callback)
                 .toListOf()
 
             else -> throw SpriteParserException("Invalid image file extension found")
@@ -190,7 +190,11 @@ class SpriteFileHolder(sprites: List<SpriteFile>, val fileName: String, private 
     val fileType by lazy {
         (PathUtil.getExtension(fileName) ?: fileName).uppercase().let {
             when (it) {
-                "SPR" -> if (sprites.size > 0) SpriteType.SPR_SET else SpriteType.SPR
+                "SPR" -> if (sprites.isNotEmpty()) {
+                    SPR_SET
+                } else {
+                    SPR
+                }
                 "S16" -> S16
                 "C16" -> C16
                 "BLK" -> BLK
