@@ -34,8 +34,8 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
 
 class DumpAgentAction : AnAction(
-    AgentMessages.message("actions.dump-agent.title"),
-    AgentMessages.message("actions.dump-agent.description"),
+    { AgentMessages.message("actions.dump-agent.title") },
+    { AgentMessages.message("actions.dump-agent.description") },
     CaosScriptIcons.SDK_ICON
 ), DumbAware {
 

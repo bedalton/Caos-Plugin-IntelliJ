@@ -31,8 +31,8 @@ import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicInteger
 
 class DumpSpriteAction : AnAction(
-    AgentMessages.message("actions.dump-sprite.title"),
-    AgentMessages.message("actions.dump-sprite.description"),
+    { AgentMessages.message("actions.dump-sprite.title") },
+    { AgentMessages.message("actions.dump-sprite.description") },
     CaosScriptIcons.SDK_ICON
 ), DumbAware {
 
