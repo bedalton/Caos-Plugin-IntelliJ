@@ -59,7 +59,6 @@ dependencies {
 
     //Kotlin / Kotlinx
     implementationExcludingKotlin("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")
 
     // Other Libs
     implementationExcludingKotlin("com.soywiz.korlibs.korim:korim:$korImagesVersion")
