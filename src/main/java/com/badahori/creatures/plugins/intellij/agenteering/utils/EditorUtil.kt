@@ -2,32 +2,27 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.intellij.codeInsight.completion.InsertionContext
+import com.intellij.ide.DataManager
+import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.command.UndoConfirmationPolicy
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
-import com.intellij.psi.codeStyle.CommonCodeStyleSettings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
-import com.intellij.ide.DataManager
-import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.actionSystem.DataContext
-import com.intellij.openapi.actionSystem.PlatformDataKeys
-import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.fileEditor.FileEditorStateLevel
-import com.intellij.openapi.fileEditor.TextEditor
-import com.intellij.openapi.module.Module
-import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 
 object EditorUtil {
 
@@ -80,7 +75,7 @@ object EditorUtil {
     }
 
     fun insertText(editor: Editor, text: String, offset: Int, moveCaretToEnd: Boolean) {
-        runWriteAction(Runnable {
+        runWriteAction({
             val project = editor.project
             val manager = if (project != null) PsiDocumentManager.getInstance(project) else null
             manager?.doPostponedOperationsAndUnblockDocument(editor.document)
@@ -94,7 +89,7 @@ object EditorUtil {
     }
 
     fun insertText(project:Project, document: Document, text: String, offset: Int) {
-        runWriteAction(Runnable {
+        runWriteAction({
             val manager = PsiDocumentManager.getInstance(project)
             manager.doPostponedOperationsAndUnblockDocument(document)
             document.insertString(offset, text)
@@ -103,7 +98,7 @@ object EditorUtil {
     }
 
     fun insertText(document: Document, text: String, offset: Int) {
-        runWriteAction(Runnable {
+        runWriteAction({
             document.insertString(offset, text)
         }, null, document)
     }
@@ -149,7 +144,7 @@ object EditorUtil {
         val document = document(element) ?: return null
         val editors = EditorFactory.getInstance()
                 .getEditors(document, element.project)
-                .filter {editor ->
+                .filter { _ ->
 //                    editor.psiFile == element.containingFile
                     true
                 }
@@ -170,7 +165,7 @@ object EditorUtil {
         return DataManager.getInstance().getDataContext(component)
     }
 
-    fun tabSize(editor:Editor) : Int? {
+    fun tabSize(editor:Editor) : Int {
         var tabSize: Int? = null
         val commonCodeStyleSettings = CommonCodeStyleSettings(CaosScriptLanguage)
         val indentOptions = commonCodeStyleSettings.indentOptions
