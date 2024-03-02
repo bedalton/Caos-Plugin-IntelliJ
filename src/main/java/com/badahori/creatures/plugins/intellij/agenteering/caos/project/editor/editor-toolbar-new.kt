@@ -44,14 +44,12 @@ import com.intellij.psi.text.BlockSupport
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.EditorNotifications
 import com.intellij.util.ui.UIUtil
-import kotlinx.coroutines.selects.select
 import java.awt.*
 import java.awt.event.ItemEvent
 import java.awt.event.MouseEvent
 import java.util.*
 import java.util.Timer
 import javax.swing.*
-
 
 
 private val KEY: Key<EditorNotificationPanel> = Key.create("creatures.caos.CaosEditorToolbar")
@@ -202,11 +200,13 @@ private fun populate(
         injectors
     )
 
+    val runInjectorActionPresentation = Presentation()
+
 
     // Actual injection button
     val runInjectorButton = ActionButton(
         runInjectorAction,
-        runInjectorAction.templatePresentation,
+        runInjectorActionPresentation,
         virtualFile.path,
         ActionToolbar.NAVBAR_MINIMUM_BUTTON_SIZE
     )
@@ -254,9 +254,12 @@ private fun populate(
     val compileAction = CompileCAOS2Action().apply {
         this.file = virtualFile
     }
+
+    val compileButtonPresentation = Presentation("Compile Agent")
+
     val compileButton = ActionButton(
         compileAction,
-        compileAction.templatePresentation,
+        compileButtonPresentation,
         virtualFile.path,
         ActionToolbar.NAVBAR_MINIMUM_BUTTON_SIZE
     )
