@@ -1,12 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiElementFactory
 import org.junit.Test
 
 class Caos2CobC1Test {
 
     @Test
-    fun Caos2CompilerCompilesCorrectly() {
+    fun caos2CompilerCompilesCorrectly() {
         val agentName = "TestAgent"
         val cobName = "Test Cob Name"
         val expiryYear = 2021
