@@ -49,7 +49,7 @@ internal class PrayFileTreeNode(
         val stream = VirtualFileStreamReader(file)
         runBlocking {
             try {
-                parsePrayAgentBlocks(stream, "*", true)
+                parsePrayAgentBlocks(stream, "*")
             } catch (e: Exception) {
                 if (e is ProcessCanceledException) {
                     throw e
@@ -160,7 +160,7 @@ internal class PrayBlockTreeNode(
 
         val isAgent = try {
             runBlocking {
-                prayBlock.intTags().any { it.tag like "Agent Type" } || prayBlock.stringTags()
+                prayBlock.intTags.any { it.tag like "Agent Type" } || prayBlock.stringTags
                     .any { it.tag like "Agent Type" }
             }
         } catch (e: Exception) {
@@ -183,7 +183,7 @@ internal class PrayBlockTreeNode(
         }
         val stringTags = runBlocking {
             try {
-                prayBlock.stringTags()
+                prayBlock.stringTags
             } catch (e: Exception) {
                 if (e is ProcessCanceledException) {
                     throw e
