@@ -76,9 +76,7 @@ internal class DDEConnection(override val variant: CaosVariant, private val data
             if (response == "0000") {
                 InjectionStatus.Bad(fileName, descriptor, CaosBundle.message("caos.injector.errors.silent-failure"))
             } else if (response.length > 1) {
-                if (response.last() == 0.toChar()) {
-                    response = response.substringFromEnd(0, 1)
-                }
+                response = response.trimEnd(0.toChar())
             }
             InjectionStatus.Ok(fileName, descriptor, response)
         } catch (e: Exception) {
@@ -146,8 +144,12 @@ internal class DDEConnection(override val variant: CaosVariant, private val data
 
     private fun getConnection(): DDEClientConversation? {
         var conn = connection
-        if (conn != null)
+        if (conn != null) {
             return connection
+        }
+        if (!DDEClientConversation.isLoaded()) {
+            return null
+        }
         conn = DDEClientConversation()
         conn.eventListener = object : DDEClientEventListener {
             override fun onItemChanged(p0: String?, p1: String?, p2: String?) {

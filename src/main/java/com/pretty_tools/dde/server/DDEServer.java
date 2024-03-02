@@ -51,6 +51,8 @@ public abstract class DDEServer
     /** Service name of the server application that will be handled by this class. */
     private final String service;
 
+    private static boolean loaded = false;
+
     protected DDEServer(String service)
     {
         this.service = service;
@@ -316,6 +318,10 @@ public abstract class DDEServer
             throw new DDEException("Server was not started.");
     }
 
+    public static boolean isLoaded() {
+        return loaded;
+    }
+
     // Pointer to c++ DEEServer implementation. Used from c++ code.
     private volatile long nativeDDEServer;
 
@@ -325,9 +331,15 @@ public abstract class DDEServer
 
     static// Loads the library, if available.
     {
-        if ("64".equals(System.getProperty("sun.arch.data.model")))
-            CaosLibraryLoader.loadLib("JavaDDEx64");
-        else
-            CaosLibraryLoader.loadLib("JavaDDE");
+        try {
+            if ("64".equals(System.getProperty("sun.arch.data.model"))) {
+                loaded = CaosLibraryLoader.loadLib("dde/JavaDDEx64");
+            } else {
+                loaded = CaosLibraryLoader.loadLib("dde/JavaDDE");
+            }
+        } catch (Exception e) {
+            logger.severe(e.getClass().getSimpleName() + ": " + e.getLocalizedMessage());
+            loaded = false;
+        }
     }
 }

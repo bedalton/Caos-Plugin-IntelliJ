@@ -65,6 +65,8 @@ public class DDEClientConversation {
 
     private static final int DEFAULT_TIMEOUT = 2000;
 
+    private static boolean loaded = false;
+
     /**
      * DDE Client Events Listener.
      */
@@ -91,6 +93,10 @@ public class DDEClientConversation {
     private int textFormat = ClipboardFormat.CF_TEXT.getNativeCode();
 
     public DDEClientConversation() {
+    }
+
+    public static boolean isLoaded() {
+        return loaded;
     }
 
     /**
@@ -431,10 +437,15 @@ public class DDEClientConversation {
 
     static// Loads the library, if available.
     {
-        if ("64".equals(System.getProperty("sun.arch.data.model"))) {
-            CaosLibraryLoader.loadLib("dde/JavaDDEx64");
-        } else {
-            CaosLibraryLoader.loadLib("dde/JavaDDE");
+        try {
+            if ("64".equals(System.getProperty("sun.arch.data.model"))) {
+                loaded = CaosLibraryLoader.loadLib("dde/JavaDDEx64");
+            } else {
+                loaded = CaosLibraryLoader.loadLib("dde/JavaDDE");
+            }
+        } catch (Exception e) {
+            logger.severe("Failed to load JavaDDE; " + e.getClass().getSimpleName() + ": " + e.getLocalizedMessage());
+            loaded = false;
         }
     }
 }

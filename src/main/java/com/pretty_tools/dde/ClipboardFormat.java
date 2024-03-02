@@ -15,6 +15,8 @@
  */
 package com.pretty_tools.dde;
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosLibraryLoader;
+
 /**
  * Standard clipboard formats.
  *
@@ -82,9 +84,10 @@ public enum ClipboardFormat
 
     static// Loads the library, if available.
     {
-        if ("64".equals(System.getProperty("sun.arch.data.model")))
-            System.loadLibrary("JavaDDEx64");
-        else
-            System.loadLibrary("JavaDDE");
+        if ("64".equals(System.getProperty("sun.arch.data.model"))) {
+            CaosLibraryLoader.loadLib("dde/JavaDDEx64");
+        } else {
+            CaosLibraryLoader.loadLib("dde/JavaDDE");
+        }
     }
 }

@@ -1,35 +1,36 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
-import com.bedalton.common.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.bedalton.common.util.PathUtil
+import com.bedalton.common.util.formatted
 import java.io.File
 import java.io.InputStream
-import java.lang.reflect.Field
 
-object CaosLibraryLoader{
+
+object CaosLibraryLoader {
 
     /**
      * Puts library to temp dir and loads to memory
      */
     @JvmStatic
-    fun loadLib(pathIn: String) : Boolean {
-        val pathTemp = if (pathIn.endsWith("dll"))
+    fun loadLib(pathIn: String): Boolean {
+        val pathTemp = if (pathIn.endsWith("dll")) {
             pathIn
-        else
+        } else {
             "$pathIn.dll"
+        }
         val myFile: String = PathUtil.getFileNameWithoutExtension(pathIn)!!
 
         try {
             // have to use a stream
             val dllInputStream: InputStream = javaClass.classLoader.getResourceAsStream(pathTemp)
-                    ?: throw Exception("Failed to get resource as stream")
+                ?: throw Exception("Failed to get resource as stream")
             // always write to different location
-            val fileOut = File(System.getProperty("java.io.tmpdir") + "/" + pathTemp)
+            val fileOut = File.createTempFile(pathTemp.replace("\\","_").replace("/", "_"), "")
             if (fileOut.exists()) {
                 try {
                     fileOut.delete()
-                } catch (e: Exception) {
+                } catch (_: Exception) {
 
                 }
             }
@@ -43,48 +44,11 @@ object CaosLibraryLoader{
                     return false
                 }
             }
-            val directory = fileOut.parentFile
-            addLibraryPath(directory.absolutePath)
-            System.loadLibrary(myFile)
+            System.load(fileOut.absolutePath)
             return true
         } catch (e: Exception) {
-            throw Exception("Failed to load required DLL: $pathTemp with error: ${e.message}")
+            throw Exception("Failed to load required DLL: $pathTemp with error: ${e.formatted(true)}")
         }
     }
 
-    /**
-     * Adds the specified path to the java library path
-     *
-     * @param pathToAdd the path to add
-     * @throws Exception
-     */
-    @Throws(java.lang.Exception::class)
-    private fun addLibraryPath(pathToAdd: String) {
-        val usrPathsField: Field = ClassLoader::class.java.getDeclaredField("usr_paths")
-        usrPathsField.isAccessible = true
-
-        //get array of paths
-        val paths = getUserPaths()
-        if (paths.contains(pathToAdd)) {
-            return
-        }
-
-        //check if the path to add is already present
-        for (path in paths) {
-            if (path == pathToAdd) {
-                return
-            }
-        }
-
-        //add the new path
-        val newPaths: Array<String> = paths + pathToAdd
-        usrPathsField.set(null, newPaths)
-    }
-
-    private fun getUserPaths() : Array<String>  {
-        val usrPathsField: Field = ClassLoader::class.java.getDeclaredField("usr_paths")
-        usrPathsField.isAccessible = true
-        @Suppress("UNCHECKED_CAST")
-        return usrPathsField.get(null) as Array<String>
-    }
 }
