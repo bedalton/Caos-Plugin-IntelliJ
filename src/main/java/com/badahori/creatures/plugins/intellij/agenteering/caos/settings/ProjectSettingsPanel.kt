@@ -15,6 +15,7 @@ import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.options.Configurable
+import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.ui.DialogWrapper
@@ -25,7 +26,7 @@ import java.awt.Dimension
 import javax.swing.*
 
 
-class CaosProjectSettingsConfigurable(private val project: Project) : Configurable {
+class CaosProjectSettingsConfigurable(private val project: Project) : Configurable, SearchableConfigurable {
 
     override fun getHelpTopic(): String {
         return "Settings for creatures CAOS, agent and breed editing"
@@ -59,6 +60,10 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
     override fun getPreferredFocusedComponent(): JComponent {
         createComponent()
         return panel.getPreferredFocusComponent()
+    }
+
+    override fun getId(): String {
+        return "com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsConfigurable"
     }
 
     private val applicationSettings: CaosApplicationSettings? by lazy {
