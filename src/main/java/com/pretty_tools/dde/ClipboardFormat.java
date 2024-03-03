@@ -41,7 +41,7 @@ public enum ClipboardFormat
 
     final int fmt;
 
-    private ClipboardFormat(int fmt)
+    ClipboardFormat(int fmt)
     {
         this.fmt = fmt;
     }
@@ -67,8 +67,8 @@ public enum ClipboardFormat
      *
      * @param format format to register
      * @return identifier of the registered clipboard format.
-     * @throws UnsatisfiedLinkError
-     * @throws DDEException
+     * @throws UnsatisfiedLinkError on error
+     * @throws DDEException on error
      */
     public static int registerClipboardFormat(String format) throws UnsatisfiedLinkError, DDEException
     {
