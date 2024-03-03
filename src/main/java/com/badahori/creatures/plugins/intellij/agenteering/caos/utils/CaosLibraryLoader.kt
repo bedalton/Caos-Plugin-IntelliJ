@@ -1,7 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
-import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.formatted
 import java.io.File
 import java.io.InputStream
@@ -19,7 +18,6 @@ object CaosLibraryLoader {
         } else {
             "$pathIn.dll"
         }
-        val myFile: String = PathUtil.getFileNameWithoutExtension(pathIn)!!
 
         try {
             // have to use a stream
