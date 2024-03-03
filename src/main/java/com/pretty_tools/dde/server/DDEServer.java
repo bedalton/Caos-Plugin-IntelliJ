@@ -44,6 +44,7 @@ import java.util.logging.Logger;
  *
  * @author Alexander Kozlov (alex@pretty-tools.com)
  */
+@SuppressWarnings({"SpellCheckingInspection", "unused"})
 public abstract class DDEServer
 {
     private static final Logger logger = Logger.getLogger(DDEServer.class.getName());
@@ -51,7 +52,7 @@ public abstract class DDEServer
     /** Service name of the server application that will be handled by this class. */
     private final String service;
 
-    private static boolean loaded = false;
+    private static boolean loaded;
 
     protected DDEServer(String service)
     {
@@ -63,7 +64,7 @@ public abstract class DDEServer
      * This function causes the system to send XTYP_REGISTER transactions to other running
      * Dynamic Data Exchange Management Library (DDEML) client applications.
      *
-     * @throws DDEException
+     * @throws DDEException on error
      */
     public synchronized void start() throws DDEException
     {
@@ -78,7 +79,7 @@ public abstract class DDEServer
      * This function causes the system to send XTYP_UNREGISTER transactions to other running
      * Dynamic Data Exchange Management Library (DDEML) client applications.
      *
-     * @throws DDEException
+     * @throws DDEException on error
      */
     public synchronized void stop() throws DDEException
     {
@@ -90,7 +91,7 @@ public abstract class DDEServer
      *
      * @param topic topic name of updated item
      * @param item item name which was updated
-     * @throws DDEException
+     * @throws DDEException on error
      */
     public synchronized void notifyClients(String topic, String item) throws DDEException
     {

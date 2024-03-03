@@ -6,7 +6,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.substringFromEnd
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.pretty_tools.dde.client.DDEClientConversation
@@ -162,7 +161,7 @@ internal class DDEConnection(override val variant: CaosVariant, private val data
             }
         }
         return try {
-            conn.connect(serveName, topic)
+            conn.connect(serveName, TOPIC)
             connection = conn
             conn
         } catch (e: Exception) {
@@ -173,7 +172,7 @@ internal class DDEConnection(override val variant: CaosVariant, private val data
     }
 
     companion object {
-        private const val topic: String = "IntelliJCaosInjector"
+        private const val TOPIC: String = "IntelliJCaosInjector"
         private var connection: DDEClientConversation? = null
         private const val VIVARIUM = "Vivarium"
     }

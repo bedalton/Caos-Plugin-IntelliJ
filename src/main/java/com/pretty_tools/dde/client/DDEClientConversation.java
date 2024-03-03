@@ -60,12 +60,13 @@ import java.util.concurrent.Executors;
  *
  * @author Alexander Kozlov (alex@pretty-tools.com)
  */
+@SuppressWarnings("unused")
 public class DDEClientConversation {
     private static final Logger logger = Logger.getLogger(DDEClientConversation.class.getName());
 
     private static final int DEFAULT_TIMEOUT = 2000;
 
-    private static boolean loaded = false;
+    private static boolean loaded;
 
     /**
      * DDE Client Events Listener.
@@ -104,7 +105,7 @@ public class DDEClientConversation {
      *
      * @param service service name
      * @param topic   topic name
-     * @throws DDEException
+     * @throws DDEException on already connected
      */
     public synchronized void connect(String service, String topic) throws DDEException {
         if (nativeDDEClientConversation != 0) {
@@ -122,7 +123,8 @@ public class DDEClientConversation {
     /**
      * Terminate current conversation.
      *
-     * @throws DDEException
+     * @throws DDEException on error
+     * @throws UnsatisfiedLinkError on error
      */
     public synchronized void disconnect() throws DDEException {
         if (executorService != null) {
@@ -142,7 +144,8 @@ public class DDEClientConversation {
      * Send a command string to the server.
      *
      * @param command command to execute
-     * @throws DDEException
+     * @throws DDEException on error
+     * @throws UnsatisfiedLinkError on error
      */
     public synchronized void execute(String command) throws DDEException {
         checkConversation();
@@ -154,7 +157,8 @@ public class DDEClientConversation {
      * Send a command to the server.
      *
      * @param command command to execute
-     * @throws DDEException
+     * @throws DDEException on error
+     * @throws UnsatisfiedLinkError on error
      */
     public synchronized void execute(byte[] command) throws DDEException {
         checkConversation();
@@ -167,7 +171,8 @@ public class DDEClientConversation {
      *
      * @param item item name
      * @param data data to send
-     * @throws DDEException
+     * @throws DDEException on error
+     * @throws UnsatisfiedLinkError on error
      */
     public synchronized void poke(String item, String data) throws DDEException {
         checkConversation();
@@ -181,7 +186,8 @@ public class DDEClientConversation {
      * @param item            item name
      * @param data            data to send
      * @param clipboardFormat Specifies the standard clipboard format of the data.
-     * @throws DDEException
+     * @throws DDEException on error
+     * @throws UnsatisfiedLinkError on error
      */
     public void poke(String item, byte[] data, ClipboardFormat clipboardFormat) throws DDEException {
         poke(item, data, clipboardFormat.getNativeCode());
@@ -193,7 +199,8 @@ public class DDEClientConversation {
      * @param item item name
      * @param data data to send
      * @param wFmt Specifies the standard clipboard format of the data.
-     * @throws DDEException
+     * @throws DDEException on error
+     * @throws UnsatisfiedLinkError on error
      */
     public synchronized void poke(String item, byte[] data, int wFmt) throws DDEException {
         checkConversation();
@@ -206,7 +213,8 @@ public class DDEClientConversation {
      *
      * @param item item name
      * @return Item data.
-     * @throws DDEException
+     * @throws DDEException on error
+     * @throws UnsatisfiedLinkError on error
      */
     public synchronized String request(String item) throws DDEException {
         checkConversation();
@@ -220,7 +228,8 @@ public class DDEClientConversation {
      * @param item item name
      * @param wFmt Specifies the standard clipboard format of the data.
      * @return Item data.
-     * @throws DDEException
+     * @throws DDEException on error
+     * @throws UnsatisfiedLinkError on error
      */
     public synchronized byte[] request(String item, int wFmt) throws DDEException {
         checkConversation();
@@ -232,7 +241,8 @@ public class DDEClientConversation {
      * Establish an advise loop with a server.
      *
      * @param item item name
-     * @throws DDEException
+     * @throws DDEException on error
+     * @throws UnsatisfiedLinkError on error
      */
     public synchronized void startAdvice(String item) throws DDEException {
         checkConversation();
@@ -244,7 +254,8 @@ public class DDEClientConversation {
      * End an advise loop with a server.
      *
      * @param item item name
-     * @throws DDEException
+     * @throws DDEException on error
+     * @throws UnsatisfiedLinkError on error
      */
     public synchronized void stopAdvice(String item) throws DDEException {
         checkConversation();
@@ -356,27 +367,25 @@ public class DDEClientConversation {
         try {
             final long nativeDDEClientWhenDisconnectHappens = nativeDDEClientConversation;
 
-            executorService.submit(new Runnable() {
-                public void run() {
-                    try {
-                        final DDEClientEventListener listener = getEventListener();
+            executorService.submit(() -> {
+                try {
+                    final DDEClientEventListener listener = getEventListener();
 
-                        if (listener != null) {
-                            listener.onDisconnect();
-                        }
-                    } catch (Throwable t) {
-                        logger.log(Level.SEVERE, t.toString(), t);
+                    if (listener != null) {
+                        listener.onDisconnect();
                     }
-                    // disconnect and free resources
-                    try {
-                        synchronized (DDEClientConversation.this) {
-                            if (nativeDDEClientWhenDisconnectHappens == nativeDDEClientConversation && nativeDDEClientConversation != 0) {
-                                disconnect();
-                            }
+                } catch (Throwable t) {
+                    logger.log(Level.SEVERE, t.toString(), t);
+                }
+                // disconnect and free resources
+                try {
+                    synchronized (DDEClientConversation.this) {
+                        if (nativeDDEClientWhenDisconnectHappens == nativeDDEClientConversation && nativeDDEClientConversation != 0) {
+                            disconnect();
                         }
-                    } catch (Throwable t) {
-                        logger.log(Level.SEVERE, t.toString(), t);
                     }
+                } catch (Throwable t) {
+                    logger.log(Level.SEVERE, t.toString(), t);
                 }
             });
         } catch (Throwable thr) {
@@ -394,17 +403,15 @@ public class DDEClientConversation {
         }
 
         try {
-            executorService.submit(new Runnable() {
-                public void run() {
-                    try {
-                        final DDEClientEventListener listener = getEventListener();
+            executorService.submit(() -> {
+                try {
+                    final DDEClientEventListener listener = getEventListener();
 
-                        if (listener != null) {
-                            listener.onItemChanged(topic, item, data);
-                        }
-                    } catch (Exception e) {
-                        logger.log(Level.SEVERE, e.toString(), e);
+                    if (listener != null) {
+                        listener.onItemChanged(topic, item, data);
                     }
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE, e.toString(), e);
                 }
             });
         } catch (Throwable thr) {
