@@ -1,8 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector
 
-import org.junit.Assert
-import org.junit.Test
-
 class InjectorTests {
 
 //
