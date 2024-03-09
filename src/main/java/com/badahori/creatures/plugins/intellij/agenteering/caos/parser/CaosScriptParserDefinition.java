@@ -35,11 +35,13 @@ public class CaosScriptParserDefinition implements ParserDefinition {
     }
 
     @Override
+    @NotNull
     public PsiParser createParser(Project project) {
         return new CaosScriptParser();
     }
 
     @Override
+    @NotNull
     public IFileElementType getFileNodeType() {
         return CaosScriptStubTypes.Companion.getFILE();
     }
@@ -68,17 +70,20 @@ public class CaosScriptParserDefinition implements ParserDefinition {
     }
 
     @Override
+    @NotNull
     public PsiFile createFile(FileViewProvider fileViewProvider) {
         assert (!fileViewProvider.getVirtualFile().getName().endsWith("cob")) : "CaosScriptParserDefinition called, but COB file type was not properly set";
         return new CaosScriptFile(fileViewProvider, fileViewProvider.getVirtualFile());
     }
 
     @Override
+    @NotNull
     public SpaceRequirements spaceExistanceTypeBetweenTokens(ASTNode left, ASTNode right) {
         return spaceExistenceTypeBetweenTokens(left, right);
     }
 
     @Override
+    @NotNull
     public SpaceRequirements spaceExistenceTypeBetweenTokens(ASTNode astNode, ASTNode astNode1) {
         if (WHITE_SPACES.contains(astNode.getElementType()))
             return SpaceRequirements.MAY;
