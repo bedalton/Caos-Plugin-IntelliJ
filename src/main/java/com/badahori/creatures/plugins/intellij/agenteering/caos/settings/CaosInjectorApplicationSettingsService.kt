@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.GameInterfaceLi
 import com.badahori.creatures.plugins.intellij.agenteering.utils.JsonToXMLStringConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.bedalton.common.util.className
+import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
@@ -55,6 +56,7 @@ class CaosInjectorApplicationSettingsService :
         if (actualState == this.myState) {
             return
         }
+
         val oldState = this.myState
         this.myState = actualState
 //        XmlSerializerUtil.copyBean(state, this)
@@ -128,6 +130,7 @@ class CaosInjectorApplicationSettingsService :
     data class CaosWineSettings(
         @Attribute(converter = GameInterfaceListConverter::class)
         val gameInterfaceNames: List<GameInterfaceName> = listOf(),
+        @Attribute(converter = StringListConverter::class)
         val lastGameInterfaceNames: List<String> = listOf(),
         @Attribute
         val lastWineDirectory: String? = null,

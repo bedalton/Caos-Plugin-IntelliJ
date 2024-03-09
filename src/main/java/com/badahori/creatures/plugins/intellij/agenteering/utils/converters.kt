@@ -65,7 +65,7 @@ internal class StringListConverter : Converter<List<String>>() {
                 json.decodeFromString<List<String>>(decoded).toList()
             } catch (e: Exception) {
                 LOGGER.severe("Failed to deserialize JSON string; ${e.className}:${e.message}")
-                null
+                emptyList()
             }
         }
         return try {
