@@ -1,20 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.handlers
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.token
-import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.bedalton.common.util.className
 import com.bedalton.common.util.formatted
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
-import com.intellij.codeInsight.template.impl.editorActions.TypedActionHandlerBase
-import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.editor.actionSystem.TypedActionHandler
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
@@ -151,18 +144,18 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
         }
     }
 
-    companion object {
+}
 
-        private val ELIF = token('e', 'l', 'i', 'f') //
-        private val ELSE = token('e', 'l', 's', 'e') //
-        private val ENDI = token('e', 'n', 'd', 'i') //
-        private val REPE = token('r', 'e', 'p', 'e') //
-        private val NEXT = token('n', 'e', 'x', 't') //
-        private val NSCN = token('n', 's', 'c', 'n') //
-        private val UNTL = token('u', 'n', 't', 'l')//
-        private val EVER = token('e', 'v', 'e', 'r')//
-        private val RETN = token('r', 'e', 't', 'n') //
-        private val ENDM = token('e', 'n', 'd', 'm')//
+private val ELIF = token('e', 'l', 'i', 'f') //
+private val ELSE = token('e', 'l', 's', 'e') //
+private val ENDI = token('e', 'n', 'd', 'i') //
+private val REPE = token('r', 'e', 'p', 'e') //
+private val NEXT = token('n', 'e', 'x', 't') //
+private val NSCN = token('n', 's', 'c', 'n') //
+private val UNTL = token('u', 'n', 't', 'l')//
+private val EVER = token('e', 'v', 'e', 'r')//
+private val RETN = token('r', 'e', 't', 'n') //
+private val ENDM = token('e', 'n', 'd', 'm')//
 
 //        private inline fun log(project: Project, text: () -> String) {
 //            CaosNotifications.showInfo(project, "End Word handler", text())
