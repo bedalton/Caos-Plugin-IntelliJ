@@ -643,9 +643,7 @@ object NoneInjectorInterface: GameInterfaceName() {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as NoneInjectorInterface
-
-        return id == other.id
+        return true
     }
 
     override fun hashCode(): Int {

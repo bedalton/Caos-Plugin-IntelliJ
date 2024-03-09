@@ -489,4 +489,10 @@ internal val NOT_WINDOWS_STATUS = InjectionStatus.ActionNotSupported(
     message("caos.injector.errors.only-windows")
 )
 
+internal val NOT_NIX_STATUS = InjectionStatus.ActionNotSupported(
+    null,
+    null,
+    message("caos.injector.errors.only-nix")
+)
+
 internal const val DEBUG_INJECTOR = "bedalton.creatures.intellij.log.DEBUG_INJECTOR"
