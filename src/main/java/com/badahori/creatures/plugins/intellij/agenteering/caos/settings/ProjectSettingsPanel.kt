@@ -204,6 +204,8 @@ private class ProjectSettingsPanel(
                 } else {
                     gameInterfaceListModel.add(i, name)
                 }
+            } else {
+                gameInterfaceListModel.removeAt(i)
             }
             setItems(gameInterfaceListModel)
             reload()
