@@ -2,15 +2,14 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariantExplicitOrImplicit
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfNotConcrete
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor.EDITOR_INJECTOR_KEY
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor.EDITOR_VARIANT_KEY
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptInstallScript
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptMacro
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptRemovalScript
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInjectorApplicationSettingsService
@@ -84,7 +83,7 @@ class InjectSingleCaosScriptAction : AnAction(
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
         if (project == null) {
-            LOGGER.info("Project is null when injecting script")
+            LOGGER.severe("Project is null when injecting script")
             return
         }
         val element = e.getData(PlatformDataKeys.PSI_ELEMENT)
