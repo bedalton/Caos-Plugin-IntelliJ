@@ -386,7 +386,12 @@ interface IsNet {
             return null
         }
 
-        internal fun getUrl(variant: CaosVariant? = null, rawUrl: String, gameName: String?): URL? {
+        internal fun getUrl(
+            variant: CaosVariant? = null,
+            rawUrl: String,
+            gameName: String?,
+            schema: String? = "http://"
+        ): URL? {
             val url = substitute(variant, rawUrl, gameName)
             try {
                 val temp = URL(url)
@@ -395,8 +400,15 @@ interface IsNet {
                 }
             } catch (_: Exception) {
             }
+            val prefix = if (schema.isNullOrBlank()) {
+                ""
+            } else if (schema.endsWith(":/") || schema.endsWith("://")) {
+                schema
+            } else {
+                "$schema://"
+            }
             return try {
-                URL("http://$url")
+                URL("$prefix$url")
             } catch (_: Exception) {
                 null
             }
