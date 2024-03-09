@@ -38,6 +38,22 @@
     <change-notes><![CDATA[
         <ul>
             <li>
+                <b>Version: 2024.01.1</b>
+                <b>Added</b>
+                <ul>
+                    <li>Added CAOS injection on unix platforms</li>
+                    <li>Spellchecking in commands and strings</li>
+                    <li>Spellchecking entries for CAOS commands in text</li>
+                </ul>
+            </li>
+            <li>
+                <b>Version: 2024.01.00</b>
+                <b>Fixes</b>
+                <ul>
+                    <li>Fix C1/C2 injection on Windows</li>
+                </ul>
+            </li>
+            <li>
                 <b>Version: 2023.01.00</b>
                 <b>Improvement</b>
                 <ul>
@@ -52,156 +68,6 @@
                     <li>Filename rename in CAOS2Pray</li>
                     <li>Rename NAME|GAME|EAME variable strings</li>
                     <li>Fix error on expand CAOS in C1e scripts</li>
-                </ul>
-            </li>
-            <li>
-                <b>Version: 2022.03.04</b>
-                <b>Fixes</b>
-                <ul>
-                    <li>Fix ATT editor not showing tails</li>
-                </ul>
-            </li>
-            <li>
-                <b>Version: 2022.03.03</b>
-                <b>Fixes</b>
-                <ul>
-                    <li>Fix ATT editing issues for C1/C2 breeds</li>
-                </ul>
-            </li>
-            <li>
-                <b>Version: 2022.03.02</b>
-                <b>Improvements</b>
-                <ul>
-                    <li>Cache sprite/ATT pairs for faster re-render</li>
-                </ul>
-                <b>Fixes</b>
-                <ul>
-                    <li>Fix ATT editor cell images not scaling</li>
-                </ul>
-            </li>
-            <li>
-                <b>Version: 2022.03.01</b>
-                <b>Fixes</b>
-                <ul>
-                    <li>Sprites reparsed constantly in ATT editor</li>
-                    <li>Inverted part pose drop down action. i.e. Left-Leg: Up actually pointed leg down</li>
-                </ul>
-            </li>
-            <li>
-                <b>Version: 2022.03.00</b>
-                <b>Improvements</b>
-                <ul>
-                    <li>Improved editing files in non-CAOS-module based projects</li>
-                    <li>Added Catalogue file editing</li>
-                    <li>Classifier auto-complete for named classifiers</li>
-                </ul>
-            </li>
-            <li>
-                <b>Version: 2022.02.02</b>
-                <b>#Fixes</b>
-                <ul>
-                    <li>Fix ATT editor not rendering poses with missing tail files</li>
-                </ul>
-            </li>
-            <li>
-                <b>Version: 2022.02.01</b>
-                <b>#Fixes</b>
-                <ul>
-                    <li>Fix broken PRAY compiler</li>
-                    <li>Fix ATT editor selecting incorrect sprite</li>
-                </ul>
-            </li>
-            <li>
-                <b>Version: 2022.02.00</b>
-                <b>#Fixes</b>
-                <ul>
-                    <li>Broken CAOS injector</li>
-                    <li>Ignored indent options in code formatting</li>
-                    <li>Project or folder failing to load on bad .agents file parse</li>
-                    <li>Sprite dump not working on windows</li>
-                </ul>
-                <b>#Improvements</b>
-                <ul>
-                    <li>
-                        General ATT editor improvements<br/>
-                        <ul>
-                            <li>Allow visual ATT editor on empty or incomplete ATT files</li>
-                            <li>Add menu shortcut to create ATT from sprite file</liL>
-                            <li>Remove CAOS2Pray compiler icon when file is not CAOS2Pray</li>
-                        </ul>
-                    </li>
-                    <li>Streamline BLK image dump</li>
-                </ul>
-            </li>
-            <li>
-                <b>Version: 2021.11.01</b>
-                <b>#Fixes</b>
-                <ul>
-                    <li>Fix body part z-order in Att/Pose editor</li>
-                    <li>ATT/Sprite indexing lock-up</li>
-                    <li>Fix PRAY/CAOS2Pray inspection reporting invalid file when file existed</li>
-                    <li>Fix named variable renaming</li>
-                </ul>
-                <b>#Improvements</b>
-                <ul>
-                    <li>Speed up Att/Sprite pair indexing</li>
-                </ul>
-            </li>
-            <li>
-                <b>Versions: 2021.12.20</b>
-                <b>Fixes</b>
-                <ul>
-                    <li>C1 and C2 injection failure</li>
-                    <li>Error in sprite viewer</li>
-                    <li>Fix subroutine not renaming all usages</li>
-                    <li>Show error on bad subroutine instead of failing silently</li>
-                </ul>
-                <b>Improvements</b>
-                <ul>
-                    <li>Prevent blocking UI thread with lots of breed files</li>
-                    <li>Improve unterminated string handling</li>
-                    <li>Improve bad command handling</li>
-                    <li>Highlight usages of indexed variables under caret</li>
-                </ul>
-            </li>
-            <li>
-                <b>Versions: 2021.09.19</b>
-                <b>Improvements</b>
-                <ul>
-                    <li>Added PRAY and CAOS2Pray compiling</li>
-                    <li>Added code navigation from script number in `MESG WRIT`, `MESG WRT+` and `CALL` commands</li>
-                    <li>Added support for arbitrary game names in injector</li>
-                    <li>Added file name completion in file parameter contexts</li>
-                </ul>
-                <b>Fixed</b>
-                <ul>
-                    <li>Fixed false trailing whitespace error</li>
-                    <li>Fixed commas showing as invalid on C1/C2</li>
-                    <li>Fixed random sprites in ATT editor</li>
-                    <li>Fixed erroneous comma errors in C1/C2</li>
-                    <li>Fixed Bit-flag type hints</li>
-                    <li>Fix subroutine name to gsub navigation</li>
-                </ul>
-            </li>
-            <li>
-                <b>Versions: 2021.07.25</b>
-                <ul>
-                    <li>Fixed CAOS2Cob compilation errors</li>
-                    <li>Fix CAOS2Pray markup errors</li>
-                    <li>Remove default CAOS colorization preventing natural overrides</li>
-                    <li>Fix name/game/mame variable errors</li>
-                </ul>
-            </li>
-            <li>
-                <b>Versions: 2021.06.22</b>
-                <ul>
-                    <li>Added ability to use non-matching genus in ATT editor</li>
-                </ul>
-            </li>
-            <li>
-                <b>Versions: 2021.05.29</b>
-                <ul>
-                    <li>Add all named values to autocomplete on double ctrl+space</li>
                 </ul>
             </li>
         </ul>
