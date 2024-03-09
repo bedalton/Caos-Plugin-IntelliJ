@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.messa
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle.message
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.injector.C3Connection.Companion.MAX_CAOS_FILE_LENGTH
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.openapi.project.Project
 import java.io.BufferedReader
@@ -17,11 +18,16 @@ import java.net.URL
  * Connection class for managing POST based CAOS injection
  * Requires CAOS server executable to be running to handle caos injection post requests
  */
-internal class PostConnection(override val variant: CaosVariant, private val gameInterfaceName: PostInjectorInterface) :
-    CaosConnection {
+internal class PostConnection(
+    override val variant: CaosVariant,
+    private val gameInterfaceName: PostInjectorInterface,
+) : CaosConnection {
 
     override val supportsJect: Boolean
         get() = false
+
+    override val maxCaosLength: Int
+        get() = MAX_CAOS_FILE_LENGTH
 
     private val url: URL? by lazy {
         gameInterfaceName.getURL(variant)
@@ -31,7 +37,7 @@ internal class PostConnection(override val variant: CaosVariant, private val gam
         project: Project,
         fileName: String,
         descriptor: String?,
-        caos: String
+        caos: String,
     ): InjectionStatus {
         val url = url
             ?: return InjectionStatus.BadConnection(

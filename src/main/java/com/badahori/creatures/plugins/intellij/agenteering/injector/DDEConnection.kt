@@ -17,6 +17,9 @@ import com.pretty_tools.dde.client.DDEClientEventListener
  */
 internal class DDEConnection(override val variant: CaosVariant, private val data: GameInterfaceName) : CaosConnection {
 
+    override val maxCaosLength: Int
+        get() = 4096 - 1
+
     override val supportsJect: Boolean
         get() = false
 

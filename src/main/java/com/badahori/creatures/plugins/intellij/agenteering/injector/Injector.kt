@@ -350,6 +350,11 @@ object Injector {
 internal interface CaosConnection {
     val variant: CaosVariant
 
+    /**
+     * The maximum allowed length of a CAOS script for this injector
+     */
+    val maxCaosLength: Int
+
     val supportsJect: Boolean
     fun inject(project: Project, fileName: String, descriptor: String?, caos: String): InjectionStatus
     fun injectWithJect(project: Project, caos: CaosScriptFile, flags: Int): InjectionStatus

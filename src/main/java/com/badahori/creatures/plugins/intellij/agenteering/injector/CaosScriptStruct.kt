@@ -61,8 +61,8 @@ sealed class CaosScriptStruct {
         }
     }
 
-    val collapsedLengthIsValid by lazy {
-        text.length < InjectorHelper.MAX_CAOS_FILE_LENGTH
+    internal fun collapsedLengthIsValid(conn: CaosConnection): Boolean {
+        return text.length < conn.maxCaosLength
     }
 }
 

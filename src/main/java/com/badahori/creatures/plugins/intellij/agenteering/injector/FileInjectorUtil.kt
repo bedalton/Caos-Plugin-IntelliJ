@@ -86,8 +86,8 @@ internal object FileInjectorUtil {
             "Injecting scripts"
         }
         val allScripts = scriptBlocks.values.flatten()
-        if (allScripts.any { !it.collapsedLengthIsValid }) {
-            val tooLong = allScripts.filter { !it.collapsedLengthIsValid }
+        if (allScripts.any { !it.collapsedLengthIsValid(connection) }) {
+            val tooLong = allScripts.filter { !it.collapsedLengthIsValid(connection) }
             CaosInjectorNotifications.showError(
                 project,
                 "Injection Error",

@@ -8,7 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInjectorApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CLIInjectFlag.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.bedalton.common.util.*
@@ -25,6 +25,15 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import kotlin.collections.filter
+import kotlin.collections.firstOrNull
+import kotlin.collections.getOrNull
+import kotlin.collections.joinToString
+import kotlin.collections.listOf
+import kotlin.collections.plus
+import kotlin.collections.set
+import kotlin.collections.setOf
+import kotlin.collections.toTypedArray
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -35,8 +44,12 @@ internal class WineConnection(
     override val variant: CaosVariant,
     private val data: WineInjectorInterface
 ) : CaosConnection {
+
     override val supportsJect: Boolean
         get() = false
+
+    override val maxCaosLength: Int
+        get() = MAX_CAOS_FILE_LENGTH
 
     private val exeName = "ject.exe"
     private val file: File by lazy {

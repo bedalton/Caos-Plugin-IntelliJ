@@ -21,6 +21,10 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
 
     override val supportsJect: Boolean
         get() = false
+
+    override val maxCaosLength: Int
+        get() = MAX_CAOS_FILE_LENGTH
+
     private var tempFileIndex = 1
     private var ranOnce = false
     private val exeName = "C3CaosInjector.exe"
@@ -460,7 +464,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
     companion object {
 
         private const val MAX_CONSOLE_LENGTH: Int = 7590
-        private const val MAX_CAOS_FILE_LENGTH = 14100
+        internal const val MAX_CAOS_FILE_LENGTH = 14100
     }
 
 
