@@ -31,8 +31,8 @@ import icons.CaosScriptIcons
 import java.util.concurrent.atomic.AtomicInteger
 
 class AttNewFileFromSpritesAction : AnAction(
-    /* text = */ CaosBundle.message("att.actions.new-file-from-sprites.multi.title"),
-    /* description = */ CaosBundle.message("att.actions.new-file-from-sprites.multi.description"),
+    {/* text = */ CaosBundle.message("att.actions.new-file-from-sprites.multi.title") },
+    {/* description = */ CaosBundle.message("att.actions.new-file-from-sprites.multi.description") },
     /* icon = */ CaosScriptIcons.ATT_FILE_ICON
 ) {
 

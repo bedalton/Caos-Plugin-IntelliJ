@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.coroutines.coroutineContext
 
-class CompilePrayFileAction(private val transient: Boolean = true) : AnAction("Compile PRAY Agent") {
+class CompilePrayFileAction(private val transient: Boolean = true) : AnAction({ "Compile PRAY Agent" }) {
 
 
     override fun update(e: AnActionEvent) {

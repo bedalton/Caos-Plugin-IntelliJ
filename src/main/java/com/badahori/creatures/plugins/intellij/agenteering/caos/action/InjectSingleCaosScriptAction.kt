@@ -44,13 +44,17 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class InjectSingleCaosScriptAction : AnAction(
-    CaosBundle.message(
-        "caos.injector.action.inject-script.title",
-        SCRIPT_NAME_DEFAULT
-    ), //java.util.function.Supplier { CaosBundle.message("caos.injector.action.inject-script.title") },
-    CaosBundle.message(
-        "caos.injector.action.inject-script.description", SCRIPT_NAME_DEFAULT
-    ), //java.util.function.Supplier { CaosBundle.message("caos.injector.action.inject-script.description", scriptName) },
+    {
+        CaosBundle.message(
+            "caos.injector.action.inject-script.title",
+            SCRIPT_NAME_DEFAULT
+        )
+    },
+    {
+        CaosBundle.message(
+            "caos.injector.action.inject-script.description", SCRIPT_NAME_DEFAULT
+        )
+    },
     CaosScriptIcons.MODULE_ICON
 ) {
 

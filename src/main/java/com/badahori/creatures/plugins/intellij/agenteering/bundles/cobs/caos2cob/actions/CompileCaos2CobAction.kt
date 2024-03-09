@@ -28,8 +28,8 @@ import kotlin.math.min
  * @todo implement multiple file types (ie. implementations or protocols)
  */
 class CompileCaos2CobAction : AnAction(
-    /* text = */ AgentMessages.message("cob.caos2cob.compile.title"),
-    /* description = */ AgentMessages.message("cob.caos2cob.compile.description"),
+    { /* text = */ AgentMessages.message("cob.caos2cob.compile.title") },
+    {/* description = */ AgentMessages.message("cob.caos2cob.compile.description") },
     /* icon = */ CaosScriptIcons.C1_COB_FILE_ICON
 ) {
 

@@ -1,18 +1,23 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 
-import com.bedalton.common.util.OS
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.like
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfNotConcrete
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInjectorApplicationSettingsService
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.addGameInterfaceName
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceNames
+import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.removeGameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosConstants
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CreateInjectorDialog
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInjectorInterface
+import com.badahori.creatures.plugins.intellij.agenteering.injector.TCPInjectorInterface
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
+import com.bedalton.common.util.OS
 import com.bedalton.common.util.className
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.like
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfNotConcrete
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.AnAction
@@ -26,12 +31,9 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.SmartPsiElementPointer
 
-
-//val CAOSEditorKey = Key<Editor>("creatures.caos.EDITOR")
-
 class InjectorActionGroup(file: CaosScriptFile) : ActionGroup(
-    "Inject CAOS",
-    "Select CAOS injection interface",
+    { CaosBundle.message("caos.injector.action.group") },
+    { CaosBundle.message("caos.injector.action.description") },
     AllIcons.Toolwindows.ToolWindowRun
 ) {
 
@@ -141,9 +143,15 @@ internal class CaosInjectFileAction(
     private val pointer: SmartPsiElementPointer<CaosScriptFile>,
     title: String = gameInterfaceName.defaultDisplayName(),
 ) : AnAction(
-    title,
-    (gameInterfaceName.code.let { if (it == "*" || it == "AL" || it == "ANY") "Any variant" else it } + " CAOS injector interface").trim(),
-    AllIcons.Toolwindows.ToolWindowRun) {
+    { title },
+    {
+        CaosBundle.message(
+            "caos.injector.action.add-interface.action-description",
+            gameInterfaceName.code.let { if (it == "*" || it == "AL" || it == "ANY") "Any Variant" else it }
+        ).trim()
+    },
+    AllIcons.Toolwindows.ToolWindowRun
+) {
 
     override fun update(e: AnActionEvent) {
         super.update(e)
@@ -173,7 +181,7 @@ internal class CaosInjectFileAction(
 }
 
 internal class AddGameInterfaceAction(private val project: Project, private val variant: CaosVariant?) :
-    AnAction("Add GAME Interface Name") {
+    AnAction({ CaosBundle.message("caos.injector.action.add-interface") }) {
     override fun actionPerformed(e: AnActionEvent) {
         create(e.files.getOrNull(0))
     }
@@ -201,7 +209,7 @@ internal class AddGameInterfaceAction(private val project: Project, private val 
             }
         }
         WriteCommandAction.writeCommandAction(project)
-            .withName("Add Game Interface")
+            .withName(CaosBundle.message("caos.injector.action.add-interface.undo-label"))
             .withGroupId("caos.ADD_GAME_INTERFACE")
             .withUndoConfirmationPolicy(UndoConfirmationPolicy.REQUEST_CONFIRMATION)
             .run<Exception> write@{

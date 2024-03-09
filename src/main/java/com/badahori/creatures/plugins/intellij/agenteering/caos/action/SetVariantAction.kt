@@ -19,8 +19,8 @@ import icons.CaosScriptIcons
 import javax.swing.JLabel
 
 class SetVariantAction : AnAction(
-    CaosBundle.message("caos.actions.set-variant"),
-    CaosBundle.message("caos.actions.set-variant.description"),
+    { CaosBundle.message("caos.actions.set-variant") },
+    { CaosBundle.message("caos.actions.set-variant.description") },
     CaosScriptIcons.SDK_ICON
 ) {
 

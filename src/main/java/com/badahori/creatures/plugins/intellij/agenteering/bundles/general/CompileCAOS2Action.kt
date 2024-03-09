@@ -1,24 +1,26 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.general
 
-import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions.CompileCaos2CobAction
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
+import com.bedalton.common.util.className
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.vfs.VirtualFile
-import icons.CaosScriptIcons
 
 class CompileCAOS2Action: AnAction(
-    "Compile Agent",
-    "Compiles selected CAOS2Cob, CAOS2Pray and Pray files into agents and cobs",
+    { "Compile Agent" },
+    { "Compiles selected CAOS2Cob, CAOS2Pray and Pray files into agents and cobs" },
     AllIcons.Actions.Compile
 ) {
 
@@ -45,8 +47,6 @@ class CompileCAOS2Action: AnAction(
 
 
     override fun actionPerformed(e: AnActionEvent) {
-
-        LOGGER.info("Compiling CAOS2Pray")
         val project = e.project
             ?: return
 
@@ -66,7 +66,7 @@ class CompileCAOS2Action: AnAction(
                 CompileCaos2CobAction.compile(project, caos2Cob)
             }
         } catch (e: Exception) {
-            LOGGER.info("Failed to compile CAOS2Cob; ${e.className}(${e.message}); Files: ${caos2Cob.joinToString { it.name }}")
+            LOGGER.severe("Failed to compile CAOS2Cob; ${e.className}(${e.message}); Files: ${caos2Cob.joinToString { it.name }}")
         }
 
         val caos2Pray = caosFiles
@@ -84,8 +84,6 @@ class CompileCAOS2Action: AnAction(
         } catch (e: Exception) {
             LOGGER.severe("Failed to compile CAOS2Pray; ${e.className}(${e.message}) files: ${caos2Pray.joinToString { it.name }}")
         }
-
-        LOGGER.info("Compiled CAOS2Pray files")
     }
 
     private fun isCompilable(file: VirtualFile): Boolean {
