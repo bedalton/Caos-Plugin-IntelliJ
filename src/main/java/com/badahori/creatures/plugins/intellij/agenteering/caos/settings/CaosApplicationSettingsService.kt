@@ -37,7 +37,9 @@ class CaosApplicationSettingsService :
         @Attribute
         val ignoredCatalogueTags: List<String> = emptyList(),
         @Attribute
-        val ignoredCharacterEscapes: Set<Char> = emptySet()
+        val ignoredCharacterEscapes: Set<Char> = emptySet(),
+        @Attribute
+        val noSpellcheckCommands: Set<String> = emptySet()
     )
 
     @Attribute(converter = ApplicationSettingsConverter::class)
@@ -134,6 +136,19 @@ class CaosApplicationSettingsService :
             loadState(
                 myState.copy(
                     ignoredCharacterEscapes = value
+                )
+            )
+        }
+
+    var noSpellcheckCommands: Set<String>
+        get() = myState.noSpellcheckCommands
+        set(value) {
+            if (value == myState.noSpellcheckCommands) {
+                return
+            }
+            loadState(
+                myState.copy(
+                    noSpellcheckCommands = noSpellcheckCommands
                 )
             )
         }

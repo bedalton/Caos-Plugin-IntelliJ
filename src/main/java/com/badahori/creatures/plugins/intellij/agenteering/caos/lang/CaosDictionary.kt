@@ -1,4 +1,4 @@
-package com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang
+package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
 import com.intellij.spellchecker.BundledDictionaryProvider
 
