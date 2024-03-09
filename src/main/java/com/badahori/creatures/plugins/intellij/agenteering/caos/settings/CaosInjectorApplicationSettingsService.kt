@@ -5,8 +5,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInject
 import com.badahori.creatures.plugins.intellij.agenteering.utils.GameInterfaceListConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.JsonToXMLStringConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
+import com.bedalton.common.util.formatted
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
@@ -153,7 +153,7 @@ class CaosInjectorApplicationSettingsService :
             return try {
                 super.fromString(value)
             } catch (e: Exception) {
-                LOGGER.info("Failed to deserialize Caos injector settings; ${e.className}${e.message?.let { ":$it" }}\nValue:\n\t$value;")
+                LOGGER.severe("Failed to deserialize Caos injector settings; ${e.formatted(false)}\nValue:\n\t$value;")
                 null
             }
         }
