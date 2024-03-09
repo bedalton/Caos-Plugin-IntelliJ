@@ -21,7 +21,7 @@ object CobToDataObjectDecompiler {
                     decompile(this, virtualFile.nameWithoutExtension)
                 }
             } catch (e: Exception) {
-                LOGGER.info(e.message ?: "Failed to decompile COB: ${virtualFile.name}; ${e.formatted(true)}")
+                LOGGER.severe("Failed to decompile COB: ${virtualFile.name}; ${e.formatted(true)}")
                 null
             }
         }

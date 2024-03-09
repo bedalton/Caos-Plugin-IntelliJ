@@ -35,7 +35,7 @@ object ReplaceStringContentsWithValueInsertHandler : InsertHandler<LookupElement
             context.document.replaceString(context.startOffset, context.tailOffset, lookupString)
             return
         }
-        LOGGER.info("ReplaceStringInsertHandler: Element: ${element.tokenType}; Text: ${element.text}")
+//        LOGGER.info("ReplaceStringInsertHandler: Element: ${element.tokenType}; Text: ${element.text}")
         val stringLike = element.getSelfOrParentOfType(CaosScriptStringLike::class.java)?.let {
             if (it.firstChild is CaosScriptStringText) {
                 it.firstChild
@@ -48,7 +48,7 @@ object ReplaceStringContentsWithValueInsertHandler : InsertHandler<LookupElement
         var start = stringLike.startOffset
         val text = stringLike.text.replace(DUMMY_IDENTIFIER_WITH_TRAILING_SPACE, "")
 
-        LOGGER.info("ReplaceStringInsertHandler: StringLikeElement: ${stringLike.tokenType}; Text: <${stringLike.text}>; TrueText: <$text>; LookupString: <${lookupString}>")
+//        LOGGER.info("ReplaceStringInsertHandler: StringLikeElement: ${stringLike.tokenType}; Text: <${stringLike.text}>; TrueText: <$text>; LookupString: <${lookupString}>")
 
         val firstChar = text.firstOrNull()
         val lastChar = if (text.length > 1) {

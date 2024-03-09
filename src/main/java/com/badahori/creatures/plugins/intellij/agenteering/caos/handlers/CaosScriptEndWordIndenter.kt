@@ -28,7 +28,7 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
     override fun charTyped(c: Char, project: Project, editor: Editor, file: PsiFile): Result {
 
         if (PsiUtilBase.getLanguageInEditor(editor, project) != CaosScriptLanguage) {
-            LOGGER.info("CaosScriptEndWordIndenter not called on NON-CAOS language")
+//            LOGGER.info("CaosScriptEndWordIndenter not called on NON-CAOS language")
             return Result.CONTINUE
         }
 
@@ -84,14 +84,14 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
 
             else -> null
 
-        } ?: return Result.CONTINUE.also {
+        } ?: return Result.CONTINUE/*.also {
             LOGGER.info("Is not a CAOS de-dent token; Char: $c; Element: ${editor.element?.let { it.className +  "[${it.text}]" } }")
-        }
+        }*/
 
 
 
         try {
-            LOGGER.info("IS CAOS de-dent token; \n\tChar: $c;\n\tElement: ${blockToReformat.className}[${blockToReformat.text}]\nReformatting...")
+//            LOGGER.info("IS CAOS de-dent token; \n\tChar: $c;\n\tElement: ${blockToReformat.className}[${blockToReformat.text}]\nReformatting...")
             CodeStyleManager.getInstance(project)
                 .reformatText(file, blockToReformat.startOffset, blockToReformat.endOffset)
         } catch (e: Exception) {
@@ -167,6 +167,3 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
 //        private inline fun log(project: Project, text: () -> String) {
 //            CaosNotifications.showInfo(project, "End Word handler", text())
 //        }
-    }
-
-}

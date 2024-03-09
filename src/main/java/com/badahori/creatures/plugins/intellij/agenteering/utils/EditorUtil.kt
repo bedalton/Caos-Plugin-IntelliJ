@@ -149,9 +149,7 @@ object EditorUtil {
                     true
                 }
         return editors.firstOrNull { editor ->
-            editor.component.isVisible.also {
-                LOGGER.info("Is Editor Visible: $it")
-            }
+            editor.component.isVisible
         } ?: return editors.firstOrNull()
     }
 

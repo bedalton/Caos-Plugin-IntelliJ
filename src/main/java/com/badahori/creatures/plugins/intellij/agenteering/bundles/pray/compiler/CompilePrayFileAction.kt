@@ -121,7 +121,6 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction({ 
             return if (builder.showAndGet()) {
                 options
             } else {
-                LOGGER.info("Failed to get compiler options")
                 null
             }
         }

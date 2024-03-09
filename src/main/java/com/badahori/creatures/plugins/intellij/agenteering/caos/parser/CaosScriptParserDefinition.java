@@ -100,7 +100,7 @@ public class CaosScriptParserDefinition implements ParserDefinition {
                 }
             }
         }
-        CaosScriptTreeUtilKt.getLOGGER().info("Add Space: " + astNode.getElementType() + "<>" + astNode1.getElementType() );
+//        CaosScriptTreeUtilKt.getLOGGER().info("Add Space: " + astNode.getElementType() + "<>" + astNode1.getElementType() );
         return SpaceRequirements.MUST;
     }
 
