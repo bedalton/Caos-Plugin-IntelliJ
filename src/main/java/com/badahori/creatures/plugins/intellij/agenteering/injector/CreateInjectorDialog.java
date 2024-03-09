@@ -1,11 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.injector;
 
-import com.bedalton.common.util.OS;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInjectorApplicationSettingsService;
 import com.badahori.creatures.plugins.intellij.agenteering.utils.DocumentChangeListener;
-
+import com.bedalton.common.util.OS;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
@@ -15,6 +14,8 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import kotlin.Pair;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
+import kotlin.text.MatchResult;
+import kotlin.text.Regex;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,6 +44,8 @@ public class CreateInjectorDialog extends DialogBuilder {
     private JLabel nicknameLabel;
     private JComponent wineExecutable;
     private JLabel wineExecutableLabel;
+    private JLabel portLabel;
+    private JTextField port;
 
     private boolean nameIsDefault = true;
 
@@ -58,8 +61,7 @@ public class CreateInjectorDialog extends DialogBuilder {
     private GameInterfaceName out = null;
 
     public CreateInjectorDialog(final Project project,
-                                @Nullable
-                                final CaosVariant variant) {
+                                @Nullable final CaosVariant variant) {
         super();
         this.project = project;
         setCenterPanel(contentPane);
@@ -142,8 +144,7 @@ public class CreateInjectorDialog extends DialogBuilder {
     }
 
     private void updateVariant(
-            @Nullable
-            final ActionEvent e) {
+            @Nullable final ActionEvent e) {
         CaosVariant variant = getSelectedVariant();
         nameIsDefault = isNameDefault(variant, gameName.getText());
         if (nameIsDefault) {
@@ -159,8 +160,7 @@ public class CreateInjectorDialog extends DialogBuilder {
     }
 
     private void updateInjector(
-            @Nullable
-            final ActionEvent e) {
+            @Nullable final ActionEvent e) {
         updateInjector();
     }
 
@@ -181,8 +181,10 @@ public class CreateInjectorDialog extends DialogBuilder {
                 }
                 break;
             case POST:
+                setPOST();
+                break;
             case TCP:
-                setNet();
+                setTCP();
                 break;
             default:
                 setInvalid();
@@ -194,19 +196,33 @@ public class CreateInjectorDialog extends DialogBuilder {
         showNetOptions(false);
         showGameNameOrUrl(true);
         clearURL();
-        showDirectory(true);
+        showGameDirectory(true);
+        showPort(false);
         showPrefix(false);
         showNickname(true);
         showWineBinary(false);
         okActionEnabled(true);
     }
 
-    private void setNet() {
+    private void setPOST() {
         showGameNameOrUrl(true);
         showNetOptions(true);
         setDefaultURL();
         showPrefix(false);
-        showDirectory(false);
+        showGameDirectory(false);
+        showPort(true);
+        showNickname(true);
+        showWineBinary(false);
+        okActionEnabled(true);
+    }
+
+    private void setTCP() {
+        showGameNameOrUrl(true);
+        showNetOptions(true);
+        setDefaultURL();
+        showPrefix(false);
+        showGameDirectory(false);
+        showPort(true);
         showNickname(true);
         showWineBinary(false);
         okActionEnabled(true);
@@ -214,7 +230,8 @@ public class CreateInjectorDialog extends DialogBuilder {
 
     private void setWINE() {
         showPrefix(true);
-        showDirectory(true);
+        showGameDirectory(true);
+        showPort(false);
         showGameNameOrUrl(true);
         showNetOptions(false);
         clearURL();
@@ -225,7 +242,8 @@ public class CreateInjectorDialog extends DialogBuilder {
 
     private void setInvalid() {
         showPrefix(false);
-        showDirectory(false);
+        showGameDirectory(false);
+        showPort(false);
         showGameNameOrUrl(false);
         showNetOptions(false);
         clearURL();
@@ -234,14 +252,19 @@ public class CreateInjectorDialog extends DialogBuilder {
         okActionEnabled(false);
     }
 
-    private void showDirectory(final boolean show) {
-        gameFolder.setVisible(show);
-        gameFolderLabel.setVisible(show);
-    }
-
     private void showPrefix(final boolean show) {
         winePrefixLabel.setVisible(show);
         winePrefix.setVisible(show);
+    }
+
+    private void showGameDirectory(final boolean show) {
+        gameFolderLabel.setVisible(show);
+        gameFolder.setVisible(show);
+    }
+
+    private void showPort(final boolean show) {
+        portLabel.setVisible(show);
+        port.setVisible(show);
     }
 
     private void showGameNameOrUrl(final boolean show) {
@@ -254,9 +277,14 @@ public class CreateInjectorDialog extends DialogBuilder {
             updateGameNameLabelText(variant);
         }
         showNetOptions(showNet);
-        final String label = isNet ?
-                CaosBundle.message("caos.injector.dialog.url") :
-                CaosBundle.message("caos.injector.dialog.game-name.machine-cfg");
+        final String label;
+        if (is(POST)) {
+            label = CaosBundle.message("caos.injector.dialog.url");
+        } else if (is(TCP)) {
+            label = CaosBundle.message("caos.injector.dialog.host");
+        } else {
+            label = CaosBundle.message("caos.injector.dialog.game-name.machine-cfg");
+        }
         gameNameLabel.setText(label);
         gameNameLabel.setVisible(show);
         gameName.setVisible(show);
@@ -272,6 +300,11 @@ public class CreateInjectorDialog extends DialogBuilder {
         return injectorKind == POST || injectorKind == TCP;
     }
 
+    private boolean is(final int kind) {
+        final int injectorKind = this.getSelectedInjectorKind();
+        return injectorKind == kind;
+    }
+
     private void clearURL() {
         if (IsNet.getErrorMessageIfAny(gameName.getText()) != null) {
             gameName.setText("");
@@ -285,8 +318,9 @@ public class CreateInjectorDialog extends DialogBuilder {
         final int injectorKind = this.getSelectedInjectorKind();
         String newURL = getDefaultURL();
         if (newURL == null) {
-            newURL = "http://";
+            newURL = is(TCP) ? TCPInjectorInterface.DEFAULT_URL : "http://";
         }
+
         final String currentText = gameName.getText();
         if (isNameDefault(getSelectedVariant(), currentText)) {
             gameName.setText(newURL);
@@ -295,10 +329,12 @@ public class CreateInjectorDialog extends DialogBuilder {
         if (currentText.equalsIgnoreCase(newURL)) {
             return;
         }
+
         if (IsNet.getErrorMessageIfAny(currentText) == null) {
             return;
         }
-        final String otherURL = getDefaultURL(injectorKind == POST ? TCP : POST);
+
+        final String otherURL = getDefaultURL(injectorKind == POST ? POST : TCP);
         if (otherURL != null && !otherURL.equalsIgnoreCase(currentText)) {
             gameName.setText(newURL);
         }
@@ -312,17 +348,16 @@ public class CreateInjectorDialog extends DialogBuilder {
     @Nullable
     private String getDefaultURL(final int injectorKind) {
         if (injectorKind == TCP) {
-            return "http://" + TCPInjectorInterface.defaultURL + ":" + TCPInjectorInterface.DEFAULT_PORT;
+            return TCPInjectorInterface.DEFAULT_URL;
         }
         if (injectorKind == POST) {
-            return "http://" + PostInjectorInterface.defaultURL;
+            return "http://" + PostInjectorInterface.DEFAULT_URL;
         }
         return null;
     }
 
     private void updateGameNameLabelText(
-            @NotNull
-            final CaosVariant variant) {
+            @NotNull final CaosVariant variant) {
         // Get variant for determining show
         final String currentText = gameNameLabel.getText();
 
@@ -371,16 +406,30 @@ public class CreateInjectorDialog extends DialogBuilder {
         final int injectorKind = this.getSelectedInjectorKind();
         final CaosVariant variant = getSelectedVariant();
         if (variant == CaosVariant.UNKNOWN.INSTANCE) {
-            throw new InvalidValueException("Invalid game variant value", this.variant);
+            throw new InvalidValueException(CaosBundle.message("caos.injector.dialog.variant.invalid"), this.variant);
         }
-        final boolean isNet = isNet();
+
+        // Get net type if any
+        final boolean isPost = is(POST);
+        final boolean isTCP = is(TCP);
+        final boolean isNet = isPost || isTCP;
+
         final String gameName = isNet ? null : getGameNameThrowing();
         final String code = variant != CaosVariant.ANY.INSTANCE ? variant.getCode() : "*";
         final String nickname = getNickname();
+
+        // Wine and Native
         final String gamePath = getGamePath(injectorKind);
         final String prefixPath = getPrefixPathThrowing(injectorKind);
-        final String url = isNet ? getUrlThrowing(injectorKind) : null;
         final String wineBinary = getWineBinaryThrowing();
+
+        // URL and Port
+        String url = isNet ? getUrlThrowing(injectorKind) : null;
+        Integer port = isNet ? getPortThrowing(url) : null;
+
+        // Add or Remove port as necessary
+        url = isPost ? appendPort(url, port) : stripPort(url, port);
+
         GameInterfaceName gameInterface;
         switch (injectorKind) {
             case NATIVE:
@@ -405,10 +454,12 @@ public class CreateInjectorDialog extends DialogBuilder {
                 );
                 break;
             case TCP:
+
                 gameInterface = new TCPInjectorInterface(
                         code,
                         gameName,
                         Objects.requireNonNull(url),
+                        port,
                         nickname
                 );
                 break;
@@ -422,7 +473,7 @@ public class CreateInjectorDialog extends DialogBuilder {
                 );
                 break;
             default:
-                throw new InvalidValueException("Injector kind is invalid", this.injectorKind);
+                throw new InvalidValueException(CaosBundle.message("caos.injector.dialog.kind.invalid"), this.injectorKind);
         }
         return gameInterface;
     }
@@ -437,11 +488,11 @@ public class CreateInjectorDialog extends DialogBuilder {
             prefixData = getPrefixDirectory(true);
         }
         if (prefixData == null) {
-            throw new InvalidValueException("Wine prefix path is invalid", this.winePrefix);
+            throw new InvalidValueException(CaosBundle.message("caos.injector.dialog.wine-prefix.invalid"), this.winePrefix);
         }
         final String prefixPath = prefixData.getSecond() != null ? prefixData.getSecond().getPath() : null;
         if (prefixPath == null || prefixPath.isBlank()) {
-            throw new InvalidValueException("Wine prefix path cannot be blank", this.winePrefix);
+            throw new InvalidValueException(CaosBundle.message("caos.injector.dialog.wine-prefix.blank"), this.winePrefix);
         }
         return prefixPath;
     }
@@ -457,7 +508,7 @@ public class CreateInjectorDialog extends DialogBuilder {
                     return temp;
                 }
             }
-            throw new InvalidValueException("Game name cannot be blank", this.gameName);
+            throw new InvalidValueException(CaosBundle.message("caos.injector.dialog.game-name.blank"), this.gameName);
         }
         return gameName;
     }
@@ -482,12 +533,16 @@ public class CreateInjectorDialog extends DialogBuilder {
         }
         if (injectorKind == WINE) {
             String prefixPath = this.winePrefixText();
+            if (prefixPath.isEmpty()) {
+                return null;
+            }
             if (prefixPath.contains("\\") && !prefixPath.endsWith("\\")) {
                 prefixPath += '\\';
             } else if (!prefixPath.endsWith("/")) {
                 prefixPath += '/';
             }
-            if (!prefixPath.isEmpty() && path.equals(prefixPath)) {
+
+            if (path.equals(prefixPath)) {
                 return null;
             }
         }
@@ -503,7 +558,7 @@ public class CreateInjectorDialog extends DialogBuilder {
 
     @Nullable
     private String getWineBinaryThrowing() {
-        final String executable = ((TextFieldWithBrowseButton)wineExecutable).getText();
+        final String executable = ((TextFieldWithBrowseButton) wineExecutable).getText();
         if (executable.isBlank()) {
             return null;
         }
@@ -515,7 +570,7 @@ public class CreateInjectorDialog extends DialogBuilder {
         if (file.exists()) {
             return file.getPath();
         }
-        throw new InvalidValueException("Wine binary path is invalid", wineExecutable);
+        throw new InvalidValueException(CaosBundle.message("caos.injector.dialog.wine.binary-invalid"), wineExecutable);
     }
 
     @Nullable
@@ -524,6 +579,9 @@ public class CreateInjectorDialog extends DialogBuilder {
             return null;
         }
         final String url = getGameNameThrowing();
+        if (is(TCP)) {
+            return url.trim();
+        }
         if (url.isBlank()) {
             throw new InvalidValueException(CaosBundle.message("caos.injector.dialog.url.blank"), this.gameName);
         }
@@ -532,6 +590,84 @@ public class CreateInjectorDialog extends DialogBuilder {
             throw new InvalidValueException(error, this.gameName);
         }
         return url;
+    }
+
+    @Nullable
+    private Integer getPortThrowing(@Nullable final String url) {
+        final String portText = port.getText().trim();
+        if (portText.isBlank()) {
+            return getUrlPort(url);
+        }
+        if (!portText.matches("^\\d+$")) {
+            throw new InvalidValueException(CaosBundle.message("caos.injector.dialog.port.invalid"), this.port);
+        }
+        try {
+            return Integer.parseInt(portText);
+        } catch (Exception e) {
+            throw new InvalidValueException(CaosBundle.message("caos.injector.dialog.port.invalid"), this.port);
+        }
+    }
+
+    @Nullable
+    private Integer getUrlPort(@Nullable final String url) {
+        if (url == null) {
+            return null;
+        }
+        final Regex regex = new Regex("^.+:(\\d+)$");
+        final MatchResult matches = regex.matchEntire(url.trim());
+        if (matches == null) {
+            return null;
+        }
+        final List<String> groups = matches.getGroupValues();
+        final String portString = groups.get(1);
+        return Integer.parseInt(portString);
+    }
+
+    @Nullable
+    private String appendPort(@Nullable final String url, @Nullable final Integer port) {
+        if (url == null || port == null) {
+            return url;
+        }
+        if (url.endsWith(":" + port)) {
+            return url;
+        }
+        if (url.matches("^.+:\\d+$")) {
+            throw new InvalidValueException(
+                    CaosBundle.message("caos.injector.dialog.url.url-port-mismatch"),
+                    this.gameName
+            );
+        }
+        return url + ":" + port;
+    }
+
+    @Nullable
+    private String stripPort(@Nullable final String url, @Nullable final Integer port) {
+        if (url == null) {
+            return null;
+        }
+
+        final Regex regex = new Regex("^(.+)(:\\d+)?$");
+
+        final MatchResult result = regex.matchEntire(url);
+        if (result == null) {
+            return url;
+        }
+
+        final List<String> groups = result.getGroupValues();
+        final String urlWithoutPort = groups.get(1);
+
+        if (groups.size() == 2) {
+            return urlWithoutPort;
+        }
+
+        if (port == null || groups.get(1).endsWith(":" + port)) {
+            return urlWithoutPort;
+        }
+
+        throw new InvalidValueException(
+                CaosBundle.message("caos.injector.dialog.url.url-port-mismatch"),
+                this.gameName
+        );
     }
 
     private void onCancel() {
@@ -556,6 +692,7 @@ public class CreateInjectorDialog extends DialogBuilder {
         // Get path now, so we can set it if blank and is wine prefix
         String gamePath = interfaceName.getPath();
         String gameNameOrURL = interfaceName.getGameName();
+        String portString = "";
 
         // Change format depending on interface kind
         final int kind;
@@ -568,13 +705,18 @@ public class CreateInjectorDialog extends DialogBuilder {
             injectorKind.setSelectedItem(POST);
             gamePath = null;
             gameNameOrURL = interfaceName.getPath();
-            setNet();
+            final Integer port = getUrlPort(gameNameOrURL);
+            portString = port != null ? port.toString() : null;
+            gameNameOrURL = stripPort(gameNameOrURL, null);
+            setPOST();
         } else if (interfaceName instanceof TCPInjectorInterface) {
             kind = TCP;
             injectorKind.setSelectedItem(TCP);
             gamePath = null;
             gameNameOrURL = interfaceName.getPath();
-            setNet();
+            final Integer port = ((TCPInjectorInterface) interfaceName).getPort();
+            portString = port != null ? port.toString() : "";
+            setTCP();
         } else if (interfaceName instanceof WineInjectorInterface) {
             kind = WINE;
             injectorKind.setSelectedItem(WINE);
@@ -605,14 +747,27 @@ public class CreateInjectorDialog extends DialogBuilder {
 
         gameName.setText(gameNameOrURL != null ? gameNameOrURL : "");
         nickname.setText(interfaceName.getNickname() != null ? interfaceName.getNickname() : "");
-        String wineExecutablePath = (interfaceName instanceof WineInjectorInterface)
-                ? ((WineInjectorInterface)interfaceName).getWineExecutable()
-                : null;
+        port.setText(portString);
+        String wineExecutablePath = getWineExecutablePathValue(interfaceName);
+        ((TextFieldWithBrowseButton) wineExecutable).setText(wineExecutablePath);
+        ((TextFieldWithBrowseButton) gameFolder).setText(gamePath != null ? gamePath : "");
+    }
+
+    @NotNull
+    private static String getWineExecutablePathValue(@NotNull GameInterfaceName interfaceName) {
+        String wineExecutablePath = null;
+        if (interfaceName instanceof WineInjectorInterface) {
+            wineExecutablePath = ((WineInjectorInterface) interfaceName).getWineExecutable();
+        } else if (interfaceName instanceof TCPInjectorInterface) {
+            Integer port = ((TCPInjectorInterface) interfaceName).getPort();
+            if (port != null) {
+                wineExecutablePath = port.toString();
+            }
+        }
         if (wineExecutablePath == null || wineExecutablePath.isBlank()) {
             wineExecutablePath = "";
         }
-        ((TextFieldWithBrowseButton)wineExecutable).setText(wineExecutablePath);
-        ((TextFieldWithBrowseButton)gameFolder).setText(gamePath != null ? gamePath : "");
+        return wineExecutablePath;
     }
 
     private void createUIComponents() {
@@ -707,8 +862,8 @@ public class CreateInjectorDialog extends DialogBuilder {
         final CaosInjectorApplicationSettingsService state = CaosInjectorApplicationSettingsService.getInstance();
         // Initialize WINE directory
         final TextFieldWithBrowseButton prefix = createSelectFolderField(
-                "Wine Root",
-                "The root folder of the wine prefix. Sometimes at ~/.wine",
+                CaosBundle.message("caos.injector.dialog.wine-prefix.popup.label"),
+                CaosBundle.message("caos.injector.dialog.wine-prefix.popup.description"),
                 getDefaultWineDirectory(state, home),
                 (event, newText) -> {
                     final String homeText = newText != null && newText.isBlank()
@@ -726,9 +881,9 @@ public class CreateInjectorDialog extends DialogBuilder {
             }
             if ((new File(text)).exists()) {
                 state.setLastWineDirectory(text);
-                if (!((TextFieldWithBrowseButton)gameFolder).getText().startsWith(text)) {
-                    ((TextFieldWithBrowseButton)gameFolder).setText(text);
-                    ((TextFieldWithBrowseButton)gameFolder).getTextField().setText(text);
+                if (!((TextFieldWithBrowseButton) gameFolder).getText().startsWith(text)) {
+                    ((TextFieldWithBrowseButton) gameFolder).setText(text);
+                    ((TextFieldWithBrowseButton) gameFolder).getTextField().setText(text);
                 }
             }
         };
@@ -758,13 +913,13 @@ public class CreateInjectorDialog extends DialogBuilder {
 
     @NotNull
     private String winePrefixText() {
-        return (winePrefix != null ? (((TextFieldWithBrowseButton)winePrefix).getText()) : "");
+        return (winePrefix != null ? (((TextFieldWithBrowseButton) winePrefix).getText()) : "");
     }
 
     private void initializeWineBinaryField(final File home) {
         this.wineExecutable = createSelectFileField(
-                "Wine Binary",
-                "The wine binary used to run this prefix. Sometimes at /usr/bin/wine",
+                CaosBundle.message("caos.injector.dialog.wine-binary.popup.label"),
+                CaosBundle.message("caos.injector.dialog.wine-binary.popup.description"),
                 getDefaultWineBinaryDirectory(home)
         );
     }
@@ -962,12 +1117,12 @@ public class CreateInjectorDialog extends DialogBuilder {
         } else {
             injectorKind.addItem(WINE);
         }
-        if (TCPConnection.isImplemented()) {
+        if (!isWindows) {
             injectorKind.addItem(TCP);
         }
-        injectorKind.addItem(POST);
 
-        injectorKind.setSelectedItem(isWindows ? NATIVE : WINE);
+        injectorKind.addItem(POST);
+        injectorKind.setSelectedItem(isWindows ? NATIVE : TCP);
         injectorKind.updateUI();
 
     }
@@ -992,12 +1147,12 @@ public class CreateInjectorDialog extends DialogBuilder {
                 enabled = !isWindows;
             } else if (injectorKind == TCP) {
                 text = "TCP";
-                enabled = TCPConnection.isImplemented();
+                enabled = !isWindows;
             } else if (injectorKind == POST) {
                 text = "POST";
                 enabled = true;
             } else {
-                throw new RuntimeException("Failed to understand Injector type with id: " + injectorKind);
+                throw new RuntimeException(CaosBundle.message("caos.injector.dialog.id.invalid", injectorKind));
             }
             if (index < 0) {
                 label = new JLabel(text);
@@ -1015,9 +1170,9 @@ public class CreateInjectorDialog extends DialogBuilder {
                 label.setToolTipText(text);
                 label.setMaximumSize(new Dimension(100, 80));
             } else {
-                label.setToolTipText(value + " is disabled on this platform");
+                label.setToolTipText(CaosBundle.message("caos.injector.dialog.kind.disabled", value));
                 if (index == TCP) {
-                    label.setToolTipText(value + " is not yet implemented");
+                    label.setToolTipText(CaosBundle.message("caos.injector.dialog.kind.not-implemented", value));
                 }
                 label.setMaximumSize(new Dimension(1, 1));
             }

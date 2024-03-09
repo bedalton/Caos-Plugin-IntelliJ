@@ -485,7 +485,7 @@ data class PostInjectorInterface(
     companion object {
 
         internal const val KIND = "post"
-        internal const val defaultURL = "127.0.0.1"
+        internal const val DEFAULT_URL = "127.0.0.1"
 
         fun fromString(serial: String): GameInterfaceName? {
             val (code, gameName, rawPath, nickname) = defaultComponents(serial)
@@ -519,27 +519,34 @@ data class PostInjectorInterface(
 data class TCPInjectorInterface(
     override val code: String,
     override val gameName: String?,
-    override val path: String,
-    override val nickname: String?,
+    override val path: String? = null,
+    val port: Int? = null,
+    override val nickname: String? = null,
     override val id: String = id(code, gameName, path, nickname)
-) : GameInterfaceName(), IsNet {
+) : GameInterfaceName() {
+
+
+    constructor(variant: CaosVariant): this(
+        variant.code,
+        variant.fullName
+    )
 
     constructor(
         code: String,
-        gameName: String?,
-        path: String,
-        nickname: String?
-    ) : this(
+       gameName: String?,
+        path: String? = null,
+        port: Int? = null,
+        nickname: String? = null
+    ): this(
         code = code,
         gameName = gameName,
         path = path,
+        port = port,
         nickname = nickname,
         id = id(code, gameName, path, nickname)
     )
 
     override val kind get() = KIND
-
-    override fun getURL(variant: CaosVariant?): URL? = IsNet.getUrl(variant ?: this.variant, path, gameName)
 
     override fun withCode(code: String): GameInterfaceName {
         return copy(code = code)
@@ -547,8 +554,7 @@ data class TCPInjectorInterface(
 
     companion object {
 
-        internal const val defaultURL = "127.0.0.1"
-        internal const val DEFAULT_PORT = 19960
+        internal const val DEFAULT_URL = "127.0.0.1"
 
         internal const val KIND = "tcp"
         fun fromString(serial: String): GameInterfaceName? {
@@ -563,6 +569,13 @@ data class TCPInjectorInterface(
                 gameName = gameName,
                 path = url,
                 nickname = nickname
+            )
+        }
+
+        fun simple(variant: CaosVariant): TCPInjectorInterface {
+            return TCPInjectorInterface(
+                variant.code,
+                variant.fullName,
             )
         }
     }

@@ -73,9 +73,24 @@ class InjectorActionGroup(file: CaosScriptFile) : ActionGroup(
         }
 
         private fun getDefaultInjectors(variant: CaosVariant?): List<GameInterfaceName> {
-            if (!OS.Companion.isWindows) {
-                return emptyList()
+            return if (OS.Companion.isWindows) {
+                getDefaultInjectorsWindows(variant)
+            } else {
+                getDefaultInjectorsNix(variant)
             }
+        }
+
+
+        private fun getDefaultInjectorsNix(variant: CaosVariant?): List<GameInterfaceName> {
+            return when {
+                variant == null -> emptyList()
+                variant.isC3DS -> listOf(TCPInjectorInterface(variant))
+                variant == CaosVariant.CV -> listOf(TCPInjectorInterface(CaosVariant.CV))
+                else -> emptyList()
+            }
+        }
+
+        private fun getDefaultInjectorsWindows(variant: CaosVariant?): List<GameInterfaceName> {
             if (variant == null) {
                 return CaosConstants.VARIANTS
                     .filter { it != CaosVariant.UNKNOWN && it != CaosVariant.ANY }

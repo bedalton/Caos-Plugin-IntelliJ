@@ -348,6 +348,8 @@ object Injector {
  * Plugin supports multiple game connections such as DDE (C1e), MemoryMapped(C2e), HTTP(Any)
  */
 internal interface CaosConnection {
+
+    // Connection variant
     val variant: CaosVariant
 
     /**
@@ -355,9 +357,23 @@ internal interface CaosConnection {
      */
     val maxCaosLength: Int
 
+    // Whether this injector supports JECT based injecting from bootstrap
     val supportsJect: Boolean
+
+    /**
+     * Inject a raw CAOS macro
+     */
     fun inject(project: Project, fileName: String, descriptor: String?, caos: String): InjectionStatus
+
+    /**
+     * Inject using JECT
+     * This copies a file to C2e bootstrap, then calls `ject "{file}" {flags}`
+     */
     fun injectWithJect(project: Project, caos: CaosScriptFile, flags: Int): InjectionStatus
+
+    /**
+     * Injects an event script into the games Scriptorium
+     */
     fun injectEventScript(
         project: Project,
         fileName: String,
@@ -368,20 +384,43 @@ internal interface CaosConnection {
         caos: String,
     ): InjectionStatus
 
+    /**
+     * Disconnect from this connection
+     */
     fun disconnect(): Boolean
+
+    /**
+     * Test if is connected
+     */
     fun isConnected(): Boolean
+
+    /**
+     * Connect to game
+     */
     fun connect(silent: Boolean = false): Boolean
+
+    /**
+     * Show the attribution for the injector code used in this connection
+     */
     fun showAttribution(project: Project, variant: CaosVariant)
 }
+
 
 /**
  * The status for an injection request
  */
 @Suppress("MemberVisibilityCanBePrivate")
 internal sealed class InjectionStatus(open val fileName: String?, open val descriptor: String?) {
+
+    /**
+     * Called when no errors occur, and when no detectable error message is returned
+     */
     data class Ok(override val fileName: String, override val descriptor: String?, val response: String) :
         InjectionStatus(fileName, descriptor)
 
+    /**
+     * Called to aggregate status from multiple injections in a set
+     */
     data class MultiResponse(
         private val results: List<InjectionStatus>,
     ) : InjectionStatus(null, null) {
@@ -429,6 +468,9 @@ internal sealed class InjectionStatus(open val fileName: String?, open val descr
         }
     }
 
+    /**
+     * Response from an injection failure, or when a known error format is encountered
+     */
     data class Bad(
         override val fileName: String,
         override val descriptor: String?,
@@ -437,6 +479,10 @@ internal sealed class InjectionStatus(open val fileName: String?, open val descr
     ) :
         InjectionStatus(fileName, descriptor)
 
+
+    /**
+     * Response when a connection failed to be established with game or injector
+     */
     data class BadConnection(
         override val fileName: String,
         override val descriptor: String?,
@@ -453,9 +499,16 @@ internal sealed class InjectionStatus(open val fileName: String?, open val descr
         }
     }
 
+    /**
+     * Response when an injection method was called which is not supported
+     */
     data class ActionNotSupported(override val fileName: String?, override val descriptor: String?, val error: String) :
         InjectionStatus(fileName, descriptor)
 
+    /**
+     * Status marking an injection result as pending.
+     * Will alert listeners when injection result returns
+     */
     data class Pending(override val fileName: String?, override val descriptor: String?, val serial: String) :
         InjectionStatus(fileName, descriptor) {
         private var result: InjectionStatus? = null
