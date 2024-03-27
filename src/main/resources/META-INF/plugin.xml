@@ -38,6 +38,13 @@
     <change-notes><![CDATA[
         <ul>
             <li>
+                <b>Version: 2024.01.2</b>
+                <b>Fixes</b>
+                <ul>
+                    <li>Fix out of range errors on agent and sprite parsing</li>
+                </ul>
+            </li>
+            <li>
                 <b>Version: 2024.01.1</b>
                 <b>Added</b>
                 <ul>

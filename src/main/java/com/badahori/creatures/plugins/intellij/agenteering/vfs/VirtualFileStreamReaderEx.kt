@@ -40,7 +40,7 @@ internal class VirtualFileStreamReader(
         }
         var rawBytes = virtualFile.contentsToByteArray()
         if (start != null || end != null) {
-            rawBytes = rawBytes.sliceArray((start?.toInt() ?: 0)..(end?.toInt() ?: rawBytes.lastIndex))
+            rawBytes = rawBytes.sliceArray((start?.toInt() ?: 0)until(end?.toInt() ?: rawBytes.size))
         }
         MemoryByteStreamReader(rawBytes)
     }
