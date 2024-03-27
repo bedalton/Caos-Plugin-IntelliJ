@@ -926,20 +926,26 @@
 
         <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"
                 class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"
-                text="Expand CAOS Commands" description="Places each CAOS command onto its own line">">
+                text="Expand CAOS Commands"
+                description="Places each CAOS command onto its own line"
+        >
             <add-to-group group-id="CutCopyPasteGroup" anchor="before" relative-to-action="CopyPaths"/>
         </action>
 
         <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.SetVariantAction"
                 class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.SetVariantAction"
-                text="Expand CAOS Commands" description="Places each CAOS command onto its own line">">
+                text="Set CAOS Variant"
+                description="Set CAOS variant for selected folder or files"
+                icon="CaosScriptIcons.SDK_ICON"
+        >
             <add-to-group group-id="CutCopyPasteGroup" anchor="after"
                           relative-to-action="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"/>
         </action>
 
         <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions.CompileCaos2CobAction"
                 class="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions.CompileCaos2CobAction"
-                text="Compile CAOS2Cob Files" description="Compile CAOS2Cob CAOS files into C1/C2 COBs">
+                text="Compile CAOS2Cob Files"
+                description="Compile CAOS2Cob CAOS files into C1/C2 COBs">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="ExternalToolsGroup"/>
         </action>
 
