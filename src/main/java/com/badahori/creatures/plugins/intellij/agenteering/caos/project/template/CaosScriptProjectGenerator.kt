@@ -46,7 +46,7 @@ open class CaosScriptProjectGenerator : DirectoryProjectGeneratorBase<CaosProjec
     }
 
     override fun getName(): String {
-        return "CAOS Project"
+        return "CAOS project"
     }
 
     override fun getLogo(): Icon? {
