@@ -11,9 +11,10 @@ import javax.swing.JComponent
 
 class CaosModuleConfigurationEditorProvider : ModuleConfigurationEditorProvider {
     override fun createEditors(state: ModuleConfigurationState): Array<ModuleConfigurationEditor> {
-        val module = state.rootModel?.module ?: return emptyArray()
-        if (ModuleType.get(module) !is CaosScriptModuleType)
+        val module = state.currentRootModel?.module ?: return emptyArray()
+        if (ModuleType.get(module) !is CaosScriptModuleType) {
             return ModuleConfigurationEditor.EMPTY
+        }
         return arrayOf(//ContentEntriesEditor(module.name, state),
                 CaosContentEntitiesEditor(module.name, state),
                 CaosModuleConfigurationEditor(state)
@@ -27,7 +28,8 @@ class CaosModuleConfigurationEditor(private val state: ModuleConfigurationState)
 
     override fun isModified(): Boolean {
         // Check if is modified
-        val settings = state.rootModel
+        val settings = state
+            .currentRootModel
             ?.module
             ?.settings
             ?.getState()
@@ -47,8 +49,8 @@ class CaosModuleConfigurationEditor(private val state: ModuleConfigurationState)
     override fun getDisplayName(): String = "CAOS Script Settings"
 
     override fun apply() {
-        state.rootModel.module.variant = panel.selectedVariant
-        state.rootModel.module.settings.ignoredFiles = panel.ignoredFileNames
+        state.currentRootModel.module.variant = panel.selectedVariant
+        state.currentRootModel.module.settings.ignoredFiles = panel.ignoredFileNames
             .filter {
                 it.isNotBlank()
             }
@@ -56,7 +58,11 @@ class CaosModuleConfigurationEditor(private val state: ModuleConfigurationState)
     }
 
     override fun createComponent(): JComponent? {
-        val settings = state.rootModel.module.settings.getState()
+        val settings = state
+            .currentRootModel
+            .module
+            .settings
+            .getState()
         panel.selectedVariant = settings.variant
         panel.setIgnoredFileNames(settings.ignoredFiles)
         return panel.component
