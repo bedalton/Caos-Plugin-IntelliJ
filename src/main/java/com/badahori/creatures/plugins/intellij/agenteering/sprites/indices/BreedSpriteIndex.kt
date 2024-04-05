@@ -3,10 +3,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.indices
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedFileInputFilter
-import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedKeyIndexer
-import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartDescriptor
-import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
+import com.badahori.creatures.plugins.intellij.agenteering.indices.*
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
@@ -39,7 +36,8 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
             ID.create("com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex")
 
         private const val THIS_VERSION = 4
-        const val VERSION = THIS_VERSION + BreedPartKey.VERSION + BreedKeyIndexer.VERSION + BreedPartDescriptor.VERSION + BreedFileInputFilter.VERSION
+
+        const val VERSION = BREED_INDEX_VERSION_BASE + THIS_VERSION + BreedPartKey.VERSION + BreedKeyIndexer.VERSION + BreedPartDescriptor.VERSION + BreedFileInputFilter.VERSION
         private var didIndexOnce: Boolean = false
 
         fun acceptInput(virtualFile: VirtualFile): Boolean {

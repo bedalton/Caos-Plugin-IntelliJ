@@ -9,7 +9,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnkno
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.s16.S16FileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileType
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.openapi.fileTypes.FileType
@@ -23,6 +22,8 @@ import java.io.DataInput
 import java.io.DataOutput
 import java.io.IOException
 import java.util.*
+
+const val BREED_INDEX_VERSION_BASE = 1
 
 object VariantIndexer : DataIndexer<CaosVariant, Void, FileContent> {
     const val VERSION = 1

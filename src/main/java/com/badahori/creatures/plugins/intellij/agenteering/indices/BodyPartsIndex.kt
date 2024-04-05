@@ -43,7 +43,7 @@ object BodyPartsIndex {
     private const val THIS_INDEX_VERSION = 10
 
     // Compound version to force a reindex if any of the sourced indices change
-    const val VERSION = THIS_INDEX_VERSION + AttFilesIndex.VERSION + BreedSpriteIndex.VERSION
+    const val VERSION = BREED_INDEX_VERSION_BASE + THIS_INDEX_VERSION + AttFilesIndex.VERSION + BreedSpriteIndex.VERSION
 
     @JvmStatic
     suspend fun variantParts(
