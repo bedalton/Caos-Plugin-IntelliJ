@@ -78,12 +78,6 @@ public class CaosScriptParserDefinition implements ParserDefinition {
 
     @Override
     @NotNull
-    public SpaceRequirements spaceExistanceTypeBetweenTokens(ASTNode left, ASTNode right) {
-        return spaceExistenceTypeBetweenTokens(left, right);
-    }
-
-    @Override
-    @NotNull
     public SpaceRequirements spaceExistenceTypeBetweenTokens(ASTNode astNode, ASTNode astNode1) {
         if (WHITE_SPACES.contains(astNode.getElementType()))
             return SpaceRequirements.MAY;

@@ -55,11 +55,6 @@ class SfcDecompiledFilePropertyPusher private constructor() : FilePropertyPusher
         return false
     }
 
-    override fun acceptsFile(file: VirtualFile): Boolean {
-        return (file is SfcVirtualFile || file.extension?.equalsIgnoreCase("sfc").orFalse())
-                && SfcReader.isSfc(file)
-    }
-
     companion object {
         private val VARIANT_FILE_ATTRIBUTE = FileAttribute("caos.sfc.decompiler.SFC_DECOMPILED_DATA", 0, true)
 

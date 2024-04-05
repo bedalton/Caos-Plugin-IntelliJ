@@ -64,10 +64,6 @@ class AgentFileDetector : FileTypeRegistry.FileTypeDetector {
         }
     }
 
-    override fun getVersion(): Int {
-        return VERSION
-    }
-
     companion object {
         private const val VERSION = 1
         internal val AGENT_FILE_EXTENSIONS = listOf(

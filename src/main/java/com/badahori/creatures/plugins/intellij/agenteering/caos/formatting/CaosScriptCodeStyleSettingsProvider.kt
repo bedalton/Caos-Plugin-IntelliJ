@@ -12,19 +12,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptL
 
 
 class CaosScriptCodeStyleSettingsProvider : CodeStyleSettingsProvider() {
-    override fun createCustomSettings(settings: CodeStyleSettings): CustomCodeStyleSettings? {
+    override fun createCustomSettings(settings: CodeStyleSettings): CustomCodeStyleSettings {
         return CaosScriptCodeStyleSettings(settings)
     }
 
-    override fun getConfigurableDisplayName(): String? = "Caos Script"
-
-    @Deprecated("Deprecated\n" +
-            "use createConfigurable(CodeStyleSettings, CodeStyleSettings) or LanguageCodeStyleSettingsProvider.createConfigurable(CodeStyleSettings, CodeStyleSettings) for language settings.",
-        ReplaceWith("createConfigurable(settings, modelSettings)")
-    )
-    override fun createSettingsPage(settings: CodeStyleSettings, modelSettings: CodeStyleSettings): Configurable {
-        return createConfigurable(settings, modelSettings)
-    }
+    override fun getConfigurableDisplayName(): String = "Caos Script"
 
     override fun createConfigurable(settings: CodeStyleSettings, modelSettings: CodeStyleSettings): CodeStyleConfigurable {
         return object : CodeStyleAbstractConfigurable(settings, modelSettings, this.configurableDisplayName) {

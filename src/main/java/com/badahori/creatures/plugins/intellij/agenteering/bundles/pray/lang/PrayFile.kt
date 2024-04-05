@@ -139,10 +139,6 @@ class PraySettingsPropertyPusher private constructor() : FilePropertyPusher<Pray
         return true
     }
 
-    override fun acceptsFile(file: VirtualFile): Boolean {
-        return file.fileType is PrayFileType || file.fileType is CaosScriptFileType
-    }
-
     companion object {
         private val PRAY_COMPILER_ATTRIBUTES = FileAttribute("pray_compiler_options", 0, false)
 

@@ -49,10 +49,6 @@ internal class InjectorInterfacePropertyPusher private constructor() : FilePrope
         return true
     }
 
-    override fun acceptsFile(file: VirtualFile): Boolean {
-        return file is CaosVirtualFile || (file.fileType as? LanguageFileType) is CaosScriptFileType
-    }
-
     companion object {
         private val INJECTOR_ATTRIBUTE = FileAttribute("caos.CAOS_FILE_INJECTOR", 0, true)
 

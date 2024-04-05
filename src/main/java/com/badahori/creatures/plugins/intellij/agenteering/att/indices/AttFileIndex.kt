@@ -18,7 +18,7 @@ import com.intellij.util.indexing.*
 import com.intellij.util.io.KeyDescriptor
 
 class AttFilesByVariantIndex : ScalarIndexExtension<CaosVariant>() {
-    override fun getName(): ID<CaosVariant, Void> = NAME
+    override fun getName(): ID<CaosVariant, Void> = INDEX_NAME
 
     override fun getIndexer(): DataIndexer<CaosVariant, Void, FileContent> = VariantIndexer
 
@@ -34,7 +34,7 @@ class AttFilesByVariantIndex : ScalarIndexExtension<CaosVariant>() {
 
     companion object {
         // Index name identifier
-        val NAME: ID<CaosVariant, Void> =
+        val INDEX_NAME: ID<CaosVariant, Void> =
             ID.create("com.badahori.creatures.plugins.intellij.agenteering.att.AttByVariantIndex")
 
         // Update this index's version number, NOT const "VERSION"
@@ -64,14 +64,14 @@ class AttFilesByVariantIndex : ScalarIndexExtension<CaosVariant>() {
                 key
             return FileBasedIndex
                 .getInstance()
-                .getContainingFiles(NAME, fudgedKey, scope)
+                .getContainingFiles(INDEX_NAME, fudgedKey, scope)
         }
     }
 }
 
 
 class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
-    override fun getName(): ID<BreedPartKey, Void> = NAME
+    override fun getName(): ID<BreedPartKey, Void> = INDEX_NAME
 
     override fun getIndexer(): DataIndexer<BreedPartKey, Void, FileContent> = BreedKeyIndexer
 
@@ -88,7 +88,7 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
     companion object {
         private const val THIS_VERSION = 8
         const val VERSION = THIS_VERSION + BreedPartKey.VERSION + BreedKeyIndexer.VERSION + BreedPartDescriptor.VERSION
-        val NAME: ID<BreedPartKey, Void> =
+        val INDEX_NAME: ID<BreedPartKey, Void> =
             ID.create("com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesIndex")
 
         @JvmStatic
@@ -109,7 +109,7 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
             else
                 key
 
-            return FileBasedIndex.getInstance().getAllKeys(NAME, project)
+            return FileBasedIndex.getInstance().getAllKeys(INDEX_NAME, project)
                 .filter { other ->
                     progressIndicator?.checkCanceled()
                     BreedPartKey.isGenericMatch(fudgedKey, other)
@@ -119,7 +119,7 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
                         return emptyList()
                     }
                     progressIndicator?.checkCanceled()
-                    FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope)
+                    FileBasedIndex.getInstance().getContainingFiles(INDEX_NAME, aKey, scope)
                 }
                 .let { files ->
                     progressIndicator?.checkCanceled()
@@ -142,7 +142,7 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
             if (project.isDisposed) {
                 return emptyList()
             }
-            return FileBasedIndex.getInstance().getAllKeys(NAME, project)
+            return FileBasedIndex.getInstance().getAllKeys(INDEX_NAME, project)
         }
 
         /**
@@ -154,12 +154,12 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
             if (project.isDisposed) {
                 return emptyList()
             }
-            return FileBasedIndex.getInstance().getAllKeys(NAME, project)
+            return FileBasedIndex.getInstance().getAllKeys(INDEX_NAME, project)
                 .filter { aKey ->
                     if (project.isDisposed) {
                         return emptyList()
                     }
-                    FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope)
+                    FileBasedIndex.getInstance().getContainingFiles(INDEX_NAME, aKey, scope)
                         .any { file -> scope.accept(file) }
                 }
         }

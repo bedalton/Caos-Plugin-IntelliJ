@@ -655,10 +655,6 @@ internal open class SpriteAttPathPropertyPusher
         return true
     }
 
-    override fun acceptsFile(file: VirtualFile): Boolean {
-        return file.extension in SpriteParser.VALID_SPRITE_EXTENSIONS
-    }
-
     companion object {
 
         private val fileAttribute by lazy {

@@ -105,12 +105,6 @@ class VariantsFilePropertyPusher private constructor() : FilePropertyPusher<List
         return true
     }
 
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Deprecated in parent")
-    override fun acceptsFile(file: VirtualFile): Boolean {
-        return file is CaosVirtualFile || (file.fileType as? LanguageFileType) is CaosScriptFileType
-    }
-
     companion object {
         private val VARIANTS_FILE_ATTRIBUTE = FileAttribute("caos_script_variants", 0, true)
 

@@ -63,10 +63,6 @@ class PrayFileDetector : FileTypeRegistry.FileTypeDetector {
         }
     }
 
-    override fun getVersion(): Int {
-        return VERSION
-    }
-
     companion object {
         private const val VERSION = 2
         private const val STRING = "\"([^\"]|\\\\\")+\""
