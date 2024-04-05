@@ -47,7 +47,9 @@ internal class InjectorInterfacePropertyPusher private constructor() : FilePrope
     }
 
     companion object {
-        private val INJECTOR_ATTRIBUTE = FileAttribute("caos.CAOS_FILE_INJECTOR", 0, true)
+        private val INJECTOR_ATTRIBUTE by lazy {
+            FileAttribute("caos.CAOS_FILE_INJECTOR", 0, true)
+        }
 
         internal fun readFromStorage(file: VirtualFile, variant: CaosVariant?): GameInterfaceName? {
             file.getUserData(INJECTOR_INTERFACE_USER_DATA_KEY)?.let {

@@ -32,8 +32,9 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
     override fun dependsOnFileContent(): Boolean = false
 
     companion object {
-        val NAME: ID<BreedPartKey, Void> =
+        val NAME: ID<BreedPartKey, Void> by lazy {
             ID.create("com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex")
+        }
 
         private const val THIS_VERSION = 4
 
@@ -44,13 +45,15 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
             return SpriteInputFilter.acceptInput(virtualFile)
         }
 
-        private val SpriteInputFilter = BreedFileInputFilter(
-            listOf(
-                SprFileType,
-                S16FileType,
-                C16FileType
+        private val SpriteInputFilter by lazy {
+            BreedFileInputFilter(
+                listOf(
+                    SprFileType,
+                    S16FileType,
+                    C16FileType
+                )
             )
-        )
+        }
 
         @JvmStatic
         fun findMatching(
