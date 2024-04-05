@@ -2,24 +2,30 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite
 
-import com.bedalton.common.util.PathUtil
-import com.bedalton.common.util.toListOf
-import com.bedalton.creatures.sprite.parsers.*
-import com.bedalton.creatures.sprite.util.SpriteType
-import com.bedalton.creatures.sprite.util.SpriteType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.mapAsync
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
-import com.bedalton.io.bytes.*
-import com.bedalton.log.*
+import com.bedalton.common.util.PathUtil
+import com.bedalton.common.util.formatted
+import com.bedalton.common.util.toListOf
+import com.bedalton.creatures.sprite.parsers.*
+import com.bedalton.creatures.sprite.util.SpriteType
+import com.bedalton.creatures.sprite.util.SpriteType.*
+import com.bedalton.io.bytes.ByteStreamReader
+import com.bedalton.log.Log
+import com.bedalton.log.iIf
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.serviceContainer.AlreadyDisposedException
 import korlibs.image.awt.toAwt
 import korlibs.image.bitmap.Bitmap32
 import korlibs.image.color.RGBA
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import kotlinx.coroutines.future.asCompletableFuture
 import java.awt.image.BufferedImage
+import java.util.concurrent.CompletableFuture
 
 object SpriteParser {
 
@@ -138,7 +144,7 @@ object SpriteParser {
 
     private fun getBodySpriteVariantSuspending(
         spriteFile: VirtualFile,
-        defaultVariant: CaosVariant
+        defaultVariant: CaosVariant,
     ): CaosVariant {
         if (!BreedPartKey.isPartName(spriteFile.nameWithoutExtension)) {
             return defaultVariant
@@ -186,15 +192,17 @@ class SpriteParserException(message: String, throwable: Throwable? = null) : Exc
 
 class SpriteFileHolder(sprites: List<SpriteFile>, val fileName: String, private val bodyPart: Boolean = false) {
 
-
     val fileType by lazy {
+        val theSprites = mSpriteFile
+            ?: throw AlreadyDisposedException("Sprite holder is already disposed")
         (PathUtil.getExtension(fileName) ?: fileName).uppercase().let {
             when (it) {
-                "SPR" -> if (sprites.isNotEmpty()) {
+                "SPR" -> if (theSprites.isNotEmpty()) {
                     SPR_SET
                 } else {
                     SPR
                 }
+
                 "S16" -> S16
                 "C16" -> C16
                 "BLK" -> BLK
@@ -202,6 +210,89 @@ class SpriteFileHolder(sprites: List<SpriteFile>, val fileName: String, private 
             }
         }
     }
+
+    private var mSpriteFile: List<SpriteFile>? = sprites
+
+    private val mAsyncFrames: List<Deferred<List<SpriteFrameAsync>>> by lazy {
+        (mSpriteFile ?: throw AlreadyDisposedException("Sprite holder is already disposed"))
+            .map {
+                GlobalScope.async {
+                    it.getAsyncFrames()
+                }
+            }
+    }
+
+    private val mBitmaps: List<Deferred<List<Bitmap32>>> by lazy {
+        mAsyncFrames.map { deferred ->
+            GlobalScope.async {
+                try {
+                    deferred.await().mapAsync {
+                        try {
+                            it.image()
+                        } catch (e: Exception) {
+                            Log.e("Failed to async frame to Bitmap32; ${e.formatted(true)}")
+                            throw e
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("Failed to convert list of AsyncFrames to list of Bitmap32s; ${e.formatted(true)}")
+                    throw e
+                }
+            }
+        }
+    }
+
+    val bitmaps: CompletableFuture<List<List<Bitmap32>>> by lazy {
+        GlobalScope.async {
+            mBitmaps.map {
+                it.await()
+            }
+        }.asCompletableFuture()
+    }
+
+    private val mImagesDeferred: Deferred<List<BufferedImage>> by lazy {
+        GlobalScope.async {
+            val images = mBitmaps.getOrNull(0)
+                ?: throw IndexOutOfBoundsException("No bitmap lists found in bitmaps list of lists")
+            val bitmaps = try {
+                images.await()
+            } catch (e: Exception) {
+                Log.e("Failed to convert deferred images list to actual image list; ${e.formatted(true)}")
+                throw e
+            }
+            try {
+                bitmaps.map(Bitmap32::toAwt)
+            } catch (e: Exception) {
+                Log.e("Failed to convert korim.Bitmap32's into Java BufferedImage; ${e.formatted(true)}")
+                throw e
+            }
+        }
+    }
+
+    val images: CompletableFuture<List<BufferedImage>> by lazy {
+        GlobalScope.async {
+            mImagesDeferred.await()
+        }.asCompletableFuture()
+    }
+
+    val imageSets: List<List<BufferedImage>> by lazy {
+        runBlocking {
+            mBitmaps.mapAsync { images ->
+                images.await().map(Bitmap32::toAwt)
+            }
+        }
+    }
+
+    val size: Int by lazy {
+        if (mSpriteFile?.size == 0) {
+            return@lazy 0
+        }
+        mSpriteFile
+            ?.firstOrNull()
+            ?.size()
+            ?: throw AlreadyDisposedException("Sprite holder is already disposed")
+    }
+
 
     constructor(sprite: SpriteFile, fileName: String) : this(
         sprite.toListOf(), fileName
@@ -211,44 +302,29 @@ class SpriteFileHolder(sprites: List<SpriteFile>, val fileName: String, private 
         sprite.toListOf(), fileName, bodyPart
     )
 
-    private var mSpriteFile: List<SpriteFile> = sprites
+    suspend fun imagesAsync(): List<BufferedImage> {
+        return mImagesDeferred.await()
+    }
 
-    val bitmaps: List<List<Bitmap32>>
-        get() = mSpriteFile.map {
-            runBlocking {
-                it.frames()
-            }
-        }
-
-    val images: List<BufferedImage>
-        get() = runBlocking {
-            bitmaps[0].map(Bitmap32::toAwt)
-        }
-
-    val imageSets: List<List<BufferedImage>>
-        get() = runBlocking {
-            mSpriteFile.map { file ->
-                file.frames().map {
-                    it.toAwt()
-                }
-            }
-        }
-
-    val size: Int by lazy {
-        runBlocking {
-            mSpriteFile.firstOrNull()?.size() ?: 0
-        }
+    suspend fun bitmapsAsync(): List<List<Bitmap32>> {
+        return mBitmaps.awaitAll()
     }
 
     fun getSize(spriteFileIndex: Int): Int? {
-        return runBlocking { mSpriteFile.getOrNull(spriteFileIndex)?.size() }
+        return runBlocking {
+            (mSpriteFile ?: throw AlreadyDisposedException("Sprite holder is already disposed"))
+                .getOrNull(spriteFileIndex)?.size()
+        }
     }
 
     operator fun get(frame: Int): BufferedImage? {
-        return if (bodyPart) {
-            images.getBodyImageAt(frame)
-        } else {
-            images.getOrNull(frame)
+        return runBlocking {
+            val frames = mAsyncFrames[0].await()
+            if (bodyPart) {
+                frames.getBodyImageAt(frame)
+            } else {
+                frames.getOrNull(frame)?.toAwt()
+            }
         }
     }
 
@@ -256,14 +332,21 @@ class SpriteFileHolder(sprites: List<SpriteFile>, val fileName: String, private 
         return imageSets.getOrNull(spriteFileIndex)?.getOrNull(frame)
     }
 
+
+    fun closeSpriteFiles() {
+        mSpriteFile?.map { it.close() }
+        mSpriteFile = null
+    }
+
+
 }
 
 internal val transparentBlack = RGBA(0, 0, 0, 0)
 //internal val solidBlack = RGBA(0,0,0)
 
 
-private fun List<BufferedImage>.getBodyImageAt(i: Int): BufferedImage {
-    var image = get(i)
+private fun List<SpriteFrameAsync>.getBodyImageAt(i: Int): BufferedImage {
+    var image = get(i).toAwt()
     val width = image.width
     val height = image.height
     if (width != 32 || height != 32) {
@@ -277,9 +360,14 @@ private fun List<BufferedImage>.getBodyImageAt(i: Int): BufferedImage {
         }
     }
     image = when (i) {
-        in 0..3 -> get(i + 4)
-        in 4..7 -> get(i - 4)
+        in 0..3 -> get(i + 4).image().toAwt()
+        in 4..7 -> get(i - 4).image().toAwt()
         else -> image
     }
     return image.flipHorizontal()
+}
+
+
+fun SpriteFrameAsync.toAwt(): BufferedImage {
+    return image().toAwt()
 }

@@ -257,7 +257,11 @@ internal class AttEditorModel(
         if (!spriteFile.isValid) {
             return emptyList()
         }
-        var images: List<BufferedImage> = runBlocking { SpriteParser.parse(spriteFile).images }
+        var images: List<BufferedImage> = runBlocking {
+            SpriteParser
+                .parse(spriteFile)
+                .imagesAsync()
+        }
         images = images.mapIndexed { i, image ->
             var out: BufferedImage = image
             if (i % 16 in 4..7) {

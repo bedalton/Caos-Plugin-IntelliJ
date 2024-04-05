@@ -47,8 +47,9 @@ internal class AttEditorController(
 
     internal val view: View
         get() {
-            if (this::mView.isInitialized)
+            if (this::mView.isInitialized) {
                 return mView
+            }
             val view = createView()
             mView = view
             return view
@@ -257,11 +258,7 @@ internal class AttEditorController(
         if (project.isDisposed) {
             return mView
         }
-        if (DumbService.isDumb(project)) {
-            DumbService.getInstance(project).runWhenSmart(mView::init)
-        } else {
-            mView.init()
-        }
+
         return mView
     }
 

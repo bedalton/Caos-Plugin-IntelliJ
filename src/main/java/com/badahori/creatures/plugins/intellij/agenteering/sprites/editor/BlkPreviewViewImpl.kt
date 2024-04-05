@@ -215,16 +215,21 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
         return true
     }
 
-    private fun stitchActual() {
+    private suspend fun stitchActual() {
         try {
             val reader = VirtualFileStreamReader(file)
             var percent = 0
-            val stitched = BlkParser.parse(
+            val stitched = BlkParser.parseAsync(
                 reader,
                 trim = shouldTrim(),
                 10
-            ) { i: Int, total: Int ->
-                val progress = ceil((i * 100.0) / total).toInt()
+            ) { pass: Int, i: Int, total: Int ->
+                val totalInPass = if (pass == 1) {
+                    total * 2
+                } else {
+                    total
+                }
+                val progress = ceil((i * 100.0) / totalInPass).toInt()
                 if (percent < progress) {
                     percent = progress
                     invokeLater {
@@ -234,7 +239,9 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
                 null
             }
             cache(file, listOf(listOf(stitched)))
-            setImage(stitched.toAwt())
+            ApplicationManager.getApplication().invokeLater {
+                setImage(stitched.toAwt())
+            }
         } catch (e: Exception) {
             val error = if (e.message?.length.orElse(0) > 0) {
                 "${e::className}: ${e.message}"

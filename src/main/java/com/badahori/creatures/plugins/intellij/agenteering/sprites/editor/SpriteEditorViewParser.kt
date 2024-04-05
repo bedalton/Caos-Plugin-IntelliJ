@@ -34,10 +34,10 @@ object SpriteEditorViewParser {
         if (!file.isValid) {
             throw Exception("Cannot parse sprite file with invalid virtual file")
         }
+        val label = loadingLabel()
         return runBlocking {
             parse(file) { i, total ->
                 val progress = ceil(i * 100.0 / total)
-                val label = loadingLabel()
                 ApplicationManager.getApplication().invokeLater {
                     if (file.isValid) {
                         label.text = "Loading sprite... " + progress.toInt() + "%"

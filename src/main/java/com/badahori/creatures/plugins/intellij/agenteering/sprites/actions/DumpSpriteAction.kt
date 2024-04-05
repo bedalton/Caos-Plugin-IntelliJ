@@ -212,7 +212,9 @@ class DumpSpriteAction : AnAction(
             }
         }
         val sprite = SpriteParser.parse(file)
-        val images = sprite.images
+        val images = sprite
+            .images
+            .join()
 
         // Get sprite filename parts
         val prefix = file.nameWithoutExtension + "-"

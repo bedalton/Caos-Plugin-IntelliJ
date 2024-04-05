@@ -96,11 +96,9 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
         this.settings = CaosProjectSettingsService.getInstance(project);
         showPoseView = settings.getShowPoseView();
         $$$setupUI$$$();
-        init();
     }
 
     public @NotNull JComponent getComponent() {
-        init();
         return mainPanel;
     }
 
@@ -933,7 +931,7 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
                     return null;
                 }
         );
-        poseEditor.init();
+//        poseEditor.init();
         posePanel = poseEditor.getMainPanel();
     }
 
@@ -965,13 +963,15 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
 
     public void refresh() {
 
-        if (project.isDisposed() || project.isOpen()) {
+        if (project.isDisposed() || !project.isOpen()) {
 //            dispose();
             return;
         }
+
         if (controller.getPart() != 'z' && !poseEditor.isValid()) {
             return;
         }
+
         if (DumbService.isDumb(project)) {
             DumbService.getInstance(project).runWhenSmart(this::refresh);
             return;

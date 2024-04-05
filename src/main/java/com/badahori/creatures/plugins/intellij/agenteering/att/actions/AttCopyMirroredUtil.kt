@@ -159,7 +159,10 @@ internal object AttCopyMirroredUtil {
     private fun getSprite(project: Project, attFile: VirtualFile): List<BufferedImage>? {
         val spriteFile = getAnyPossibleSprite(project, attFile)
             ?: return null
-        return runBlocking { SpriteParser.parse(spriteFile).images  }
+        return runBlocking { SpriteParser
+            .parse(spriteFile)
+            .imagesAsync()
+        }
     }
 
     sealed class AttCopyResult {

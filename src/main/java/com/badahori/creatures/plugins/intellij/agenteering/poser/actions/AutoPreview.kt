@@ -80,17 +80,21 @@ class AutoPreview : AnAction() {
     }
 
     private fun getZoom(project: Project, defaultZoom: Int): Int {
-        return FilenameIndex.getFilesByName(project, "caos.cfg", GlobalSearchScope.everythingScope(project))
+        return FilenameIndex.getVirtualFilesByName("caos.cfg", false, GlobalSearchScope.everythingScope(project))
             .flatMap { file ->
-                file.text
-                    .trim()
-                    .split("(\r?\n)+".toRegex())
-                    .map { line ->
-                        line.split('=')
-                            .let { parts ->
-                                Pair(parts.first(), parts.getOrNull(1) ?: "")
-                            }
-                    }
+                try {
+                    file.contents
+                        .trim()
+                        .split("(\r?\n)+".toRegex())
+                        .map { line ->
+                            line.split('=')
+                                .let { parts ->
+                                    Pair(parts.first(), parts.getOrNull(1) ?: "")
+                                }
+                        }
+                } catch (_: Exception) {
+                    emptyList()
+                }
             }
             .firstNotNullOfOrNull { property ->
                 if (property.first.lowercase() == "autopreview.zoom") {

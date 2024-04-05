@@ -51,7 +51,6 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
         } catch (_: Exception) {
         }
         val editor = SprFileEditor(myProject, myFile)
-        editor.init()
         this.editor = editor
         return editor.component
     }
@@ -110,12 +109,18 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
         if (!isValid) {
             return
         }
-        myFile.getUserData(CACHE_MD5_KEY)?.let { cachedMD5 ->
-            if (cachedMD5 == myFile.md5()) {
-                return
-            }
-            clearCache(myFile)
+
+        if (this::editor.isInitialized) {
+            editor.init()
         }
+
+        val cachedMD5: String? = myFile.getUserData(CACHE_MD5_KEY)
+        val currentMD5 = myFile.md5()
+        if (cachedMD5 == currentMD5) {
+            return
+        }
+
+        clearCache(myFile)
         if (this::editor.isInitialized) {
             editor.reloadSprite()
         }
@@ -137,8 +142,9 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
             }
             virtualFile.putUserData(CACHE_MD5_KEY, null)
             virtualFile.putUserData(CACHE_KEY, null)
-            if (images.isEmpty())
+            if (images.isEmpty()) {
                 return
+            }
             val md5 = virtualFile.md5()
                 ?: return
             virtualFile.putUserData(CACHE_KEY, images)

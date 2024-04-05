@@ -411,8 +411,14 @@ internal class CobSpriteFileTreeNode(
         if (!isValid()) {
             return@lazy emptyList()
         }
+
         val fileNameBase = PathUtil.getFileNameWithoutExtension(block.fileName).orEmpty() + "_"
-        val images = block.sprite.images
+
+        val images = block
+            .sprite
+            .images
+            .join()
+
         val padLength = "${images.size}".length
         images.mapIndexed map@{ index, image ->
             SpriteImageTreeNode(

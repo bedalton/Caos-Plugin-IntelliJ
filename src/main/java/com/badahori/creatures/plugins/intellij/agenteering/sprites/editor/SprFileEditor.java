@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 
 @SuppressWarnings("UseJBColor")
@@ -64,7 +65,6 @@ public class SprFileEditor implements DumbAware {
         this.file = file;
         images = new ArrayList<>();
         $$$setupUI$$$();
-        init();
     }
 
     @SuppressWarnings("unused")
@@ -72,75 +72,43 @@ public class SprFileEditor implements DumbAware {
         didInit = false;
     }
 
-    synchronized void init() {
+    void init() {
+        ApplicationManager.getApplication().executeOnPooledThread(this::initSync);
+    }
+
+    void initSync() {
         if (didInit) {
             return;
         }
+        ApplicationManager.getApplication().invokeLater(this::initPlaceholder);
         didInit = true;
-        initPlaceholder();
         // Load sprite images
         // Executed on background thread
-        loadSprite();
+        loadSpriteOnBackgroundThread();
         // Initialize the UI controls
-        initUI();
+        ApplicationManager.getApplication().invokeLater(this::initUI);
         main.setFocusable(true);
         imageList.setFocusable(true);
         main.setTransferHandler(imageList.getTransferHandler());
     }
 
     JComponent getComponent() {
-        init();
+//        init();
         return main;
-    }
-
-    @Nullable
-    private List<List<BufferedImage>> readFileAsPhotoAlbum() {
-
-        final ByteStreamReader stream = new VirtualFileStreamReader(file, null, null);
-        final PhotoAlbum album = SpriteEditorViewParser.parse(file, stream, () -> loadingLabel, () -> {
-            initPlaceholder();
-            return loadingLabel;
-        });
-        if (album == null) {
-            if (loadingLabel == null) {
-                initPlaceholder();
-            }
-            assert loadingLabel != null;
-            loadingLabel.setText("Failed to load photo album");
-            return null;
-        }
-        moniker = album.getMoniker();
-        if (moniker != null && moniker.trim().length() != 4) {
-            moniker = null;
-        }
-        final List<Bitmap32> bitmaps = SpriteEditorImpl.toBitmapList(album);
-        final List<List<Bitmap32>> images = new ArrayList<>();
-        images.add(bitmaps);
-        SpriteEditorImpl.cache(file, images);
-        final List<BufferedImage> bufferedImages = SpriteEditorImpl.toBufferedImages(album);
-        final List<List<BufferedImage>> out = new ArrayList<>();
-        out.add(bufferedImages);
-        return out;
-    }
-
-    private List<List<BufferedImage>> readFileAsRegularSprite() {
-        final SpriteFileHolder holder = SpriteEditorViewParser.parseSprite(file, () -> {
-            if (loadingLabel == null) {
-                initPlaceholder();
-            }
-            return loadingLabel;
-        });
-        SpriteEditorImpl.cache(file, holder.getBitmaps());
-        return holder.getImageSets();
     }
 
     /**
      * Loads sprite images into view
      * Executed on background thread
      */
-    private void loadSprite() {
+    private void loadSpriteOnBackgroundThread() {
+        ApplicationManager
+                .getApplication()
+                .executeOnPooledThread(this::loadSprite);
+    }
 
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+    private void loadSprite() {
+        synchronized (file) {
             if (!file.isValid()) {
                 return;
             }
@@ -170,58 +138,98 @@ public class SprFileEditor implements DumbAware {
                 rawImages = Collections.emptyList();
             }
 
-
-            // Find number padding for image names for file copy
-            final int padLength = (rawImages.size() + "").length();
-            final String prefix = moniker != null ? moniker : FileUtil.getNameWithoutExtension(fullFileName);
-            final String suffix = ".png";
+            // Clear existing images
             final int lastSize = images.size();
             images.clear();
             final int[] selection = imageList.getSelectedIndices();
-            final List<ImageTransferItem> images = Lists.newArrayList();
-            final int spriteSetCounts = rawImages.size();
-            final int setPrefixLength = (spriteSetCounts + "").length();
-            for (int i = 0; i < spriteSetCounts; i++) {
-                String setPrefix;
-                if (spriteSetCounts == 1) {
-                    setPrefix = "";
-                } else {
-                    setPrefix = "." + pad(i, setPrefixLength);
-                    images.add(new ImageTransferItem(prefix + "[" + pad(i, setPrefixLength) + "]", null));
-                }
-                final List<BufferedImage> spriteSet = rawImages.get(i);
-                final int spriteCount = spriteSet.size();
-                for (int j = 0; j < spriteCount; j++) {
-                    final String fileName = prefix + setPrefix + "." + pad(j, padLength) + suffix;
-                    images.add(new ImageTransferItem(fileName, spriteSet.get(j)));
-                }
-            }
-            this.images.addAll(images);
+
+            // Get image transfer items for images
+            final List<ImageTransferItem> images = imagesToImageTransferItems(
+                    rawImages,
+                    fullFileName
+            );
+
+            // Set images in images view
             ApplicationManager.getApplication().invokeLater(() -> {
-                imageList.setListData(new ImageTransferItem[0]);
-                imageList.updateUI();
-                imageList.setListData(images.toArray(new ImageTransferItem[0]));
-                if (lastSize == images.size()) {
-                    try {
-                        imageList.setSelectedIndices(selection);
-                    } catch (Exception e) {
-                        LOGGER.severe("Failed to preserve selection on reload in file " + fullFileName);
-                    }
-                }
-                if (scrollPane != null) {
-                    if (loadingLabel != null) {
-                        scrollPane.remove(loadingLabel);
-                    }
-                    loadingLabel = null;
-                    if (imageList != null) {
-                        imageList.setVisible(true);
-                        scrollPane.setViewportView(imageList);
-                    }
-                }
+                setImages(images, lastSize, selection, fullFileName);
             });
-        });
+        }
     }
 
+    private List<ImageTransferItem> imagesToImageTransferItems(
+            final List<List<BufferedImage>> rawImages,
+            final String fullFileName
+    ) {
+        // Find number padding for image names for file copy
+        final int padLength = (rawImages.size() + "").length();
+        final String prefix = moniker != null ? moniker : FileUtil.getNameWithoutExtension(fullFileName);
+        final String suffix = ".png";
+        final List<ImageTransferItem> images = Lists.newArrayList();
+        final int spriteSetCounts = rawImages.size();
+        final int setPrefixLength = (spriteSetCounts + "").length();
+        for (int i = 0; i < spriteSetCounts; i++) {
+            String setPrefix;
+            if (spriteSetCounts == 1) {
+                setPrefix = "";
+            } else {
+                setPrefix = "." + pad(i, setPrefixLength);
+                images.add(new ImageTransferItem(prefix + "[" + pad(i, setPrefixLength) + "]", null));
+            }
+            final List<BufferedImage> spriteSet = rawImages.get(i);
+            final int spriteCount = spriteSet.size();
+            for (int j = 0; j < spriteCount; j++) {
+                final String fileName = prefix + setPrefix + "." + pad(j, padLength) + suffix;
+                images.add(new ImageTransferItem(fileName, spriteSet.get(j)));
+            }
+        }
+        return images;
+    }
+
+
+    @Nullable
+    private synchronized List<List<BufferedImage>> readFileAsPhotoAlbum() {
+
+        final ByteStreamReader stream = new VirtualFileStreamReader(file, null, null);
+        final PhotoAlbum album = SpriteEditorViewParser.parse(file, stream, () -> loadingLabel, () -> {
+            initPlaceholder();
+            return loadingLabel;
+        });
+        if (album == null) {
+            if (loadingLabel == null) {
+                initPlaceholder();
+            }
+            assert loadingLabel != null;
+            loadingLabel.setText("Failed to load photo album");
+            return null;
+        }
+        moniker = album.getMoniker();
+        if (moniker != null && moniker.trim().length() != 4) {
+            moniker = null;
+        }
+        final List<Bitmap32> bitmaps = SpriteEditorImpl.toBitmapList(album);
+        final List<List<Bitmap32>> images = new ArrayList<>();
+        images.add(bitmaps);
+        SpriteEditorImpl.cache(file, images);
+        final List<BufferedImage> bufferedImages = SpriteEditorImpl
+                .toBufferedImages(album);
+        final List<List<BufferedImage>> out = new ArrayList<>();
+        out.add(bufferedImages);
+        return out;
+    }
+
+    private synchronized List<List<BufferedImage>> readFileAsRegularSprite() {
+        final SpriteFileHolder holder = SpriteEditorViewParser.parseSprite(file, () -> {
+            if (loadingLabel == null) {
+                initPlaceholder();
+            }
+            return loadingLabel;
+        });
+        final List<List<Bitmap32>> images = holder.getBitmaps().join();
+        SpriteEditorImpl.cache(file, images);
+        final List<List<BufferedImage>> imageSets = holder.getImageSets();
+        holder.closeSpriteFiles();
+        return imageSets;
+    }
 
     private void initUI() {
         initBackgroundColors();
@@ -241,7 +249,7 @@ public class SprFileEditor implements DumbAware {
 
     void reloadSprite() {
         SpriteEditorImpl.clearCache(file);
-        loadSprite();
+        loadSpriteOnBackgroundThread();
     }
 
     private void initPlaceholder() {
@@ -255,6 +263,35 @@ public class SprFileEditor implements DumbAware {
             };
         }
         scrollPane.setViewportView(loadingLabel);
+    }
+
+    private void setImages(
+            final List<ImageTransferItem> images,
+            final int lastSize,
+            final int[] selection,
+            final String fullFileName
+    ) {
+        this.images.addAll(images);
+            imageList.setListData(new ImageTransferItem[0]);
+            imageList.updateUI();
+            imageList.setListData(images.toArray(new ImageTransferItem[0]));
+            if (lastSize == images.size()) {
+                try {
+                    imageList.setSelectedIndices(selection);
+                } catch (Exception e) {
+                    LOGGER.severe("Failed to preserve selection on reload in file " + fullFileName);
+                }
+            }
+            if (scrollPane != null) {
+                if (loadingLabel != null) {
+                    scrollPane.remove(loadingLabel);
+                }
+                loadingLabel = null;
+                if (imageList != null) {
+                    imageList.setVisible(true);
+                    scrollPane.setViewportView(imageList);
+                }
+            }
     }
 
     private void initBackgroundColors() {

@@ -181,7 +181,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         }
         $$$setupUI$$$();
         model = new PoseEditorModel(project, variant, this);
-        init();
     }
 
 
@@ -1083,7 +1082,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
             }
             return;
         }
-        ApplicationManager.getApplication().runReadAction(() -> {
+//        ApplicationManager.getApplication().runReadAction(() -> {
             try {
                 model.requestRender(theParts, breedChanged);
                 dirty = false;
@@ -1096,7 +1095,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
                 //noinspection CallToPrintStackTrace
                 e.printStackTrace();
             }
-        });
+//        });
     }
 
     @Override

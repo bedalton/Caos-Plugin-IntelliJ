@@ -49,9 +49,15 @@ internal class SpriteFileTreeNode(
         if (!isValid()) {
             return@lazy emptyList()
         }
+
         val fileNameBase = PathUtil.getFileNameWithoutExtension(value.name).orElse("_") + "."
-        val images = sprite.images
+
+        val images = sprite
+            .images
+            .join()
+
         val padLength = "${images.size}".length
+
         images.mapIndexed map@{ index, image ->
             SpriteImageTreeNode(
                 project,

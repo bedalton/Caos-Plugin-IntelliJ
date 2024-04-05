@@ -110,6 +110,7 @@ internal class AttEditorImpl(
                 DumbService.getInstance(myProject).runWhenSmart(::selectNotify)
                 return
             }
+            controller.view.init()
             controller.view.refresh()
             controller.view.scrollCellIntoView()
         }
