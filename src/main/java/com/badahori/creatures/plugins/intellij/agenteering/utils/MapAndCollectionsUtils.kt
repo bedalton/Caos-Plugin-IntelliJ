@@ -148,9 +148,13 @@ internal val <T> Array<T>.firstIfOnlyOne: T? get() {
 }
 suspend fun <A, B> Array<A>.mapAsync(f: suspend (A) -> B): List<B> = coroutineScope {
     map { async { f(it) } }.awaitAll()
+
+internal suspend fun <A, B> Array<A>.mapAsync(f: suspend (A) -> B): List<B> {
+    return map { GlobalScope.async { f(it) } }.awaitAll()
 }
-suspend fun <A, B> Iterable<A>.mapAsync(f: suspend (A) -> B): List<B> = coroutineScope {
-    map { async { f(it) } }.awaitAll()
+
+internal suspend fun <A, B> Iterable<A>.mapAsync(f: suspend (A) -> B): List<B> {
+    return map { GlobalScope.async { f(it) } }.awaitAll()
 }
 
 internal fun <K,V> MutableMap<K, MutableList<V>>.put(key: K, value: V) {
