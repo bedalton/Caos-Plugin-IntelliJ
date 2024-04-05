@@ -13,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStream
 import com.bedalton.creatures.agents.pray.data.PrayDataBlockDecompressionException
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.bedalton.common.util.className
+import com.bedalton.creatures.agents.pray.compiler.getLinkFilenameReferenceFromCaosText
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
@@ -195,12 +196,16 @@ internal class PrayBlockTreeNode(
             scriptTagRegex.matches(it.tag)
         }.mapNotNull map@{
             val caosFile = try {
+                val text = it.value
+                val filename = getLinkFilenameReferenceFromCaosText(text)?.let { fileName ->
+                    fileName + " (${it.tag})"
+                } ?: it.tag
                 AgentScript.createAgentCaosFile(
                     project,
-                    it.tag,
+                    filename,
                     directory,
                     variant,
-                    it.value
+                    text
                 )
             } catch (e: Exception) {
                 if (e is ProcessCanceledException) {

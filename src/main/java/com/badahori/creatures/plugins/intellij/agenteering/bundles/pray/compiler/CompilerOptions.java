@@ -22,6 +22,7 @@ public class CompilerOptions {
     JCheckBox autogenerateAgentRemoversCheckBox;
     JCheckBox validatePRAYFileCheckBox;
     private JComboBox compressionLevel;
+    JCheckBox addLinkFilenameReference;
 
     public JPanel getComponent() {
         return panel1;
@@ -54,7 +55,9 @@ public class CompilerOptions {
                 validatePRAYFileCheckBox.isSelected(),
                 new String[0],
                 false,
-                getCompressionLevel()
+                getCompressionLevel(),
+                null,
+                validatePRAYFileCheckBox.isSelected()
         );
     }
 

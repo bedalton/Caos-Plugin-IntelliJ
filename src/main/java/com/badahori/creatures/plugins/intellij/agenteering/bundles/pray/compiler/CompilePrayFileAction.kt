@@ -167,6 +167,7 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction({ 
                 .withLogProgress(false)
                 .withPrintStats(false)
                 .withCompressionLevel(opts.compressionLevel)
+                .withLinkWithFilenameReference(opts.linkWithFilenameReference)
             logProgress(true)
             try {
                 return compilePrayAndWrite(coroutineContext = coroutineContext, LocalFileSystem!!, fileOpts, false)
