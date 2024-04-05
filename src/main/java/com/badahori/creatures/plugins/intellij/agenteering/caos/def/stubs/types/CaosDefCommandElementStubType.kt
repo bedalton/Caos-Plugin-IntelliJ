@@ -1,11 +1,5 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types
 
-import com.intellij.lang.ASTNode
-import com.intellij.openapi.components.ServiceManager
-import com.intellij.psi.stubs.IndexSink
-import com.intellij.psi.stubs.StubElement
-import com.intellij.psi.stubs.StubInputStream
-import com.intellij.psi.stubs.StubOutputStream
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexService
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandDefElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefCommandDefElementImpl
@@ -17,8 +11,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.readSimpleType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.intellij.lang.ASTNode
+import com.intellij.psi.stubs.IndexSink
+import com.intellij.psi.stubs.StubElement
+import com.intellij.psi.stubs.StubInputStream
+import com.intellij.psi.stubs.StubOutputStream
 
-class CaosDefCommandElementStubType(debugName:String) : com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubElementType<CaosDefCommandDefinitionStub, CaosDefCommandDefElementImpl>(debugName) {
+class CaosDefCommandElementStubType(debugName:String) : CaosDefStubElementType<CaosDefCommandDefinitionStub, CaosDefCommandDefElementImpl>(debugName) {
 
     override fun createPsi(stub: CaosDefCommandDefinitionStub): CaosDefCommandDefElementImpl {
         return CaosDefCommandDefElementImpl(stub, this)
@@ -42,7 +41,7 @@ class CaosDefCommandElementStubType(debugName:String) : com.badahori.creatures.p
         val variants = stream.readList { readNameAsString() }.filterNotNull().map { CaosVariant.fromVal(it) }
         val namespace = stream.readNameAsString()
         val command = stream.readNameAsString()
-        val parameters = stream.readList(StubInputStream::readParameter).filterNotNull()
+        val parameters = stream.readList(StubInputStream::readParameter)
         val isCommand = stream.readBoolean()
         val rvalue = stream.readBoolean()
         val lvalue = stream.readBoolean()
@@ -91,6 +90,6 @@ class CaosDefCommandElementStubType(debugName:String) : com.badahori.creatures.p
     }
 
     override fun indexStub(stub: CaosDefCommandDefinitionStub, indexSink: IndexSink) {
-        ServiceManager.getService(CaosDefStubIndexService::class.java).indexCommand(stub, indexSink)
+        CaosDefStubIndexService.indexCommand(stub, indexSink)
     }
 }

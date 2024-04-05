@@ -41,7 +41,7 @@ class CaosScriptSubroutineStubType(debugName:String) : CaosScriptStubElementType
     }
 
     override fun indexStub(stub: CaosScriptSubroutineStub, indexSink: IndexSink) {
-        ServiceManager.getService(CaosScriptIndexService::class.java).indexSubroutine(stub, indexSink)
+        CaosScriptIndexService.indexSubroutine(stub, indexSink)
     }
 
 }

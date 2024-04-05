@@ -5,9 +5,19 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.Ca
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefDocCommentHashtagStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefValuesListStub
 
-interface CaosDefStubIndexService {
+object CaosDefStubIndexService {
 
-    fun indexCommand(stub:CaosDefCommandDefinitionStub, indexSink: IndexSink)
-    fun indexValuesList(stub:CaosDefValuesListStub, indexSink: IndexSink)
-    fun indexDocCommentHashtag(stub:CaosDefDocCommentHashtagStub, indexSink: IndexSink)
+
+    fun indexCommand(stub: CaosDefCommandDefinitionStub, indexSink: IndexSink) {
+        indexSink.occurrence(CaosDefCommandElementsByNameIndex.KEY, stub.command)
+    }
+
+    fun indexValuesList(stub: CaosDefValuesListStub, indexSink: IndexSink) {
+        indexSink.occurrence(CaosDefValuesListElementsByNameIndex.KEY, stub.listName)
+    }
+
+    fun indexDocCommentHashtag(stub: CaosDefDocCommentHashtagStub, indexSink: IndexSink) {
+        indexSink.occurrence(CaosDefHashTagsIndex.KEY, stub.hashtag)
+    }
+
 }

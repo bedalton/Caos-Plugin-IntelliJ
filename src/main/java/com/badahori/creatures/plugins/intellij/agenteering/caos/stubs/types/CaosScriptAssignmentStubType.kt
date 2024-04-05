@@ -4,12 +4,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.CaosOp
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexService
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.CaosScriptCAssignmentImpl
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.CaosScriptPsiImplUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.UNDEF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosScriptAssignmentStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptAssignmentStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
@@ -80,7 +78,7 @@ class CaosScriptAssignmentStubType(debugName: String) :
     }
 
     override fun indexStub(stub: CaosScriptAssignmentStub, indexSink: IndexSink) {
-        ServiceManager.getService(CaosScriptIndexService::class.java).indexVarAssignment(stub, indexSink)
+        CaosScriptIndexService.indexVarAssignment(stub, indexSink)
     }
 
 }

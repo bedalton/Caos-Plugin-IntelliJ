@@ -9,7 +9,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosS
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.lang.ASTNode
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
@@ -67,7 +66,7 @@ class CaosScriptQuoteStringLiteralStubType(debugName: String)
     }
 
     override fun indexStub(stub: CaosScriptQuoteStringLiteralStub, indexSink: IndexSink) {
-        ServiceManager.getService(CaosScriptIndexService::class.java).indexString(stub, indexSink)
+        CaosScriptIndexService.indexString(stub, indexSink)
     }
 
 }

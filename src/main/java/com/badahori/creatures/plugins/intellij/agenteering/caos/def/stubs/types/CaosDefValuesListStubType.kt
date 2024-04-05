@@ -1,20 +1,18 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types
 
-import com.intellij.openapi.components.ServiceManager
-import com.intellij.psi.stubs.IndexSink
-import com.intellij.psi.stubs.StubElement
-import com.intellij.psi.stubs.StubInputStream
-import com.intellij.psi.stubs.StubOutputStream
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexService
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.impl.CaosDefValuesListElementImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.util.CaosDefPsiImplUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.api.CaosDefValuesListStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.impl.CaosDefValuesListStubImpl
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.nullIfUndefOrBlank
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.intellij.psi.stubs.IndexSink
+import com.intellij.psi.stubs.StubElement
+import com.intellij.psi.stubs.StubInputStream
+import com.intellij.psi.stubs.StubOutputStream
 
-class CaosDefValuesListStubType(debugName:String) : com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types.CaosDefStubElementType<CaosDefValuesListStub, CaosDefValuesListElementImpl>(debugName) {
+class CaosDefValuesListStubType(debugName:String) : CaosDefStubElementType<CaosDefValuesListStub, CaosDefValuesListElementImpl>(debugName) {
 
     override fun createPsi(stub: CaosDefValuesListStub): CaosDefValuesListElementImpl {
         return CaosDefValuesListElementImpl(stub, this)
@@ -52,6 +50,6 @@ class CaosDefValuesListStubType(debugName:String) : com.badahori.creatures.plugi
     }
 
     override fun indexStub(stub: CaosDefValuesListStub, indexSink: IndexSink) {
-       ServiceManager.getService(CaosDefStubIndexService::class.java).indexValuesList(stub, indexSink)
+       CaosDefStubIndexService.indexValuesList(stub, indexSink)
     }
 }

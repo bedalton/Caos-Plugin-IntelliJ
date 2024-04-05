@@ -62,6 +62,6 @@ class CatalogueArrayStubType(debugName:String) : CatalogueStubElementType<Catalo
     }
 
     override fun indexStub(stub: CatalogueArrayStub, indexSink: IndexSink) {
-        ServiceManager.getService(CatalogueStubIndexService::class.java).indexArray(stub, indexSink)
+        CatalogueStubIndexService.indexArray(stub, indexSink)
     }
 }

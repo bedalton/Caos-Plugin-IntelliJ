@@ -3,7 +3,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.def.stubs.types
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexService;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.lang.CaosDefLanguage;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCompositeElement;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.stubs.IStubElementType;
 import com.intellij.psi.stubs.StubElement;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +17,7 @@ public abstract class CaosDefStubElementType<StubT extends StubElement<PsiT>, Ps
 
     @NotNull
     protected CaosDefStubIndexService getService() {
-        return ServiceManager.getService(CaosDefStubIndexService.class);
+        return CaosDefStubIndexService.INSTANCE;
     }
 
     @NotNull

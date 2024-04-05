@@ -9,7 +9,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.CaosSc
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptNamedGameVarStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 import com.intellij.lang.ASTNode
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
@@ -70,6 +69,6 @@ class CaosScriptNamedGameVarStubType(debugName:String) : CaosScriptStubElementTy
     }
 
     override fun indexStub(stub: CaosScriptNamedGameVarStub, indexSink: IndexSink) {
-        ServiceManager.getService(CaosScriptIndexService::class.java).indexNamedGameVar(stub, indexSink)
+        CaosScriptIndexService.indexNamedGameVar(stub, indexSink)
     }
 }

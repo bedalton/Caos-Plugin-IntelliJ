@@ -34,10 +34,6 @@
             language="Catalogue"
             />
 
-        <applicationService
-                serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueStubIndexService"
-                serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueStubIndexServiceImpl"/>
-
         <stubElementTypeHolder
                 externalIdPrefix="catalogue."
                 class="com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.types.CatalogueStubTypes"

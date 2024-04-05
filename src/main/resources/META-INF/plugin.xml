@@ -725,10 +725,6 @@
         <!--        implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.references.CaosDefElementsSearchExecutor" />-->
 
         <!-- Indices -->
-        <applicationService
-                serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexService"
-                serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScriptIndexServiceImpl"/>
-
         <stubElementTypeHolder
                 externalIdPrefix="caos."
                 class="com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.types.CaosScriptStubTypes"/>
@@ -835,9 +831,6 @@
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.highlighting.CaosDefCodeBlockInjector"
         />
         <!-- Indices -->
-        <applicationService
-                serviceInterface="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexService"
-                serviceImplementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefStubIndexServiceImpl"/>
         <stubIndex
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.def.indices.CaosDefCommandElementsByNameIndex"/>
         <stubIndex

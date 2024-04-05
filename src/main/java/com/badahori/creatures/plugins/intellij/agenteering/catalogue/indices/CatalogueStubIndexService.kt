@@ -4,8 +4,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.api.C
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.api.CatalogueTagStub
 import com.intellij.psi.stubs.IndexSink
 
-interface CatalogueStubIndexService {
+object CatalogueStubIndexService {
 
-    fun indexTag(stub:CatalogueTagStub, indexSink: IndexSink)
-    fun indexArray(stub:CatalogueArrayStub, indexSink: IndexSink)
+    fun indexTag(stub: CatalogueTagStub, indexSink: IndexSink) {
+        indexSink.occurrence(CatalogueEntryElementIndex.KEY, stub.name)
+    }
+
+    fun indexArray(stub: CatalogueArrayStub, indexSink: IndexSink) {
+        indexSink.occurrence(CatalogueEntryElementIndex.KEY, stub.name)
+    }
 }

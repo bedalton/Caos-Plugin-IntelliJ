@@ -10,9 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.api.C
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.api.CatalogueTagStub
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.impl.CatalogueTagStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrBlank
-import com.badahori.creatures.plugins.intellij.agenteering.utils.readString
 import com.intellij.lang.ASTNode
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
@@ -57,6 +55,6 @@ class CatalogueTagStubType(debugName:String) : CatalogueStubElementType<Catalogu
     }
 
     override fun indexStub(stub: CatalogueTagStub, indexSink: IndexSink) {
-        ServiceManager.getService(CatalogueStubIndexService::class.java).indexTag(stub, indexSink)
+        CatalogueStubIndexService.indexTag(stub, indexSink)
     }
 }

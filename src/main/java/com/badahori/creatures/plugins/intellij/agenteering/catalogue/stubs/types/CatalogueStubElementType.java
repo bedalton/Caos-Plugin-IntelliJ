@@ -3,7 +3,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.catalogue.stubs.type
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueStubIndexService;
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.lang.CatalogueLanguage;
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.psi.api.CatalogueCompositeElement;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.psi.stubs.IStubElementType;
 import com.intellij.psi.stubs.StubElement;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +17,7 @@ public abstract class CatalogueStubElementType<StubT extends StubElement<PsiT>, 
 
     @NotNull
     protected CatalogueStubIndexService getService() {
-        return ServiceManager.getService(CatalogueStubIndexService.class);
+        return CatalogueStubIndexService.INSTANCE;
     }
 
     @NotNull
