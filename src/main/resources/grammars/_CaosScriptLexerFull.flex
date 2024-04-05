@@ -253,7 +253,7 @@ SWIFT_ESCAPE=\\\([^)]*\)
 CAOS_2_COB=[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb](\s*[Cc][12])?
 CAOS_2_PRAY=[*]{2}[Cc][Aa][Oo][Ss][2][Pp][Rr][Aa][Yy]
 CAOS_2_ID=[^\s\"'=]+
-COMMENT_AT_DIRECTIVE=\*{2}((([^\n;]|[;][^;])+;;)|[^\n]+)
+COMMENT_AT_DIRECTIVE=\*{2}@((([^\n;]|[;][^;])+;;)|[^\n]+)
 JS_INSIDE_BRACES=[$]?\{[^}]*[}]
 JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
 DDE_PICT=[^\s]{3}
