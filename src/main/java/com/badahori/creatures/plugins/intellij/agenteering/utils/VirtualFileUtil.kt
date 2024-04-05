@@ -380,7 +380,7 @@ internal inline fun <T> readFromStorage(
         return null
     }
 
-    val attributeStream = attribute.readAttribute(file)
+    val attributeStream = attribute.readFileAttribute(file)
         ?: return null
     val out = attributeStream.use { stream ->
         stream.readString()
@@ -420,7 +420,7 @@ private inline fun <T> readFromStorageActual(
         return null
     }
 
-    val stream = attribute.readAttribute(file)
+    val stream = attribute.readFileAttribute(file)
         ?: return null
     return try {
         convert(stream)
@@ -458,7 +458,7 @@ internal inline fun <T> writeToStorage(
     if (file !is VirtualFileWithId) {
         return false
     }
-    val attributeStream = attribute.writeAttribute(file)
+    val attributeStream = attribute.writeFileAttribute(file)
     return attributeStream.use { stream ->
         val string = if (value != null) convert(value) else null
         if (string == null) {
@@ -483,7 +483,7 @@ internal inline fun <T> writeToStorageStream(
     if (file !is VirtualFileWithId) {
         return false
     }
-    val attributeStream = attribute.writeAttribute(file)
+    val attributeStream = attribute.writeFileAttribute(file)
     return attributeStream.use { stream ->
         stream.convert(value)
         stream.close()

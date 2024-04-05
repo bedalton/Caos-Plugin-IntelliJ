@@ -5,16 +5,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.BUNDLE_DEFINITIONS_FOLDER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.DisposablePsiTreChangeListener
-import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orTrue
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.*
-import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 
 /**
@@ -29,12 +25,11 @@ internal fun openDocs(project: Project, variant: CaosVariant): Boolean {
 
     // Fetch psi file from virtual file
     val file = virtualFile?.getPsiFile(project)
-        ?: FilenameIndex.getFilesByName(
+        ?: getProjectPsiFileByName(
             project,
             "${variant.code}-Lib.caosdef",
             GlobalSearchScope.allScope(project)
         )
-            .firstOrNull()
         ?: return false
 
     // If failed to find variant docs, disable button and return

@@ -117,7 +117,7 @@ class VariantsFilePropertyPusher private constructor() : FilePropertyPusher<List
         internal fun readFromStorage(file: VirtualFile): List<CaosVariant> {
             if (file !is VirtualFileWithId)
                 return emptyList()
-            val stream = VARIANTS_FILE_ATTRIBUTE.readAttribute(file)
+            val stream = VARIANTS_FILE_ATTRIBUTE.readFileAttribute(file)
                 ?: return emptyList()
             return (0 until stream.readInt()).mapNotNull {
                 readVariant(stream)
@@ -140,7 +140,7 @@ class VariantsFilePropertyPusher private constructor() : FilePropertyPusher<List
         internal fun writeToStorage(file: VirtualFile, variants: List<CaosVariant>) {
             if (file !is VirtualFileWithId)
                 return
-            val stream = VARIANTS_FILE_ATTRIBUTE.writeAttribute(file)
+            val stream = VARIANTS_FILE_ATTRIBUTE.writeFileAttribute(file)
             stream.write(variants.size)
             variants.forEach { variant ->
                 writeToStorage(stream, variant)

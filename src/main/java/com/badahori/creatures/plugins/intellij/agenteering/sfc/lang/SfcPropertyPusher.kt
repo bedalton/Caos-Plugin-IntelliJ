@@ -1,10 +1,9 @@
+@file:Suppress("UnstableApiUsage")
+
 package com.badahori.creatures.plugins.intellij.agenteering.sfc.lang
 
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcFileDataHolder
-import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.SfcReader
-import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.google.gson.Gson
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -70,7 +69,7 @@ class SfcDecompiledFilePropertyPusher private constructor() : FilePropertyPusher
             }
             if (file !is VirtualFileWithId)
                 return null
-            val stream = VARIANT_FILE_ATTRIBUTE.readAttribute(file)
+            val stream = VARIANT_FILE_ATTRIBUTE.readFileAttribute(file)
                     ?: return null
             val length = stream.readInt()
             val out = StringBuilder()
@@ -93,12 +92,12 @@ class SfcDecompiledFilePropertyPusher private constructor() : FilePropertyPusher
                 if (file is SfcVirtualFile) {
                     file.putUserData(SFC_DECOMPILED_DATA_KEY, SfcFileDataHolder(file.sfcData))
                 }
-                val stream = VARIANT_FILE_ATTRIBUTE.writeAttribute(file)
+                val stream = VARIANT_FILE_ATTRIBUTE.writeFileAttribute(file)
                 val json = Gson().toJson(holder)
                 stream.writeInt(json.length)
                 stream.writeChars(json)
                 stream.close()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
 
             }
         }

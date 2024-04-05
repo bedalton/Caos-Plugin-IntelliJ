@@ -48,9 +48,6 @@ internal open class AbstractVariantFilePropertyPusher constructor(
         return true
     }
 
-    override fun acceptsFile(file: VirtualFile): Boolean {
-        return file is CaosVirtualFile || (file.fileType as? LanguageFileType) is CaosScriptFileType
-    }
 }
 
 private val VARIANT_EXPLICIT_FILE_ATTRIBUTE = FileAttribute("caos_script_variant_explicit", 0, true)

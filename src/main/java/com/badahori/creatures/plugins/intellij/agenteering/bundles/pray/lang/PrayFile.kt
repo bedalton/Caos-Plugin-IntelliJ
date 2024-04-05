@@ -1,5 +1,6 @@
-package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang
+@file:Suppress("UnstableApiUsage")
 
+package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang
 
 import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions
 import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptionsImpl
@@ -11,7 +12,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stub
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.InlineFileStruct
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.psi.stubs.PrayFileStub
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.intellij.extapi.psi.PsiFileBase
 import com.intellij.openapi.fileTypes.FileType
@@ -26,7 +26,7 @@ import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 
-class PrayFile constructor(viewProvider: FileViewProvider) :
+class PrayFile(viewProvider: FileViewProvider) :
     PsiFileBase(viewProvider, PrayLanguage) {
 
     val languageString get() = stub?.language ?: PsiTreeUtil
@@ -155,7 +155,7 @@ class PraySettingsPropertyPusher private constructor() : FilePropertyPusher<Pray
                 return file.getUserData(PRAY_COMPILER_SETTINGS_KEY)
             }
 
-            val stream = PRAY_COMPILER_ATTRIBUTES.readAttribute(file)
+            val stream = PRAY_COMPILER_ATTRIBUTES.readFileAttribute(file)
                 ?: return null
 
             // True if compiler settings is not null
@@ -179,7 +179,7 @@ class PraySettingsPropertyPusher private constructor() : FilePropertyPusher<Pray
         internal fun writeToStorage(file: VirtualFile, options: PrayCompileOptions?) {
             if (file !is VirtualFileWithId)
                 return
-            val stream = PRAY_COMPILER_ATTRIBUTES.writeAttribute(file)
+            val stream = PRAY_COMPILER_ATTRIBUTES.writeFileAttribute(file)
             stream.writeBoolean(options != null)
             if (options == null)
                 return
