@@ -203,7 +203,7 @@ data class BreedPartKey(
 
     companion object {
         const val VERSION: Int = 6
-        const val allowZ: Boolean = false
+        const val ALLOW_Z: Boolean = false
 
         @JvmStatic
         fun fromFileName(fileName: String, variant: CaosVariant? = null): BreedPartKey? {
@@ -231,7 +231,7 @@ data class BreedPartKey(
             if (chars.size != 4) {
                 return false
             }
-            if (chars[0] !in 'a'..'q' && (allowZ && chars[0] != 'z')) {
+            if (chars[0] !in 'a'..'q' && (ALLOW_Z && chars[0] != 'z')) {
                 return false
             }
             if (chars[1] !in '0'..'7') {
@@ -367,7 +367,7 @@ class BreedFileInputFilter(private val fileTypes: List<FileType>) : FileBasedInd
             return false
 
         // Breed is in range
-        return nameChars[3] in '0'..'9' || (BreedPartKey.allowZ && nameChars[3] in 'a'..'z')
+        return nameChars[3] in '0'..'9' || (BreedPartKey.ALLOW_Z && nameChars[3] in 'a'..'z')
     }
 
 

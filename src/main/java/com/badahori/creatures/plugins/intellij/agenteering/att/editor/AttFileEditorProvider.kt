@@ -27,7 +27,7 @@ class AttFileEditorProvider : FileEditorProvider {
         if (file.extension?.lowercase() != "att") {
             return false
         }
-        if (file.name.getOrNull(0)?.lowercase() == 'z' && !BreedPartKey.allowZ) {
+        if (file.name.getOrNull(0)?.lowercase() == 'z' && !BreedPartKey.ALLOW_Z) {
             return false
         }
         val spriteFileNameBase = file.nameWithoutExtension
