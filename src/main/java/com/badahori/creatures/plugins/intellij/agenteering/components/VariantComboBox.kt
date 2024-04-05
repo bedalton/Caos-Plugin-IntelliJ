@@ -91,6 +91,9 @@ class CaosVariantComboBoxPanel(
     private val labelForeground: Color = UIUtil.getLabelForeground(),
     private val labelBackground: Color = UIUtil.getLabelBackground()
 ): Disposable {
+
+    private var disposed = false
+
     val label by lazy {
         val variantLabel = labelText ?: CaosBundle.message("caos.variant.select")
         JLabel(variantLabel)
@@ -130,7 +133,8 @@ class CaosVariantComboBoxPanel(
     }
 
     override fun dispose() {
-        if (!Disposer.isDisposed(comboBox)) {
+        if (!disposed) {
+            disposed = true
             comboBox.dispose()
         }
     }
