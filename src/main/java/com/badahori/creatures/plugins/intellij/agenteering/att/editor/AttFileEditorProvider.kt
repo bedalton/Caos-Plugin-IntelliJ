@@ -39,10 +39,7 @@ class AttFileEditorProvider : FileEditorProvider {
         }
         val correspondingSprite = getAnyPossibleSprite(project, file, spriteFileNameBase)
         file.putUserData(CACHED_SPRITE_KEY, correspondingSprite)
-        if (correspondingSprite != null) {
-            return true
-        }
-        return false
+        return correspondingSprite != null
     }
 
     override fun createEditor(project: Project, file: VirtualFile): FileEditor {
@@ -59,9 +56,9 @@ class AttFileEditorProvider : FileEditorProvider {
 
     override fun disposeEditor(editor: FileEditor) {
         Disposer.dispose(editor)
-        if (editor is AttEditorImpl) {
+//        if (editor is AttEditorImpl) {
 //            editor.dispose()
-        }
+//        }
     }
 
     override fun getEditorTypeId(): String {

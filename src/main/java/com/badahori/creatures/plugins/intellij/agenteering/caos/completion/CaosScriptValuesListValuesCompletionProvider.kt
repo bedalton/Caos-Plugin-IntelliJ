@@ -5,8 +5,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptyNode
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getValuesList
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.codeInsight.completion.AddSpaceInsertHandler
@@ -16,11 +14,8 @@ import com.intellij.codeInsight.lookup.AutoCompletionPolicy
 import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.progress.ProgressIndicatorProvider
-import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.search.FilenameIndex
-import com.intellij.psi.search.GlobalSearchScope
 import icons.CaosScriptIcons
 
 /**

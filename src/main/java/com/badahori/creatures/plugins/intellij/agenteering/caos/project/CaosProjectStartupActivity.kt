@@ -79,7 +79,7 @@ class CaosProjectStartupActivity : StartupActivity {
                 val keys = events
                     .mapNotNull map@{
                         if (!(it is VFileMoveEvent || it is VFileDeleteEvent || it is VFileCreateEvent)) {
-                            return@map  null
+                            return@map null
                         }
                         val file = it.file
                             ?: return@map null
@@ -177,7 +177,6 @@ class CaosProjectStartupActivity : StartupActivity {
         }
         project.messageBus.connect().subscribe(ProjectTopics.PROJECT_ROOTS, CaosSdkProjectRootsChangeListener)
     }
-
 
     private fun registerOnAny() {
 

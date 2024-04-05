@@ -3,7 +3,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.DisableSpellcheckForCommandFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.openapi.util.TextRange
@@ -42,10 +41,12 @@ class CaosSpellcheckingStrategy : SpellcheckingStrategy() {
         }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun getRValueFixes(element: PsiElement, type: String?): Array<LocalQuickFix> {
         val parentCommand = (element.parent as? CaosScriptCommandElement)
             ?.commandStringUpper
             ?: return EMPTY_FIXES
+
         if (parentCommand !in CaosScriptRValueTokenizer.commandsToCheck) {
             return EMPTY_FIXES
         }
@@ -83,7 +84,6 @@ internal object CaosScriptRValueTokenizer : Tokenizer<CaosScriptRvalue>() {
         val index = element.index
 
         if (checkCommands.any { it.first == command && it.second == index && it.third == isLvalue }) {
-            LOGGER.info("Should spellcheck ${element.text}")
             return consumer.consumeToken(string, mySplitter)
         }
     }

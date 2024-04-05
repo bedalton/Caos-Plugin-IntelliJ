@@ -120,10 +120,6 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
                             .filterNotNull()
                     } ?: files
             }
-
-//            return FileBasedIndex.getInstance().getAllKeys(NAME, project)
-//                .filter { other -> BreedPartKey.isGenericMatch(fudgedKey, other) }
-//                .flatMap { aKey -> FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope) }
         }
 
         @JvmStatic
@@ -170,14 +166,6 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
 
             val key = BreedPartKey.fromFileName(fileName)
                 ?: return emptyList()
-//            val old = FileBasedIndex.getInstance().getAllKeys(NAME, project)
-//                .filter { other -> BreedPartKey.isGenericMatch(key, other) }
-//                .flatMap { aKey -> FileBasedIndex.getInstance().getContainingFiles(NAME, aKey, scope) }
-//            val newMatchedSpriteSet = FileBasedIndex.getInstance().getContainingFiles(NAME, key, scope)
-//            if (new.size < old.size) {
-//                LOGGER.severe("Failed to find the same number of new files as old. Expected: ${old.size}; Actual: ${new.size}")
-//                return old
-//            }
             return FileBasedIndex.getInstance().getContainingFiles(NAME, key, scope)
         }
     }

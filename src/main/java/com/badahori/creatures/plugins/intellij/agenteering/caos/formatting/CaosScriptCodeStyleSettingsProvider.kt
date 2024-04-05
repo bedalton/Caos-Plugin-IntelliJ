@@ -1,14 +1,13 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.intellij.application.options.CodeStyleAbstractConfigurable
 import com.intellij.application.options.CodeStyleAbstractPanel
 import com.intellij.application.options.TabbedLanguageCodeStylePanel
-import com.intellij.openapi.options.Configurable
 import com.intellij.psi.codeStyle.CodeStyleConfigurable
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.psi.codeStyle.CodeStyleSettingsProvider
 import com.intellij.psi.codeStyle.CustomCodeStyleSettings
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 
 
 class CaosScriptCodeStyleSettingsProvider : CodeStyleSettingsProvider() {

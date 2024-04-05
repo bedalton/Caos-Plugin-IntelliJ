@@ -3,13 +3,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CorruptInjectorInterface
 import com.badahori.creatures.plugins.intellij.agenteering.injector.NoneInjectorInterface
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
-import com.intellij.openapi.fileTypes.LanguageFileType
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.impl.FilePropertyPusher
