@@ -32,6 +32,7 @@ import com.intellij.psi.SmartPointerManager
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBCheckBox
+import java.io.File
 import java.util.*
 import java.util.Timer
 import javax.swing.*
@@ -64,7 +65,8 @@ internal class LinkFilesInsertHandler(
         }
         val virtualFile = (file.virtualFile ?: file.originalFile.virtualFile)
             ?: return false
-        val parent = virtualFile.parent
+
+        val parent = getParent(file.project, virtualFile)
             ?: return false
 
         val caos2Preflight = PsiTreeUtil.collectElementsOfType(file, CaosScriptCaos2Block::class.java).isNotEmpty() &&
@@ -99,7 +101,13 @@ internal class LinkFilesInsertHandler(
     }
 
     private fun applyFix(project: Project, file: PsiFile) {
-        val parent = file.virtualFile.parent
+
+        val virtualFile = (file.virtualFile ?: file.originalFile.virtualFile)
+            ?: return
+
+        val parent = getParent(file.project, virtualFile)
+            ?: return
+
         val linksRaw = getLinksInDirectory(parent, "", file.virtualFile, action.lowercase() == "link")
         val allExtensions = linksRaw.map { it.category + " in " + it.parentPath }.distinct().sorted().toSet()
         val selected = Pointer<Pair<List<LinkedFile>, Boolean>?>(null)
@@ -331,20 +339,30 @@ internal class LinkFilesInsertHandler(
         return if (regexRaw.isBlank()) {
             selected
         } else {
-            try {
-                val regex = regexRaw.toRegex()
-                selected.filter {
-                    regex.matches(it.virtualFile.name) || try {
-                        ".*?$regexRaw".toRegex()
-                            .matches(it.virtualFile.path)
-                    } catch (_: Exception) {
-                        false
-                    }
-                }
+
+            val pathRegex = try {
+                "(.*?/)?$regexRaw".toRegex(RegexOption.IGNORE_CASE)
             } catch (e: Exception) {
+                null
+            }
+
+            val regex = try {
+                regexRaw.toRegex(RegexOption.IGNORE_CASE)
+            } catch (_: Exception) {
                 filtered.text = "Regex error"
                 filtered.foreground = JBColor.red
                 null
+            }
+
+            selected.filter {
+                try {
+                    regex?.matches(it.virtualFile.name) == true ||
+                            pathRegex?.matches(it.virtualFile.path) == true
+                } catch (_: Exception) {
+                    filtered.text = "Regex error"
+                    filtered.foreground = JBColor.red
+                    false
+                }
             }
         }
     }
@@ -484,6 +502,21 @@ internal class LinkFilesInsertHandler(
         return commands.flatMap { get(it) }.toSet()
     }
 
+    fun getParent(project: Project, virtualFile: VirtualFile): VirtualFile? {
+
+        val projectPath = project.basePath?.let {
+            val projectFile = File(it)
+            if (projectFile.exists() && virtualFile.path.startsWith(it)) {
+                VfsUtil.findFileByIoFile(projectFile, false)
+            } else {
+                null
+            }
+        }
+
+        return projectPath
+            ?: virtualFile.parent
+    }
+
 }
 
 internal data class LinkedFile(
@@ -505,21 +538,26 @@ private fun getLinksInDirectory(
         if (child.path == thisFile.path) {
             continue
         }
-        val extension = child.extension?.lowercase()
+
+        val extension = child.extension
+            ?.lowercase()
             ?: continue
+
         if (caos && extension != "cos" && extension != "caos") {
             continue
         } else if (!caos && (extension == "cos" || extension == "caos")) {
             continue
         }
+
         val category = if (extension in creaturesFileExtensions) {
             extension
         } else {
             ":${extension}"
         }
+
         val link = LinkedFile(
             virtualFile = child,
-            path = path + '/' + child.name,
+            path = VfsUtil.findRelativePath(thisFile, child, '/') ?: child.name,
             parentPath = path,
             category = category
         )

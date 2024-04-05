@@ -16,6 +16,8 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.*
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import com.intellij.psi.search.FilenameIndex
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.util.PathUtil
 import java.awt.Toolkit
 import java.awt.datatransfer.Clipboard
@@ -61,6 +63,34 @@ fun VirtualFile.getPsiFile(project: Project): PsiFile? {
     return file
 }
 
+fun Collection<VirtualFile>.getFirstPsiFile(project: Project): PsiFile? {
+    return firstNotNullOfOrNull {
+        try {
+            it.getPsiFile(project)
+        } catch (_: Exception) {
+            null
+        }
+    }
+}
+
+
+@Suppress("UnusedReceiverParameter")
+internal fun getProjectPsiFileByName(
+    project: Project,
+    name: String,
+    searchScope: GlobalSearchScope = GlobalSearchScope.projectScope(project),
+    caseSensitive: Boolean = false,
+): PsiFile? {
+    if (project.isDisposed) {
+        return null
+    }
+    val virtualFiles = FilenameIndex.getVirtualFilesByName(
+        name,
+        caseSensitive,
+        searchScope
+    )
+    return virtualFiles.getFirstPsiFile(project)
+}
 
 private const val PLUGIN_ID = "com.badahori.creatures.plugins.intellij.agenteering"
 
