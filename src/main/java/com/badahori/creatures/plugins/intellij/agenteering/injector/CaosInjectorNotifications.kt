@@ -50,10 +50,12 @@ open class CaosNotificationsBase(
      * @param type      notification type
      */
     fun show(
-        project: Project, title: String, content: String,
+        project: Project,
+        title: String,
+        content: String,
         type: NotificationType,
     ) {
-        show(project, title, content, notificationGroup, type, null)
+        show(project, title, content, notificationGroup, type)
     }
 
     /**
@@ -64,7 +66,7 @@ open class CaosNotificationsBase(
      * @param content   notification text
      */
     fun showWarning(project: Project, title: String, content: String) {
-        show(project, title, content, notificationGroup, NotificationType.WARNING, null)
+        show(project, title, content, notificationGroup, NotificationType.WARNING)
     }
 
     /**
@@ -75,7 +77,7 @@ open class CaosNotificationsBase(
      * @param content   notification text
      */
     fun showError(project: Project, title: String, content: String) {
-        show(project, title, content, notificationGroup, NotificationType.ERROR, null)
+        show(project, title, content, notificationGroup, NotificationType.ERROR)
     }
 
     /**
@@ -85,24 +87,12 @@ open class CaosNotificationsBase(
      * @param title     notification title
      * @param content   notification text
      */
-    fun showInfo(project: Project, title: String, content: String) {
-        show(project, title, content, notificationGroup, NotificationType.INFORMATION, null)
-    }
-
-    /**
-     * Shows {@link Notification} in ".ignore plugin" group.
-     *
-     * @param project   current project
-     * @param title     notification title
-     * @param content   notification text
-     * @param type      notification type
-     * @param listener  optional listener
-     */
-    fun show(
-        project: Project, title: String, content: String,
-        type: NotificationType, listener: NotificationListener?,
+    fun showInfo(
+        project: Project,
+        title: String,
+        content: String
     ) {
-        show(project, title, content, notificationGroup, type, listener)
+        show(project, title, content, notificationGroup, NotificationType.INFORMATION)
     }
 
     /**
@@ -113,7 +103,6 @@ open class CaosNotificationsBase(
      * @param group    notification group
      * @param content  notification text
      * @param type     notification type
-     * @param listener optional listener
      */
     fun show(
         project: Project,
@@ -121,9 +110,8 @@ open class CaosNotificationsBase(
         content: String,
         group: NotificationGroup,
         type: NotificationType,
-        listener: NotificationListener?,
     ) {
-        val notification: Notification = group.createNotification(title, content, type, listener)
+        val notification: Notification = group.createNotification(title, content, type)
         Notifications.Bus.notify(notification, project)
     }
 
@@ -165,7 +153,6 @@ data class CaosNotification internal constructor(
     val contextHelpAction: AnAction? = null,
     val important: Boolean? = null,
     val expired: Boolean? = null,
-    val listener: NotificationListener? = null,
     // In charge of actually showing the notification
     private val _show: (notification: Notification) -> Unit,
 ) {
@@ -245,11 +232,6 @@ data class CaosNotification internal constructor(
         )
     }
 
-    fun setListener(listener: NotificationListener): CaosNotification {
-        return copy(
-            listener = listener
-        )
-    }
 
     fun setTitle(title: String): CaosNotification {
         return copy(
@@ -265,7 +247,11 @@ data class CaosNotification internal constructor(
     }
 
     fun show(): Notification {
-        var notification = notificationGroup.createNotification(type)
+        var notification = notificationGroup.createNotification(
+            title ?: "",
+            content ?: "",
+            type,
+        )
         title?.nullIfEmpty()?.let { title ->
             notification = notification.setTitle(title)
         }
@@ -292,9 +278,6 @@ data class CaosNotification internal constructor(
         }
         if (expired == true) {
             notification.expire()
-        }
-        listener?.let { listener ->
-            notification = notification.setListener(listener)
         }
         _show(notification)
         return notification
