@@ -107,7 +107,10 @@ class CaosVariantComboBoxPanel(
             HorizontalBox()
         }
 
+
         parent.add(label)
+        label.foreground = labelForeground
+        label.background = labelBackground
         parent.add(comboBox)
         parent
     }
