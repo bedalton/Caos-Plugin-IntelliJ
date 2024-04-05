@@ -258,7 +258,7 @@ object BodyPartsIndex {
                         PathUtil.getExtension(fileName)?.lowercase() in extensionsLowercase
             }
             .flatMap { fileName ->
-                FilenameIndex.getVirtualFilesByName(project, fileName, searchScope)
+                FilenameIndex.getVirtualFilesByName(fileName, false, searchScope)
             }
 
     }
@@ -279,7 +279,7 @@ object BodyPartsIndex {
                     ?.lowercase() in extensionsLowercase
             }
             .flatMap { fileName ->
-                FilenameIndex.getVirtualFilesByName(project, fileName, searchScope)
+                FilenameIndex.getVirtualFilesByName(fileName, false, searchScope)
                     .filter { virtualFile ->
                         virtualFile.getVariant(project, true) == variant
                     }
