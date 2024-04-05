@@ -205,6 +205,10 @@
                 id="CaosTreeViewProvider"
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.CaosTreeViewProvider"/>
 
+        <search.optionContributor
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.OptionsSearchRegister"
+        />
+
         <projectConfigurable parentId="language"
                              instance="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsConfigurable"
                              id="com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosProjectSettingsConfigurable"
@@ -245,6 +249,7 @@
         <!-- Code Style Settings -->
         <codeStyleSettingsProvider
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptCodeStyleSettingsProvider"/>
+
         <langCodeStyleSettingsProvider
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptLanguageCodeStyleSettingsProvider"/>
 

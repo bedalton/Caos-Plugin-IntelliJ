@@ -696,3 +696,26 @@ internal class GameInterfaceNamesList(
 private fun List<GameInterfaceName>.serialized(): List<String> {
     return map { it.toJSON() }
 }
+
+
+internal object SettingsSearchableStrings {
+    @JvmStatic
+    val strings = listOf(
+        "CAOS & Agenteering",
+        "CAOS",
+        CaosBundle.message("caos.settings.configurable.default-variant"),
+        CaosBundle.message("caos.settings.configurable.help-topic"),
+        CaosBundle.message("caos.settings.ignored-files.placeholder"),
+        CaosBundle.message("caos.settings.configurable.default-variant"),
+        CaosBundle.message("caos.settings.configurable.replicate-atts"),
+        CaosBundle.message("caos.settings.configurable.combine-att-nodes"),
+        CaosBundle.message("caos.settings.configurable.combine-atts-by-slot"),
+        CaosBundle.message("caos.settings.configurable.trim-blk"),
+        CaosBundle.message("caos.settings.configurable.ignored-file-names"),
+        CaosBundle.message("caos.settings.configurable.game-interface-names"),
+        CaosBundle.message("caos.settings.configurable.wine32-path"),
+        CaosBundle.message("caos.settings.configurable.wine64-path"),
+        CaosBundle.message("caos.settings.configurable.enable-auto-pose"),
+        CaosBundle.message("caos.settings.configurable.delete-injector"),
+    )
+}
