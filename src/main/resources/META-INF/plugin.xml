@@ -38,6 +38,20 @@
     <change-notes><![CDATA[
         <ul>
             <li>
+                <b>Version: 2024.2.0</b>
+                <b>Fixes</b>
+                <ul>
+                    <li>Fix CAOS2Pray Join still requiring Pray-File command</li>
+                </ul>
+            </li>
+            <li>
+                <b>Version: 2024.01.3</b>
+                <b>Fixes</b>
+                <ul>
+                    <li>Fix slow loading of sprites and ATT editor</li>
+                </ul>
+            </li>
+            <li>
                 <b>Version: 2024.01.2</b>
                 <b>Fixes</b>
                 <ul>
