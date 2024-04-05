@@ -62,13 +62,11 @@ internal class VirtualFileStreamReader(
     }
 
     override fun copyOfRange(start: Long, end: Long): ByteStreamReader {
-        return VirtualFileStreamReader(virtualFile, (this.start ?: 0) + start, (this.start ?: 0) + end)
+        return mReader.copyOfRange(start, end)
     }
 
     override fun copy(): ByteStreamReader {
-        return VirtualFileStreamReader(virtualFile, start, end).apply {
-            this.setPosition(position())
-        }
+        return mReader.copy()
     }
 
     override fun get(): Byte {
