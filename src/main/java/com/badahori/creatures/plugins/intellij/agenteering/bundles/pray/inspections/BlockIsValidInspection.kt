@@ -9,8 +9,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2BlockComment
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptySibling
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lineNumber
 import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
 import com.bedalton.creatures.agents.pray.compiler.pray.PrayDataValidator
@@ -20,10 +22,7 @@ import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PlainTextTokenTypes
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiElementVisitor
-import com.intellij.psi.PsiPlainTextFile
+import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.coroutineContext
@@ -57,7 +56,13 @@ open class PrayBlockIsValidInspection : LocalInspectionTool(), DumbAware {
         if (blockText.isNullOrBlank())
             return
         val errors = try {
-            PrayDataValidator.validate(coroutineContext, LocalFileSystem!!, containingFile.virtualFile.path, blockText, false)
+            PrayDataValidator.validate(
+                coroutineContext,
+                LocalFileSystem!!,
+                containingFile.virtualFile.path,
+                blockText,
+                false
+            )
                 .ifEmpty { null }
         } catch (e: Exception) {
             holder.registerProblem(
@@ -94,7 +99,7 @@ open class PrayBlockIsValidInspection : LocalInspectionTool(), DumbAware {
     }
 }
 
-class PrayPlainTextBlockIsValidInspection: PrayBlockIsValidInspection(), DumbAware {
+class PrayPlainTextBlockIsValidInspection : PrayBlockIsValidInspection(), DumbAware {
     override fun getShortName(): String = "PRAYTXTBlockIsInvalid"
     override fun getGroupDisplayName(): String = PRAY
 
@@ -129,6 +134,16 @@ class Caos2PrayBlockIsValidInspection : PrayBlockIsValidInspection(), DumbAware 
                 if (!block.isCaos2Pray) {
                     return
                 }
+                var prefix: PsiElement? = block
+                while (prefix != null) {
+                    if (prefix is CaosScriptComment || prefix is PsiComment) {
+                        if (prefix.text.startsWith("**")) {
+                            break
+                        }
+                    }
+                    prefix = prefix.getPreviousNonEmptySibling(true)
+                }
+
                 val before = PsiTreeUtil.collectElementsOfType(block, CaosScriptCaos2BlockComment::class.java)
                     .firstOrNull()
 
@@ -151,7 +166,7 @@ class Caos2PrayBlockIsValidInspection : PrayBlockIsValidInspection(), DumbAware 
                     }
                 }
 
-                val text = "\n" + block.text.lowercase()
+                val text = "${prefix?.text ?: ""}\n" + block.text.lowercase()
                 validateHasPrayFile(block, text, fix, holder)
                 validateHasBlockName(block, text, fix, holder)
             }
@@ -162,7 +177,7 @@ class Caos2PrayBlockIsValidInspection : PrayBlockIsValidInspection(), DumbAware 
         block: CaosScriptCaos2Block,
         text: String,
         makeFix: (String) -> LocalQuickFix,
-        holder: ProblemsHolder
+        holder: ProblemsHolder,
     ) {
 
         if (text.contains(hasPrayFileRegex)) {
@@ -197,7 +212,7 @@ class Caos2PrayBlockIsValidInspection : PrayBlockIsValidInspection(), DumbAware 
         block: CaosScriptCaos2Block,
         text: String,
         makeFix: (String) -> LocalQuickFix,
-        holder: ProblemsHolder
+        holder: ProblemsHolder,
     ) {
         if (!text.contains(hasBlockNameRegex)) {
             holder.registerProblem(
