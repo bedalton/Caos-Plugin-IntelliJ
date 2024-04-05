@@ -29,7 +29,7 @@ import javax.swing.*
 class CaosProjectSettingsConfigurable(private val project: Project) : Configurable, SearchableConfigurable {
 
     override fun getHelpTopic(): String {
-        return "Settings for creatures CAOS, agent and breed editing"
+        return CaosBundle.message("caos.settings.configurable.help-topic")
     }
 
     private lateinit var panel: ProjectSettingsPanel
@@ -79,8 +79,9 @@ class CaosProjectSettingsConfigurable(private val project: Project) : Configurab
     }
 
     override fun createComponent(): JComponent? {
-        if (this::panel.isInitialized)
+        if (this::panel.isInitialized) {
             return this.panel.panel
+        }
         val applicationSettings = applicationSettings
             ?: return null
         val projectSettings = projectSettings
@@ -276,26 +277,26 @@ private class ProjectSettingsPanel(
 
     val panel: JPanel by lazy {
         FormBuilder.createFormBuilder()
-            .addLabeledComponent(JLabel("Default Variant"), defaultVariant, 1, false)
-            .addLabeledComponent(JLabel("Replicate ATTs to Duplicate Images"), replicateAttToDuplicateSprites, 1, false)
+            .addLabeledComponent(JLabel(CaosBundle.message("caos.settings.configurable.default-variant")), defaultVariant, 1, false)
+            .addLabeledComponent(JLabel(CaosBundle.message("caos.settings.configurable.replicate-atts")), replicateAttToDuplicateSprites, 1, false)
             .addLabeledComponent(
-                JLabel("Combine related ATT file nodes under a single node. i.e. \"*04a\""),
+                JLabel(CaosBundle.message("caos.settings.configurable.combine-att-nodes")),
                 combineAttNodes,
                 1,
                 false
             )
             .addLabeledComponent(
-                JLabel("Combine related ATT file nodes by slot. i.e. \"Norn A (M)\""),
+                JLabel(CaosBundle.message("caos.settings.configurable.combine-atts-by-slot")),
                 combineAttNodesBySlot,
                 1,
                 false
             )
-            .addLabeledComponent(JLabel("Trim BLK right and bottom"), trimBlkCheckbox, 1, false)
-            .addLabeledComponent(JLabel("Ignored File Names"), ignoredFileNames, 1, true)
-            .addLabeledComponent(JLabel("Game Interface Names"), gameInterfaceNames, 1, true)
-            .addLabeledComponent(JLabel("Wine32Path"), wine32PathTextField, 1, false)
-            .addLabeledComponent(JLabel("Wine64Path"), wine64PathTextField, 1, false)
-            .addLabeledComponent(JLabel("Enable AutoPose action"), autoPoseCheckbox, 1, false)
+            .addLabeledComponent(JLabel(CaosBundle.message("caos.settings.configurable.trim-blk")), trimBlkCheckbox, 1, false)
+            .addLabeledComponent(JLabel(CaosBundle.message("caos.settings.configurable.ignored-file-names")), ignoredFileNames, 1, true)
+            .addLabeledComponent(JLabel(CaosBundle.message("caos.settings.configurable.game-interface-names")), gameInterfaceNames, 1, true)
+            .addLabeledComponent(JLabel(CaosBundle.message("caos.settings.configurable.wine32-path")), wine32PathTextField, 1, false)
+            .addLabeledComponent(JLabel(CaosBundle.message("caos.settings.configurable.wine64-path")), wine64PathTextField, 1, false)
+            .addLabeledComponent(JLabel(CaosBundle.message("caos.settings.configurable.enable-auto-pose")), autoPoseCheckbox, 1, false)
             .panel
             .apply {
                 this.alignmentY = 0f
@@ -531,8 +532,8 @@ private class GameInterfaceCell(
             return
         }
         DialogBuilder().apply {
-            setTitle("Delete Injector Interface")
-            setCenterPanel(JLabel("Are you sure you want to delete CAOS interface '${name.name}'"))
+            setTitle(CaosBundle.message("caos.settings.configurable.delete-injector"))
+            setCenterPanel(JLabel(CaosBundle.message("caos.settings.configurable.confirm-delete", name.name)))
             addOkAction()
             setOkOperation {
                 list.onChange(index, null)
@@ -561,7 +562,7 @@ private class GameInterfaceCell(
 
     fun setInterfaceName(index: Int, interfaceName: GameInterfaceName?) {
         if (!hasOwnInterface) {
-            LOGGER.severe("CreateNew button should not have an interface name assigned to it")
+            LOGGER.severe("\"Create New\" button should not have an interface name assigned to it")
             return
         }
         this.index = index
