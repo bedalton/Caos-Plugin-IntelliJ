@@ -3,15 +3,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.generator.CaosDe
 import java.io.File
 
 configurations {
-    compileClasspath
-        .get()
-        .resolutionStrategy
-        .sortArtifacts(ResolutionStrategy.SortOrder.DEPENDENCY_FIRST)
-
-    testCompileClasspath
-        .get()
-        .resolutionStrategy
-        .sortArtifacts(ResolutionStrategy.SortOrder.DEPENDENCY_FIRST)
+//    compileClasspath
+//        .get()
+//        .resolutionStrategy
+//        .sortArtifacts(ResolutionStrategy.SortOrder.DEPENDENCY_FIRST)
+//
+//    testCompileClasspath
+//        .get()
+//        .resolutionStrategy
+//        .sortArtifacts(ResolutionStrategy.SortOrder.DEPENDENCY_FIRST)
 }
 
 plugins {
