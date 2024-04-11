@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.bedalton.common.structs.Pointer
 import com.bedalton.common.util.className
 import com.bedalton.common.util.nullIfEmpty
 import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions
@@ -15,11 +16,15 @@ import com.bedalton.creatures.agents.pray.compiler.compilePrayAndWrite
 import com.bedalton.creatures.agents.pray.compiler.pray.PrayParseValidationFailException
 import com.bedalton.log.logProgress
 import com.bedalton.vfs.LocalFileSystem
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.progress.runBackgroundableTask
+import com.intellij.openapi.progress.util.BackgroundTaskUtil.BackgroundTask
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.vfs.VfsUtil
@@ -32,6 +37,9 @@ import kotlin.coroutines.coroutineContext
 
 class CompilePrayFileAction(private val transient: Boolean = true) : AnAction({ "Compile PRAY Agent" }) {
 
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
 
     override fun update(e: AnActionEvent) {
         super.update(e)
@@ -131,12 +139,13 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction({ 
                 LOGGER.severe("Failed to get opts for compile PRAY file")
                 return
             }
-            runBackgroundableTask(
-                "Compile Pray ${if (files.isNotEmpty()) "Files" else "File"}",
-                project
-            ) { indicator ->
-                compile(project, files, opts, indicator)
-            }
+            ProgressManager.getInstance().run(
+                object: Task.Backgroundable(project, "Compile Pray ${if (files.isNotEmpty()) "Files" else "File"}") {
+                    override fun run(indicator: ProgressIndicator) {
+                        compile(project, files, opts, indicator)
+                    }
+                }
+            )
         }
 
         internal suspend fun compile(project: Project, filePath: String, opts: PrayCompileOptions): String? {
@@ -221,12 +230,14 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction({ 
                     )
                 }
             }
+            indicator.isIndeterminate = true
             for (file in files) {
                 if (size > 1) {
                     indicator.text2 = " (${i++}/$size): ${file.name}"
                 } else {
                     indicator.text2 = ": ${file.name}"
                 }
+                indicator.pushState()
                 GlobalScope.launch {
                     val outputFile = compile(project, file.path, opts)
                     done++
@@ -241,6 +252,7 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction({ 
                     if (done == size) {
                         invokeLater { onDone() }
                     }
+                    indicator.popState()
                 }
 
             }

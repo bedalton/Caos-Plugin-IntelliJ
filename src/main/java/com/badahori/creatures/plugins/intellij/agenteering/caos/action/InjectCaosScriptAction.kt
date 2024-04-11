@@ -13,6 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.setting
 import com.badahori.creatures.plugins.intellij.agenteering.injector.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.UndoConfirmationPolicy
@@ -51,6 +52,11 @@ internal fun caosInject(
             CaosInjectorNotifications
                 .createErrorNotification(project, "Syntax Errors", "Cannot inject CAOS code with known errors.")
                 .addAction(object : AnAction("Ignore for Session and Inject") {
+
+                    override fun getActionUpdateThread(): ActionUpdateThread {
+                        return ActionUpdateThread.EDT
+                    }
+
                     override fun actionPerformed(e: AnActionEvent) {
                         project.settings.injectionCheckDisabled = true
                         try {
@@ -62,6 +68,12 @@ internal fun caosInject(
                     }
                 })
                 .addAction(object : AnAction("Inject Anyways") {
+
+
+                    override fun getActionUpdateThread(): ActionUpdateThread {
+                        return ActionUpdateThread.EDT
+                    }
+
                     override fun actionPerformed(e: AnActionEvent) {
                         try {
                             injectActual(project, variant, gameInterfaceName, caosFile)

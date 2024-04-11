@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifica
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.SpriteLocator
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.invokeLater
@@ -35,6 +36,10 @@ class AttNewFileFromSpritesAction : AnAction(
     {/* description = */ CaosBundle.message("att.actions.new-file-from-sprites.multi.description") },
     /* icon = */ CaosScriptIcons.ATT_FILE_ICON
 ) {
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
 
     override fun update(e: AnActionEvent) {
         super.update(e)

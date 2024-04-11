@@ -23,6 +23,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.Sprite
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.invokeLater
@@ -619,6 +620,11 @@ internal class AttEditorModel(
                     "NOTE: Manual text changes will not be replicated<br/>" +
                     "You can change this setting in the CAOS settings panel"
         ).addAction(object : AnAction("Disable Replication?") {
+
+            override fun getActionUpdateThread(): ActionUpdateThread {
+                return ActionUpdateThread.EDT
+            }
+
             override fun update(e: AnActionEvent) {
                 super.update(e)
                 e.presentation.description = "Disabled ATT point replication in this and future ATT files.\n" +

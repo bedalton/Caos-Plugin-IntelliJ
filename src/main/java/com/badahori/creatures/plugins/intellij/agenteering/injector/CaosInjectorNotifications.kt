@@ -27,6 +27,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.injector
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.intellij.notification.*
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
@@ -171,6 +172,11 @@ data class CaosNotification internal constructor(
 
     fun addAction(text: String, action: (e: AnActionEvent) -> Unit): CaosNotification {
         return addAction(object: AnAction(text) {
+
+            override fun getActionUpdateThread(): ActionUpdateThread {
+                return ActionUpdateThread.EDT
+            }
+
             override fun actionPerformed(e: AnActionEvent) {
                 action(e)
             }
@@ -184,6 +190,11 @@ data class CaosNotification internal constructor(
         action: (e: AnActionEvent) -> Unit,
     ): CaosNotification {
         return addAction(object: AnAction(text, description, icon) {
+
+            override fun getActionUpdateThread(): ActionUpdateThread {
+                return ActionUpdateThread.EDT
+            }
+
             override fun actionPerformed(e: AnActionEvent) {
                 action(e)
             }

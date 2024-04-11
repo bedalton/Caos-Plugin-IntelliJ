@@ -16,6 +16,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.collect
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.navigation.NavigationItem
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.invokeLater
@@ -117,6 +118,11 @@ internal object FileInjectorUtil {
                 ).addAction(object : AnAction(
                     "Collapse Whitespaces and Inject"
                 ) {
+
+                    override fun getActionUpdateThread(): ActionUpdateThread {
+                        return ActionUpdateThread.EDT
+                    }
+
                     override fun actionPerformed(e: AnActionEvent) {
                         this@FileInjectorUtil.collapse = true
                         val result = injectScripts(
@@ -510,6 +516,10 @@ private fun addPositionLink(
         }
     }
     val navigateToElementAction = object : AnAction(getText()) {
+
+        override fun getActionUpdateThread(): ActionUpdateThread {
+            return ActionUpdateThread.EDT
+        }
 
         override fun update(e: AnActionEvent) {
             super.update(e)

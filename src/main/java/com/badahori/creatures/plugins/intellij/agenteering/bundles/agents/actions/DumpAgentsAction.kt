@@ -13,6 +13,7 @@ import com.bedalton.creatures.agents.pray.parser.parsePrayAgentToFiles
 import com.bedalton.creatures.agents.util.RelativeFileSystem
 import com.bedalton.io.bytes.MemoryByteStreamReader
 import com.bedalton.vfs.LocalFileSystem
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.invokeLater
@@ -40,6 +41,11 @@ class DumpAgentAction : AnAction(
 ), DumbAware {
 
     override fun isDumbAware(): Boolean = true
+
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
+    }
 
     override fun update(e: AnActionEvent) {
         val files = e.files

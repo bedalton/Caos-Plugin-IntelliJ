@@ -10,6 +10,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
 import com.bedalton.common.structs.Pointer
 import com.bedalton.log.Log
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
@@ -23,6 +24,9 @@ class SetVariantAction : AnAction(
     { CaosBundle.message("caos.actions.set-variant.description") },
     CaosScriptIcons.SDK_ICON
 ) {
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
 
     override fun actionPerformed(e: AnActionEvent) {
         val files = e.files

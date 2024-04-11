@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.Sprite
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.bedalton.creatures.sprite.parsers.BlkParser
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.UndoConfirmationPolicy
@@ -37,6 +38,10 @@ class DumpSpriteAction : AnAction(
 ), DumbAware {
 
     override fun isDumbAware(): Boolean = true
+    
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
 
     override fun update(e: AnActionEvent) {
         e.presentation.isVisible = isVisible(e)

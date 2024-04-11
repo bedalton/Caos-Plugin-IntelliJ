@@ -20,6 +20,7 @@ import com.bedalton.common.util.OS
 import com.bedalton.common.util.className
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionGroup
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.UndoConfirmationPolicy
@@ -168,6 +169,11 @@ internal class CaosInjectFileAction(
     AllIcons.Toolwindows.ToolWindowRun
 ) {
 
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
+
     override fun update(e: AnActionEvent) {
         super.update(e)
         e.presentation.isVisible = isValid
@@ -197,6 +203,11 @@ internal class CaosInjectFileAction(
 
 internal class AddGameInterfaceAction(private val project: Project, private val variant: CaosVariant?) :
     AnAction({ CaosBundle.message("caos.injector.action.add-interface") }) {
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
+
     override fun actionPerformed(e: AnActionEvent) {
         create(e.files.getOrNull(0))
     }

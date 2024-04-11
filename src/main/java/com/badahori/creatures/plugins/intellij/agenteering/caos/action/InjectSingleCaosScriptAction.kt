@@ -25,6 +25,7 @@ import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
@@ -56,6 +57,10 @@ class InjectSingleCaosScriptAction : AnAction(
     },
     CaosScriptIcons.MODULE_ICON
 ) {
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
 
     override fun update(e: AnActionEvent) {
         super.update(e)
@@ -326,6 +331,11 @@ private class IgnoreAndInject(
     val gameInterfaceName: GameInterfaceName,
     val scriptPointer: SmartPsiElementPointer<CaosScriptScriptElement>,
 ) : AnAction(title, description, CaosScriptIcons.JECT) {
+
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project

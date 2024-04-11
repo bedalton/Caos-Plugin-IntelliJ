@@ -11,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.invokeLater
@@ -32,6 +33,11 @@ class CompileCaos2CobAction : AnAction(
     {/* description = */ AgentMessages.message("cob.caos2cob.compile.description") },
     /* icon = */ CaosScriptIcons.C1_COB_FILE_ICON
 ) {
+
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
@@ -143,7 +149,9 @@ class CompileCaos2CobAction : AnAction(
             // Run compile phase in background
             // Requires read-access though, so will have to move back onto ui thread I think
             runBackgroundableTask("Compile $numFiles Caos2Cob files") { progressIndicator ->
+                progressIndicator.isIndeterminate = true
                 files.forEach { file ->
+                    progressIndicator.pushState()
                     // Run on pooled event dispatch thread
                     invokeLater {
                         progressIndicator.checkCanceled()
@@ -158,6 +166,7 @@ class CompileCaos2CobAction : AnAction(
                                     progressIndicator = progressIndicator
                                 )
                             }
+                            progressIndicator.popState()
                             if (compilationResult.index == numFiles) {
                                 printResult(project, compilationResult)
                             }

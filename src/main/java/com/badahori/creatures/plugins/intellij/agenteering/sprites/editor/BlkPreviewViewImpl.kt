@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.notification.Notification
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
@@ -171,6 +172,11 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
         val doNotTrim = object: AnAction(
             "Do Not Trim BLKs"
         ) {
+
+            override fun getActionUpdateThread(): ActionUpdateThread {
+                return ActionUpdateThread.BGT
+            }
+
             override fun update(e: AnActionEvent) {
                 super.update(e)
                 if (actionTaken.value) {
@@ -190,6 +196,11 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
         val keepTrimming = object: AnAction(
             "Keep Trimming BLKs"
         ) {
+
+            override fun getActionUpdateThread(): ActionUpdateThread {
+                return ActionUpdateThread.BGT
+            }
+
             override fun update(e: AnActionEvent) {
                 super.update(e)
                 if (actionTaken.value) {

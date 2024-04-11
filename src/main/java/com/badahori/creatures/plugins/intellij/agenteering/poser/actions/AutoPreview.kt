@@ -14,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifica
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
 import com.bedalton.common.util.className
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.invokeLater
@@ -33,6 +34,11 @@ class AutoPreview : AnAction() {
 
     val strict: Boolean = true
     private var defaultZoom: Int = 2
+
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
 
     fun setDefaultZoom(newDefault: Int) {
         this.defaultZoom = newDefault

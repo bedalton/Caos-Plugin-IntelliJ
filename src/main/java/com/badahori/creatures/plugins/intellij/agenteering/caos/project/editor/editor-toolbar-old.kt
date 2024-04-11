@@ -1,4 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
+
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+
 //
 //import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions.CompileCaos2CobAction
 //import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOS2Pray
@@ -387,6 +390,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 //            CaosInjectorNotifications
 //                .createErrorNotification(project, "Syntax Errors", "Cannot inject CAOS code with known errors.")
 //                .addAction(object : AnAction("Ignore for Session and Inject") {
+//                    override fun getActionUpdateThread(): ActionUpdateThread {
+//                        return ActionUpdateThread.EDT
+//                    }
 //                    override fun actionPerformed(e: AnActionEvent) {
 //                        CaosScriptProjectSettings.injectionCheckDisabled = true
 //                        project.settings.injectionCheckDisabled = true
@@ -394,6 +400,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project.editor
 //                    }
 //                })
 //                .addAction(object : AnAction("Inject Anyways") {
+//                    override fun getActionUpdateThread(): ActionUpdateThread {
+//                        return ActionUpdateThread.EDT
+//                    }
 //                    override fun actionPerformed(e: AnActionEvent) {
 //                        injectActual(project, variant, caosFile)
 //                    }

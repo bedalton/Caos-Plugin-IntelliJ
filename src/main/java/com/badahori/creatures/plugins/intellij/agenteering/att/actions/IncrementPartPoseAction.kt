@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorImpl
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
@@ -12,6 +13,10 @@ open class IncrementPartPoseAction (
 ): AnAction (
     "Increment $partName Part Pose"
 ), AttEditorAction  {
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
+    }
 
     override fun isDumbAware(): Boolean {
         return true
