@@ -97,10 +97,7 @@ class CaosScriptFileStringRenamer(file: PsiFile, val newName: String) : Automati
      */
     private fun getNewName(element: CaosScriptStringLike, newNameIn: String): String {
 
-        Log.i { "New Rename: ${newNameIn}; Element: ${element.text}" }
-
         if (element !is PsiNamedElement) {
-            Log.i  { "Can only rename string elements here" }
             return newNameIn
         }
 
@@ -116,7 +113,7 @@ class CaosScriptFileStringRenamer(file: PsiFile, val newName: String) : Automati
             val tag = (caos2.parent as CaosScriptCaos2Tag)
                 .tagName
                 .lowercase()
-            needsExtension = (tag !in prayNoExtensionLowercase).also {
+            needsExtension = (tag !in prayNoExtensionLowercase)/*.also {
                 Log.i {
                     if (it) {
                         "TAG[$tag] -> Needs Extension -> YES"
@@ -124,12 +121,12 @@ class CaosScriptFileStringRenamer(file: PsiFile, val newName: String) : Automati
                         "TAG[$tag] -> Needs Extension -> NO; Not in $prayNoExtensionLowercase"
                     }
                 }
-            }
-        } else if (caos2 != null) {
+            }*/
+        } /* else if (caos2 != null) {
             Log.i { "Caos2Value parent is ${caos2.parent?.className}" }
         } else {
             Log.i { "String: ${(element as PsiNamedElement).name} is not CAOS2" }
-        }
+        }*/
 
         // Get the elements current/old path
         val oldPath = element.stringValue
@@ -161,7 +158,7 @@ class CaosScriptFileStringRenamer(file: PsiFile, val newName: String) : Automati
                     PathUtil.combine(parentPath ?: parent.path, newNameIn)
                 }
                 val relativePath = URI(parent.path).relativize(URI(newAbsolutePath)).path
-                Log.i { "NewAbsolutePath: $newAbsolutePath; Parent: ${parent.path}; Relativize: $relativePath" }
+//                Log.i { "NewAbsolutePath: $newAbsolutePath; Parent: ${parent.path}; Relativize: $relativePath" }
 
                 if (relativePath == parent.path) {
                     // There was no valid relative path
