@@ -6,8 +6,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
-import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.hasFlag
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.bedalton.common.util.filterNotNull
 import com.bedalton.log.Log
 import com.intellij.codeInspection.LocalInspectionTool

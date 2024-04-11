@@ -10,7 +10,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.INTELLIJ_LOG
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.virtualFile
 import com.bedalton.common.util.PathUtil
-import com.bedalton.common.util.className
 import com.bedalton.log.Log
 import com.bedalton.log.iIf
 import com.intellij.openapi.util.Key
