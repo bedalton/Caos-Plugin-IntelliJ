@@ -802,6 +802,8 @@
 
 <!--        <typedHandler-->
 <!--                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEndWordIndenter"-->
+<!--                order="first, before completionAutoPopup"-->
+<!--                id="caosScriptEndWordIndentor"-->
 <!--        />-->
 
         <editorTypedHandler
