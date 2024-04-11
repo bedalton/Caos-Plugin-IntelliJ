@@ -7,9 +7,8 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil.isWindows
-import com.bedalton.common.util.formatted
-import com.bedalton.common.util.nullIfEmpty
-import com.bedalton.common.util.trySilent
+import com.bedalton.common.util.*
+import com.bedalton.io.bytes.decodeToWindowsCP1252
 import com.bedalton.io.bytes.encodeToWindowsCP1252EncodedBytes
 import com.bedalton.log.Log
 import com.bedalton.log.iIf
@@ -89,7 +88,7 @@ internal class TCPConnection(
         val preparedCaos = if (caos.lowercase().trim().startsWith("scrp")) {
             caos
         } else {
-            "$header $caos"
+            "$header\n$caos"
         }
 
         return inject(
@@ -140,7 +139,7 @@ internal class TCPConnection(
         }
 
         return clientSocket.use { socket ->
-            runSafe(socket, fileName, descriptor, caos + TERMINATOR)
+            runSafe(socket, fileName, descriptor, caos)
         }
     }
 
@@ -204,7 +203,24 @@ internal class TCPConnection(
         descriptor: String?,
         caos: String,
     ): InjectionStatus? {
-        val encoded = caos.encodeToWindowsCP1252EncodedBytes()
+        val caosCRLF = if (caos.trim().lowercase().startsWith("rscr")) {
+            caos.trim().substring(4).trim()
+        } else {
+            caos.trim()
+        }
+            .replace("\r?\n".toRegex(), "\n")
+            .trim()
+            .ensureNotEndsWith("endm")
+            .ensureNotEndsWith(TERMINATOR)
+            .ensureNotEndsWith("endm")
+            .ensureEndsWith("\nendm")
+            .ensureEndsWith(TERMINATOR)
+
+        val encoded = caosCRLF.encodeToWindowsCP1252EncodedBytes()
+        Log.iIf(DEBUG_INJECTOR) {
+            val afterByteEncode = encoded.decodeToWindowsCP1252()
+            "Descriptor: <$descriptor>;\nCAOS FINAL: <$afterByteEncode>"
+        }
         try {
             output.write(encoded)
         } catch (e: Exception) {
