@@ -38,6 +38,27 @@
     <change-notes><![CDATA[
         <ul>
             <li>
+                <b>Version: 2024.2.2</b>
+                <b>Fixes</b>
+                <ul>
+                    <li>Fix event script injecting on macOS</li>
+                </ul>
+            </li>
+            <li>
+                <b>Version: 2024.2.1</b>
+                <b>Fixes</b>
+                <ul>
+                    <li>Fix broken actions</li>
+                </ul>
+            </li>
+            <li>
+                <b>Version: 2024.2.0</b>
+                <b>Fixes</b>
+                <ul>
+                    <li>Fix CAOS2Pray Join still requiring Pray-File command</li>
+                </ul>
+            </li>
+            <li>
                 <b>Version: 2024.2.0</b>
                 <b>Fixes</b>
                 <ul>
@@ -96,7 +117,7 @@
   </change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="221.6000"/>
+    <idea-version since-build="222.4554.10"/>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
