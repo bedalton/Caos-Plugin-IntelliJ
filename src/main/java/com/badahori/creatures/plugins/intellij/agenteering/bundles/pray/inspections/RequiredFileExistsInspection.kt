@@ -106,6 +106,7 @@ private val requiresFileWithoutExtension = listOf(
     "Egg\\s+Gallery\\s+male",
     "Egg\\s+Gallery\\s+female",
     "Agent\\s+Animation\\s+Gallery",
+    "Web\\s+Icon",
 ).joinToString("|") { "($it)" }.toRegex(RegexOption.IGNORE_CASE)
 
 private val requiresFiles = listOf(
@@ -113,7 +114,6 @@ private val requiresFiles = listOf(
     "Agent\\s+Animation\\s+File",
     "Egg\\s+Glyph\\s+File",
     "Egg\\s+Glyph\\s+File\\s2",
-    "Web\\s+Icon"
 ).joinToString("|") { "($it)" }.toRegex(RegexOption.IGNORE_CASE)
 
 
