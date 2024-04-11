@@ -6,11 +6,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.token
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.bedalton.common.util.className
 import com.bedalton.common.util.formatted
-import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
+import com.intellij.codeInsight.template.impl.editorActions.TypedActionHandlerBase
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.editor.actionSystem.TypedActionHandler
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
@@ -20,12 +20,14 @@ import com.intellij.psi.util.PsiUtilBase
 import com.intellij.psi.util.elementType
 import java.util.logging.Logger
 
-class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
+class CaosScriptEditorTypedEndWordIndenter(handler: TypedActionHandler) : TypedActionHandlerBase(handler) {
 
     private val logger = Logger.getLogger(this.className)
 
-    override fun newTypingStarted(c: Char, editor: Editor, context: DataContext) {
-        logger.info("newTypingStarted('$c')")
+    override fun execute(editor: Editor, c: Char, context: DataContext) {
+        super.myOriginalHandler?.execute(editor, c, context)
+        logger.info("Character '$c' typed")
+
         val project = context.getData(CommonDataKeys.PROJECT)
             ?: editor.project
             ?: throw NullPointerException("Failed to get project from context or editor")
@@ -39,28 +41,17 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
             ?: context.getData(CommonDataKeys.PSI_ELEMENT)
                 ?.containingFile
             ?: return Unit.also {
-                logger.severe("Failed to get PSI file from data context's CommonDataKeys.PSI_FILE, CommonDataKeys.PSI_ELEMENT or editor.psiFile")
+                logger.severe(
+                    "Failed to get PSI file from data context's " +
+                            "CommonDataKeys.PSI_FILE, " +
+                            "CommonDataKeys.PSI_ELEMENT or " +
+                            "editor.psiFile"
+                )
             }
-        onCharTyped(c, project, editor, file)
+        charTyped(c, project, editor, file)
     }
 
-
-    override fun beforeCharTyped(c: Char, project: Project, editor: Editor, file: PsiFile, fileType: FileType): Result {
-        logger.info("beforeCharTyped('$c')")
-        return onCharTyped(c, project, editor, file)
-    }
-
-    override fun charTyped(c: Char, project: Project, editor: Editor, file: PsiFile): Result {
-        logger.info("charTyped('$c')")
-        return onCharTyped(c, project, editor, file)
-    }
-
-    override fun checkAutoPopup(charTyped: Char, project: Project, editor: Editor, file: PsiFile): Result {
-        logger.info("checkAutoPopup('$charTyped')")
-        return onCharTyped(charTyped, project, editor, file)
-    }
-
-    private fun onCharTyped(c: Char, project: Project, editor: Editor, file: PsiFile): Result {
+    private fun charTyped(c: Char, project: Project, editor: Editor, file: PsiFile) {
         val blockToReformat = when (c) {
             'f', 'i' -> {
                 getElementIfPrefixed(file, editor, ENDI, ELIF)
@@ -76,7 +67,7 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
                 getElementIfPrefixed(file, editor, RETN, NSCN)?.let {
                     if (it.elementType == CaosScriptTypes.CaosScript_C_KW_RETN) {
                         it.parent.parent
-                            ?: return Result.CONTINUE
+                            ?: return
                     } else {
                         it.parent
                     }
@@ -113,7 +104,7 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
 
             else -> null
 
-        } ?: return Result.CONTINUE
+        } ?: return
 
         try {
             CodeStyleManager.getInstance(project)
@@ -127,8 +118,9 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
                 }"
             )
         }
-        return Result.CONTINUE
     }
+
+
 
     private fun commitAndUnblockDocument(file: PsiFile): Boolean {
         return try {
@@ -169,13 +161,11 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
         return try {
             token(text)
         } catch (e: Exception) {
-            logger.severe("Element ${element.text} caused error on token; ${e.className}: ${e.message}")
             null
         }
     }
-
-
 }
+
 
 private val ELIF = token('e', 'l', 'i', 'f') //
 private val ELSE = token('e', 'l', 's', 'e') //
