@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.token
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.bedalton.common.util.className
 import com.bedalton.common.util.formatted
+import com.bedalton.log.Log
 import com.intellij.codeInsight.editorActions.TypedHandlerDelegate
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
@@ -18,14 +19,11 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiUtilBase
 import com.intellij.psi.util.elementType
-import java.util.logging.Logger
 
 class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
 
-    private val logger = Logger.getLogger(this.className)
-
     override fun newTypingStarted(c: Char, editor: Editor, context: DataContext) {
-        logger.info("newTypingStarted('$c')")
+        Log.i("newTypingStarted('$c')")
         val project = context.getData(CommonDataKeys.PROJECT)
             ?: editor.project
             ?: throw NullPointerException("Failed to get project from context or editor")
@@ -39,27 +37,28 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
             ?: context.getData(CommonDataKeys.PSI_ELEMENT)
                 ?.containingFile
             ?: return Unit.also {
-                logger.severe("Failed to get PSI file from data context's CommonDataKeys.PSI_FILE, CommonDataKeys.PSI_ELEMENT or editor.psiFile")
+                Log.e("Failed to get PSI file from data context's CommonDataKeys.PSI_FILE, CommonDataKeys.PSI_ELEMENT or editor.psiFile")
             }
         onCharTyped(c, project, editor, file)
     }
 
 
     override fun beforeCharTyped(c: Char, project: Project, editor: Editor, file: PsiFile, fileType: FileType): Result {
-        logger.info("beforeCharTyped('$c')")
+        Log.i("beforeCharTyped('$c')")
         return onCharTyped(c, project, editor, file)
     }
 
     override fun charTyped(c: Char, project: Project, editor: Editor, file: PsiFile): Result {
-        logger.info("charTyped('$c')")
+        Log.i("charTyped('$c')")
         return onCharTyped(c, project, editor, file)
     }
 
     override fun checkAutoPopup(charTyped: Char, project: Project, editor: Editor, file: PsiFile): Result {
-        logger.info("checkAutoPopup('$charTyped')")
+        Log.i("checkAutoPopup('$charTyped')")
         return onCharTyped(charTyped, project, editor, file)
     }
 
+    @Suppress("SameReturnValue")
     private fun onCharTyped(c: Char, project: Project, editor: Editor, file: PsiFile): Result {
         val blockToReformat = when (c) {
             'f', 'i' -> {
@@ -119,7 +118,7 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
             CodeStyleManager.getInstance(project)
                 .reformatText(file, blockToReformat.startOffset, blockToReformat.endOffset)
         } catch (e: Exception) {
-            logger.severe(
+            Log.e(
                 "Failed to de-dent at token;\n\tChar: $c;\n\tElement: ${blockToReformat.className}[${blockToReformat.text}]\n${
                     e.formatted(
                         true
@@ -169,7 +168,7 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
         return try {
             token(text)
         } catch (e: Exception) {
-            logger.severe("Element ${element.text} caused error on token; ${e.className}: ${e.message}")
+            Log.e("Element ${element.text} caused error on token; ${e.className}: ${e.message}")
             null
         }
     }
