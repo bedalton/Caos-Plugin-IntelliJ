@@ -1,20 +1,23 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.editor
 
 
-import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions
-import com.bedalton.common.util.PathUtil
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.PrayFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosBalloonNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
-import com.intellij.openapi.application.invokeLater
+import com.bedalton.common.util.PathUtil
+import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.fileEditor.FileEditor
-import com.intellij.openapi.progress.runBackgroundableTask
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
@@ -115,17 +118,30 @@ internal object PrayCompilerToolbarActions {
             return
         }
 
-        runBackgroundableTask("Compile PRAY Agent") task@{
-            val output = runBlocking { CompilePrayFileAction.compile(project, file.virtualFile.path, opts) }
-                ?: return@task
-            invokeLater {
-                CaosNotifications.showInfo(
-                    project,
-                    "PRAY Compiler",
-                    "Compiled PRAY file '${file.name}' to '${PathUtil.getFileNameWithoutExtension(output)}'"
-                )
+        CaosBalloonNotifications.showInfo(
+            project,
+            "PRAY Compile",
+            "Compiling CAOS2Pray file",
+        )
+
+        ProgressManager.getInstance().run(object: Task.Backgroundable(
+            project,
+            "Compiling PRAY Agent"
+        ) {
+            override fun run(progressIndicator: ProgressIndicator) {
+                progressIndicator.isIndeterminate = true
+                val output = runBlocking {
+                    CompilePrayFileAction.compile(project, file.virtualFile.path, opts)
+                } ?: return
+                invokeLater {
+                    CaosNotifications.showInfo(
+                        project,
+                        "PRAY Compiler",
+                        "Compiled PRAY file '${file.name}' to '${PathUtil.getFileNameWithoutExtension(output)}'"
+                    )
+                }
             }
-        }
+        })
     }
 
     private fun getOpts(file: PsiFile): PrayCompileOptions? {
