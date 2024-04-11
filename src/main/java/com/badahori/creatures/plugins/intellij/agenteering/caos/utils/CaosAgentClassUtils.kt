@@ -1,31 +1,28 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
-data class AgentClass(val family: Int, val genus: Int, val species: Int) {
-    fun like(otherClass: AgentClass): Boolean {
-        if (notMatches(family, otherClass.family))
-            return false
-        if (notMatches(genus, otherClass.genus))
-            return false
-        if (notMatches(species, otherClass.species))
-            return false
-        return true
-    }
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClassConstants.INDETERMINATE_VALUE
 
-    private fun notMatches(val1:Int, val2:Int) : Boolean {
-        return val1 != val2 && val1 != 0 && val2 != 0
-    }
+typealias AgentClass = com.bedalton.creatures.common.structs.AgentClass
 
-    companion object {
-        val POINTER by lazy {
-            AgentClass(2, 1, 1)
-        }
+val AgentClass.hasIndeterminateValue get() = family == INDETERMINATE_VALUE
+        || genus == INDETERMINATE_VALUE
+        || species == INDETERMINATE_VALUE
 
-        val CREATURE: AgentClass by lazy {
-            AgentClass(4, 0, 0)
-        }
-        val ZERO by lazy {
-            AgentClass(0, 0, 0)
-        }
+val AgentClass.isCompletelyIndeterminate get() = family == INDETERMINATE_VALUE
+        && genus == INDETERMINATE_VALUE
+        && species == INDETERMINATE_VALUE
+
+object AgentClassConstants {
+    const val INDETERMINATE_VALUE = -255
+
+    val POINTER get() = AgentClass.POINTER
+
+    val CREATURE: AgentClass get() = AgentClass.CREATURE
+
+    val ZERO: AgentClass get() = AgentClass.ZERO
+
+    val UNPARSABLE_CLASS by lazy {
+        AgentClass(INDETERMINATE_VALUE, INDETERMINATE_VALUE, INDETERMINATE_VALUE)
     }
 }
 

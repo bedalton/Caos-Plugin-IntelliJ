@@ -1,0 +1,20 @@
+<html lang="en">
+<body>
+Detects missing required event scripts for <b>BHVR</b> value
+<p>
+	Certain BHVR bitflags require certain scripts to be present for agent inject.
+</p>
+<p>
+	Example:
+</p>
+<pre><code>
+new: simp 2 21 45553 "blnk" 1 0 0
+bhvr 11
+</code></pre>
+<p>
+	<code>bhvr 11</code> = (activate 1, activate 2, hit)<br>
+	Inspection will show warning if scripts 1 (activate 1), 2 (activate 2) or 3 (hit) are missing
+</p>
+<!-- tooltip end -->
+</body>
+</html>

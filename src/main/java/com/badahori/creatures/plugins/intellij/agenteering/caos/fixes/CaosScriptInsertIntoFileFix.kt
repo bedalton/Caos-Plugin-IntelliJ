@@ -3,56 +3,54 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.editor
-import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
 
-class CaosScriptInsertAfterFix(
+class CaosScriptInsertIntoFileFix(
+    psiFile: PsiFile,
     private val fixText: String,
     private val elementText: String,
-    element: PsiElement,
-    private val offsetInElement: Int = element.text.length,
-    private val offsetInNewText: Int? = null,
+    private val offsetInFile: Int = psiFile.endOffset,
     private val postInsert: ((editor:Editor) -> Unit)? = null,
 ) : LocalQuickFix, IntentionAction {
 
-    private val element = SmartPointerManager.createPointer(element)
+    private val filePointer = SmartPointerManager.createPointer(psiFile)
 
     override fun getFamilyName(): String = CAOSScript
+
 
     override fun getText(): String = fixText
 
     override fun startInWriteAction(): Boolean = true
 
     override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
-        return element.element != null
+        return filePointer.element != null
     }
 
     override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
-        val element = element.element
-            ?: return
-        invoke(editor, element)
+        if (file == null) {
+            return
+        }
+        invoke(editor, file)
     }
 
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
-        val element = descriptor.psiElement
+        val element = descriptor.psiElement?.containingFile
+            ?: descriptor.psiElement?.originalElement?.containingFile
             ?: return
         invoke(element.editor, element)
     }
 
-    private fun invoke(editor: Editor?, element:PsiElement) {
+    private fun invoke(editor: Editor?, element:PsiFile) {
         if (editor == null)
             return
-        EditorUtil.insertText(editor, "$elementText ", element.startOffset + offsetInElement, true)
-        if (offsetInNewText != null) {
-            EditorUtil.offsetCaret(editor, element.startOffset + offsetInElement + offsetInNewText)
-        }
+        EditorUtil.insertText(editor, "$elementText ", offsetInFile, true)
         postInsert?.invoke(editor)
     }
 }

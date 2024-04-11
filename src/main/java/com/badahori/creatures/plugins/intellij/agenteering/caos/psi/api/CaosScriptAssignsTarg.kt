@@ -2,28 +2,58 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.Classifier
 import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.variable
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClassConstants.UNPARSABLE_CLASS
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParentOfType
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 
-interface CaosScriptAssignsTarg : CaosScriptCompositeElement
+interface CaosScriptAssignsTarg : CaosScriptCompositeElement {
+    val targClassifier: AgentClass?
+
+//    val targAgentClass: AgentClass? get() {
+//        this.getUserData(TARG_CLASS_KEY)?.let {
+//            if (it.second == this.text.lowercase()) {
+//                return it.first
+//            } else {
+//                this.putUserData(TARG_CLASS_KEY, null)
+//            }
+//        }
+//        if (!this.isTargAgentClassSetter) {
+//            return null
+//        }
+//        return getAgentClassGeneric(this)
+//    }
+
+    /**
+     * Allows marking a multi-command element as this command not setting ownr
+     */
+    val isTargAgentClassSetter: Boolean get() = false
+
+    companion object {
+        val UNPARSABLE_TARG get() = UNPARSABLE_CLASS
+    }
+}
+
+private fun getAgentClassGeneric(element: PsiElement): AgentClass? {
+    return null
+}
 
 
-fun PsiElement.targClassifier(follow:Boolean):List<Classifier>? {
-    val classifier = this.getUserData(TARG_CLASS_KEY)
+fun PsiElement.targAgentClass(follow:Boolean):List<AgentClass>? {
+    val AgentClass = this.getUserData(TARG_CLASS_KEY)
     // TODO implement
     return null
 }
 
 
-private fun getTargAt(element:PsiElement, follow: Boolean, lastChecked: MutableList<PsiElement>): List<Classifier> {
+private fun getTargAt(element:PsiElement, follow: Boolean, lastChecked: MutableList<PsiElement>): List<AgentClass> {
     val variant = element.variant
         ?: return emptyList()
-    var classifiers = element.getSelfOrParentOfType(CaosScriptEnumNextStatement::class.java)?.let { enum ->
+    var AgentClasss = element.getSelfOrParentOfType(CaosScriptEnumNextStatement::class.java)?.let { enum ->
         if (lastChecked.any { it.isEquivalentTo(enum)})
             return emptyList()
         lastChecked.add(enum)
@@ -32,41 +62,41 @@ private fun getTargAt(element:PsiElement, follow: Boolean, lastChecked: MutableL
         val temp = if (arguments.size != 3)
             null
         else
-            parseClassifier(variant, follow, arguments[0], arguments[1], arguments[2], lastChecked)
+            parseAgentClass(variant, follow, arguments[0], arguments[1], arguments[2], lastChecked)
     }
     // TODO implement
     return emptyList()
 }
 
-private fun getTargOf(element:PsiElement, follow:Boolean, lastChecked: MutableList<PsiElement>) : List<Classifier> {
+private fun getTargOf(element:PsiElement, follow:Boolean, lastChecked: MutableList<PsiElement>) : List<AgentClass> {
     if (element is CaosScriptRvalue) {
-        return getClassifierFromRvalue(element, follow, lastChecked)
+        return getAgentClassFromRvalue(element, follow, lastChecked)
     }
     // TODO implement
     return emptyList()
 }
 
-private fun getClassifierFromRvalue(value:CaosScriptRvalue, follow:Boolean, lastChecked: MutableList<PsiElement>) : List<Classifier> {
+private fun getAgentClassFromRvalue(value:CaosScriptRvalue, follow:Boolean, lastChecked: MutableList<PsiElement>) : List<AgentClass> {
     if (lastChecked.any { it.isEquivalentTo(value)})
         return emptyList()
     lastChecked.add(value)
     (value.rvaluePrime)?.let { prime ->
         return when (value.rvaluePrime?.commandStringUpper) {
-            "PNTR" ->  listOf(Classifier(2, 1, 1))
-            "NORN", "MTOC","HHLD", "CREA"  -> listOf(Classifier(4, 0, 0))
+            "PNTR" ->  listOf(AgentClass(2, 1, 1))
+            "NORN", "MTOC","HHLD", "CREA"  -> listOf(AgentClass(4, 0, 0))
             "TWIN" -> prime.arguments.firstOrNull()?.let { agentArg ->
                     getTargOf(agentArg, follow, lastChecked)
                 } ?: emptyList()
             "TARG" -> {
                 emptyList()
             }
-            else -> listOf(Classifier(0,0,0))
+            else -> listOf(AgentClass(0,0,0))
         }
     }
     return emptyList()
 }
 
-private fun parseClassifier(variant:CaosVariant, follow: Boolean, family:CaosScriptRvalue, genus:CaosScriptRvalue, specie:CaosScriptRvalue, lastChecked: MutableList<PsiElement>) : List<Classifier>? {
+private fun parseAgentClass(variant:CaosVariant, follow: Boolean, family:CaosScriptRvalue, genus:CaosScriptRvalue, specie:CaosScriptRvalue, lastChecked: MutableList<PsiElement>) : List<AgentClass>? {
     val families = getInt(variant, family, follow, lastChecked = lastChecked)
         ?: return null
     val genuses = getInt(variant, genus, follow, lastChecked = lastChecked)
@@ -76,7 +106,7 @@ private fun parseClassifier(variant:CaosVariant, follow: Boolean, family:CaosScr
     return families.flatMap { aFamily ->
         genuses.flatMap { aGenus ->
             species.map { aSpecie ->
-                Classifier(aFamily, aGenus, aSpecie)
+                AgentClass(aFamily, aGenus, aSpecie)
             }
         }
     }
@@ -112,4 +142,4 @@ fun getNamedGameIntValues(variant: CaosVariant, lastChecked:MutableList<PsiEleme
     return null
 }
 
-internal val TARG_CLASS_KEY:Key<Pair<Classifier, String>> = Key.create("creatures.caos.TARG_CLASSIFIER")
+internal val TARG_CLASS_KEY:Key<Pair<AgentClass, String>> = Key.create("creatures.caos.TARG_AgentClass")

@@ -15,12 +15,17 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptAssignsTarg.Companion.UNPARSABLE_TARG
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.containingCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.references.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVariantSearchScope
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClass
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClassConstants
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClassConstants.INDETERMINATE_VALUE
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosAgentClassUtils
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.NUMBER_REGEX
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.bedalton.common.util.className
@@ -3023,6 +3028,255 @@ object CaosScriptPsiImplUtil {
         val tag = element.stringValue
         val variant = element.variant
         return CobTag.fromString(tag, variant) != null
+    }
+
+    @JvmStatic
+    fun getIsTargClassifierSetter(element: CaosScriptEnumNextStatement): Boolean {
+        return true
+    }
+
+    @JvmStatic
+    fun getTargClassifier(element: CaosScriptEnumNextStatement): AgentClass {
+        return getClassifierAtStart(element.enumHeaderCommand)
+    }
+
+
+    @JvmStatic
+    fun getIsTargClassifierSetter(element: CaosScriptEnumSceneryStatement): Boolean {
+        return true
+    }
+
+    @JvmStatic
+    fun getTargClassifier(element: CaosScriptEnumSceneryStatement): AgentClass {
+        return getClassifierAtStart(element.escnHeader)
+    }
+
+    private fun getClassifierAtStart(element: CaosScriptCommandWithArguments, offset: Int = 0): AgentClass {
+        val arguments = element.arguments
+
+        if (arguments.size < (3 + offset)) {
+            return UNPARSABLE_TARG
+        }
+
+        val classifierInts = arguments.subList(offset, 3 + offset)
+            .map { it.text.toIntOrNull() }
+
+        val family = classifierInts[0]
+        val genus = classifierInts[1]
+        val species = classifierInts[2]
+
+        return if (family == null && genus == null && species == null) {
+            UNPARSABLE_TARG
+        } else {
+            AgentClass(family ?: INDETERMINATE_VALUE, genus ?: INDETERMINATE_VALUE, species ?: INDETERMINATE_VALUE)
+        }
+    }
+
+
+    @JvmStatic
+    fun getIsTargClassifierSetter(element: CaosScriptCommandCall): Boolean {
+        val commandsWithClassifier = if (element.variant?.isOld == true) {
+            listOf(
+                "TARG",
+                "RTAR",
+                "TTAR",
+                "STAR",
+                "NCLS",
+                "PCLS",
+            )
+        } else {
+            listOf(
+                "TARG",
+                "RTAR",
+                "TTAR",
+                "STAR",
+                "NCLS",
+                "PCLS",
+                "NEW: SIMP",
+                "NEW: COMP",
+                "NEW: CREA",
+                "NEW: CRAG",
+                "NEW: VHCL",
+                "NEW: SCEN",
+                "NEWC",
+            ).map(String::uppercase)
+        }
+        return element.commandStringUpper in commandsWithClassifier
+    }
+
+
+    @JvmStatic
+    fun getTargClassifier(element: CaosScriptCNext): AgentClass? {
+        return getTargClassifier(element.getParentOfType(CaosScriptEventScript::class.java))
+    }
+
+    @JvmStatic
+    fun getTargClassifier(element: CaosScriptCommandCall): AgentClass? {
+        val command = element.commandStringUpper
+        return when (command) {
+
+            // New Agent
+            "NEW: SIMP", "NEW: COMP", "NEW: VHCL" -> {
+                if (element.variant?.isOld == true) {
+                    return null
+                }
+                getClassifierAtStart(element)
+            }
+
+            // C2 Scenery object (classless)
+            "NEW: SCEN" -> UNPARSABLE_TARG
+
+            // New Creature
+            "NEW: CREA", "NEW: CRAG", "NEWC" -> {
+                val family = element.arguments
+                    .firstOrNull()
+                    ?.text
+                    ?.toIntOrNull()
+                    ?: return UNPARSABLE_TARG
+                AgentClass(family, 0, 0)
+            }
+
+            // Random Targ by class
+            "RTAR", "STAR", "TTAR" -> {
+                getClassifierAtStart(element)
+            }
+
+            // Manual enum loop
+            "NCLS", "PCLS" -> getClassifierAtStart(element, 1)
+
+            // Manual Targ setter
+            "TARG" -> {
+
+                val arg = element.arguments
+                    .getOrNull(0)
+                    ?.text
+                    ?.uppercase()
+                    ?: return UNPARSABLE_TARG
+
+                when (arg) {
+                    "OWNR" -> getTargClassifier(element.getParentOfType(CaosScriptEventScript::class.java))
+                        ?: UNPARSABLE_TARG
+                    "TARG" -> null // Same as before
+                    "NORN" -> AgentClassConstants.CREATURE
+                    else -> UNPARSABLE_TARG
+                }
+
+            }
+            else -> {
+                null
+            }
+        }
+    }
+
+    @JvmStatic
+    fun getIsTargClassifierSetter(element: CaosScriptEventScript): Boolean {
+        return true
+    }
+
+
+    @JvmStatic
+    fun getIsTargClassifierSetter(element: PsiElement): Boolean {
+        return true
+    }
+
+    @JvmStatic
+    fun getTargClassifier(element: CaosScriptEventScript?): AgentClass? {
+
+        if (element == null) {
+            return null
+        }
+        return getTargClassifier(element.classifier)
+    }
+
+    @JvmStatic
+    fun getTargClassifier(element: CaosScriptCRtar): AgentClass {
+        return getTargClassifier(element.classifier)
+    }
+
+
+    @JvmStatic
+    fun getTargClassifier(element: CaosScriptEnumHeaderCommand): AgentClass {
+        return getTargClassifier(element.classifier)
+    }
+
+    private fun getTargClassifier(classifier: CaosScriptClassifier?): AgentClass {
+
+        if (classifier == null) {
+            return UNPARSABLE_TARG
+        }
+
+        val family = classifier.family
+            .text
+            ?.toIntOrNull()
+        val genus = classifier.genus
+            ?.text
+            ?.toIntOrNull()
+        val species = classifier.species
+            ?.text
+            ?.toIntOrNull()
+
+        return if (family == null && genus == null && species == null) {
+            UNPARSABLE_TARG
+        } else {
+            return AgentClass(
+                family ?: INDETERMINATE_VALUE,
+                genus ?: INDETERMINATE_VALUE,
+                species ?: INDETERMINATE_VALUE
+            )
+        }
+    }
+
+    @JvmStatic
+    fun getIsTargClassifierSetter(element: CaosScriptCAssignment): Boolean {
+        val arguments = element.arguments
+        val lvalue = arguments.first() as? CaosScriptLvalue
+            ?: return false
+        return when (lvalue.commandStringUpper) {
+            "CLS2", "CLAS" -> true
+            else -> false
+        }
+    }
+
+    @JvmStatic
+    fun getTargClassifier(element: CaosScriptCAssignment): AgentClass? {
+        val arguments = element.arguments
+        if (arguments.size != 2) {
+            return null
+        }
+        val lvalue = arguments.first() as? CaosScriptLvalue
+            ?: return null
+        return when (lvalue.commandStringUpper) {
+            "CLS2" -> {
+                val familyGenus = lvalue.arguments
+                    .map { it.text.toIntOrNull() }
+                    .nullIfEmpty()
+                    ?: return UNPARSABLE_TARG
+                val family = familyGenus.getOrNull(0)
+                val genus = familyGenus.getOrNull(1)
+                val species = lvalue.arguments.getOrNull(1)
+                    ?.text
+                    ?.toIntOrNull()
+                if (family == null && genus == null && species == null) {
+                    return UNPARSABLE_TARG
+                } else {
+                    return AgentClass(
+                        family ?: INDETERMINATE_VALUE,
+                        genus ?: INDETERMINATE_VALUE,
+                        species ?: INDETERMINATE_VALUE
+                    )
+                }
+            }
+            "CLAS" -> {
+                val clasInt = lvalue.arguments.getOrNull(1)
+                    ?.text
+                    ?.toIntOrNull()
+                    ?: return UNPARSABLE_TARG
+                return CaosAgentClassUtils.parseClas(clasInt)?.let {
+                    return AgentClass(it.family, it.genus, it.species)
+                } ?: UNPARSABLE_TARG
+            }
+            else -> null
+        }
     }
 }
 

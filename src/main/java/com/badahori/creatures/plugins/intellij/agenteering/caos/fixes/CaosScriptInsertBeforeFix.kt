@@ -18,6 +18,7 @@ class CaosScriptInsertBeforeFix(
     private val textToInsert: String,
     element: PsiElement,
     private val appendChar: Char? = ' ',
+    private val offsetInNewText: Int? = null,
     private val after: ((editor: Editor) -> Unit)? = null
 ) : IntentionAction, LocalQuickFix {
 
@@ -55,6 +56,9 @@ class CaosScriptInsertBeforeFix(
         else
             "$appendChar"
         EditorUtil.insertText(editor, "$textToInsert$appendText", element.startOffset, false)
+        if (offsetInNewText != null) {
+            EditorUtil.offsetCaret(editor, element.startOffset + offsetInNewText)
+        }
         after?.invoke(editor)
     }
 }

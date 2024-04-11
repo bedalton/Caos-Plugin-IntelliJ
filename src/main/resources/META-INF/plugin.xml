@@ -709,6 +709,16 @@
                          implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosCatalogueTagIsUniqueInspection"
         />
 
+        <localInspection language="CaosScript"
+                         level="WARNING"
+                         groupPath="CaosScript"
+                         groupName="CaosScript"
+                         enabledByDefault="true"
+                         displayName="Agent has required behavior scripts"
+                         shortName="AgentHasRequiredBehaviorScripts"
+                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.inspections.CaosScriptHasBehaviorScriptsInspection"
+        />
+
         <!-- Documentation & Hints -->
         <documentationProvider
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptDocumentationProvider"/>

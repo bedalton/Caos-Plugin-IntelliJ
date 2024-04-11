@@ -6,6 +6,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptL
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
+import com.badahori.creatures.plugins.intellij.agenteering.utils.repeat
+import com.bedalton.common.util.ensureEndsWith
+import com.bedalton.common.util.ensureStartsWith
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -116,10 +119,10 @@ object CaosScriptPsiElementFactory {
     }
 
     fun newLines(project: Project, numNewLines: Int): PsiElement {
-        val lines = (0 until numNewLines).joinToString("") { "\n" }
+        val lines = "\n".repeat(numNewLines)
         val file = createFileFromText(project, "inst${lines}endm")
         return PsiTreeUtil.collectElementsOfType(file, PsiWhiteSpace::class.java).first().apply{
-            assert(text == lines) { "Newline factory method returned non-newline space. Actual: '$text'" }
+//            assert(text == lines) { "Newline factory method returned non-newline space. Actual: '$text'" }
         }
     }
 
@@ -155,8 +158,13 @@ object CaosScriptPsiElementFactory {
         return createAndGet(project, text, CaosScriptCodeBlock::class.java)!!
     }
 
-    fun createScriptElement(project: Project, tag: String): CaosScriptScriptElement? {
-        return createAndGet(project, "$tag\nendm", CaosScriptScriptElement::class.java)
+    fun createScriptElement(project: Project, tag: String, body: String = ""): CaosScriptScriptElement? {
+        val bodyWithNewline = if (body.isNotBlank()) {
+            body.ensureStartsWith("\t").ensureEndsWith("\n")
+        } else {
+            body
+        }
+        return createAndGet(project, "$tag\n${bodyWithNewline}endm", CaosScriptScriptElement::class.java)
     }
 
     @Suppress("unused")

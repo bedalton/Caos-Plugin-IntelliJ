@@ -13,6 +13,7 @@ import com.intellij.psi.TokenType
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.elementType
 import java.util.logging.Logger
 
 
@@ -45,11 +46,33 @@ fun PsiElement?.getPreviousSiblingOfType(siblingElementType: IElementType): PsiE
     return null
 }
 
+fun PsiElement?.getPreviousSiblingOfType(vararg siblingElementType: IElementType): PsiElement? {
+    var element:PsiElement? = this ?: return null
+    while (element?.prevSibling != null) {
+        element = element.prevSibling
+        if (element.elementType in siblingElementType) {
+            return element
+        }
+    }
+    return null
+}
+
 fun PsiElement?.getNextSiblingOfType(siblingElementType: IElementType): PsiElement? {
     var element:PsiElement? = this ?: return null
     while (element?.nextSibling != null) {
         element = element.nextSibling
         if (element.hasElementType(siblingElementType)) {
+            return element
+        }
+    }
+    return null
+}
+
+fun PsiElement?.getNextSiblingOfType(vararg siblingElementType: IElementType): PsiElement? {
+    var element:PsiElement? = this ?: return null
+    while (element?.nextSibling != null) {
+        element = element.nextSibling
+        if (element.elementType in siblingElementType) {
             return element
         }
     }
@@ -96,6 +119,24 @@ fun ASTNode.getNextNonEmptyNodeIgnoringComments(): ASTNode? {
 fun PsiElement.getPreviousNonEmptySibling(ignoreLineTerminator: Boolean): PsiElement? {
     val node = getPreviousNonEmptyNode(ignoreLineTerminator)
     return node?.psi
+}
+
+fun ASTNode.getPreviousNonEmptySiblingInParent(): ASTNode? {
+    var sibling: ASTNode? = treePrev
+    while (sibling != null) {
+        if (isWhitespace(sibling, true)) {
+            sibling = sibling.treePrev
+
+        } else if (sibling.elementType in CaosScriptTokenSets.COMMENTS) {
+            sibling = sibling.treePrev
+        }
+        break
+    }
+    return sibling
+}
+
+fun PsiElement.getPreviousNonEmptySiblingInParent(): PsiElement? {
+    return node.getPreviousNonEmptySiblingInParent()?.psi
 }
 
 fun ASTNode.getPreviousNonEmptyNodeIgnoringComments(): ASTNode? {
