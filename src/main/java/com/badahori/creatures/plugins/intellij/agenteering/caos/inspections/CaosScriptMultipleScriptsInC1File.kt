@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.getSelfOrParent
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startOffset
 import com.intellij.openapi.application.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
@@ -128,6 +129,7 @@ private object ExtractEventScriptToFile : LocalQuickFix {
                                 ?: return@run
                         FileEditorManager.getInstance(project).openFile(newFile, false)
                     } catch (e: Exception) {
+                        e.rethrowAnyCancellationException()
                         errorField.text = e.localizedMessage
                         errorField.isVisible = true
                     }

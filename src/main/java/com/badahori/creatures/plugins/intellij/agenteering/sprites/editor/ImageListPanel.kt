@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.openapi.application.invokeLater
 import com.github.timmyovo.nspasteboard.NSPasteboardAPI
 import com.intellij.notification.NotificationType
@@ -147,6 +148,7 @@ internal class ImageListPanel<T : HasImage>(private val project: Project, privat
                         NSPasteboardAPI.writeClipboardFilesURL(files.map { it.path }.toTypedArray())
                     }
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     CaosNotifications.showError(
                         project,
                         "Sprite Image List",

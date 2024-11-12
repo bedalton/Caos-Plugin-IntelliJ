@@ -96,12 +96,14 @@ fun expandCommasInCaosScript(project: Project, fileIn: PsiFile?) {
             runnable(project, fileIn)
             virtualFile.isWritable = isWritable
         } catch (e: Throwable) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to run expandCommas on '${fileIn.name}' in runUndoTransparentAction with throwable: ${e.message}")
             e.printStackTrace()
         } catch (e: Error) {
             LOGGER.severe("Failed to run expandCommas on '${fileIn.name}' in runUndoTransparentAction with error: ${e.message}")
             e.printStackTrace()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to run expandCommas on '${fileIn.name}' in runUndoTransparentAction with exception: ${e.message}")
             e.printStackTrace()
         }
@@ -171,6 +173,7 @@ private fun runnable(project: Project, fileIn: PsiFile?): Boolean {
         CodeStyleManager.getInstance(project).reformat(file)
         document.setReadOnly(readonly)
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         LOGGER.severe("Reformat threw error: ${e.message}")
         e.printStackTrace()
         return false
@@ -193,10 +196,12 @@ private fun commit(project: Project, document: Document) {
         manager.commitDocument(document)
         manager.doPostponedOperationsAndUnblockDocument(document)
     } catch (e: Throwable) {
+        e.rethrowAnyCancellationException()
         LOGGER.severe("Failed to commit document with throwable; ${e.className}: ${e.message ?: ""}")
     } catch (e: Error) {
         LOGGER.severe("Failed to commit document with error; ${e.className}: ${e.message ?: ""}")
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         LOGGER.severe("Failed to commit document with exception; ${e.className}: ${e.message ?: ""}")
     }
 

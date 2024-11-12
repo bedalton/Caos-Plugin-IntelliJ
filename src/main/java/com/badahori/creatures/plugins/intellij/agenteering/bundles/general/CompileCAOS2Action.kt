@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.common.util.className
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -72,6 +73,7 @@ class CompileCAOS2Action: AnAction(
                 CompileCaos2CobAction.compile(project, caos2Cob)
             }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to compile CAOS2Cob; ${e.className}(${e.message}); Files: ${caos2Cob.joinToString { it.name }}")
         }
 
@@ -88,6 +90,7 @@ class CompileCAOS2Action: AnAction(
                 CompilePrayFileAction.compile(project, allPrayFiles.toTypedArray())
             }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to compile CAOS2Pray; ${e.className}(${e.message}) files: ${caos2Pray.joinToString { it.name }}")
         }
     }

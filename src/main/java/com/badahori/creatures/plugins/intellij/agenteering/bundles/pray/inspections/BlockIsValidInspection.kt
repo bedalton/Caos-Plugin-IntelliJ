@@ -11,10 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2BlockComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
-import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPreviousNonEmptySibling
-import com.badahori.creatures.plugins.intellij.agenteering.utils.lineNumber
-import com.badahori.creatures.plugins.intellij.agenteering.utils.tokenType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.bedalton.creatures.agents.pray.compiler.pray.PrayDataValidator
 import com.bedalton.vfs.LocalFileSystem
 import com.intellij.codeInspection.LocalInspectionTool
@@ -64,7 +61,8 @@ open class PrayBlockIsValidInspection : LocalInspectionTool(), DumbAware {
                 false
             )
                 .ifEmpty { null }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
+            e.rethrowAnyCancellationException()
             holder.registerProblem(
                 block,
                 TextRange.create(block.endOffset - 1, block.endOffset),

@@ -141,6 +141,7 @@ class ClasForm private constructor(project: Project) : DialogWrapper(project, tr
                 try {
                     EditorUtil.insertText(editor, "$clas", position, true)
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     e.printStackTrace()
                     LOGGER.severe("Failed to insert CLAS text with error: ${e.message}")
                 }
@@ -163,6 +164,7 @@ class ClasForm private constructor(project: Project) : DialogWrapper(project, tr
                     }
                     element.replace(newValue)
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     e.printStackTrace()
                     LOGGER.severe("Failed to create CLAS value with error: ${e.message}")
                 }
@@ -233,6 +235,7 @@ class ClasForm private constructor(project: Project) : DialogWrapper(project, tr
             try {
                 it.toInt()
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 return ValidationInfo("Int value invalid", field)
             }
         }

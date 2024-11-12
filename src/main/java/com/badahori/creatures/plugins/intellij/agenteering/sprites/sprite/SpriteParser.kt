@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
 import com.badahori.creatures.plugins.intellij.agenteering.utils.flipHorizontal
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.mapAsync
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.formatted
@@ -92,6 +93,7 @@ object SpriteParser {
                     SprSpriteFile(stream, false, progressEvery, callback)
                         .toListOf()
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     Log.iIf(SPR_SHORT_DEBUG_LOGGING) { "Parsing SPR short: $fileName" }
                     try {
                         SprSetDecompiler.decompileSets(
@@ -100,7 +102,8 @@ object SpriteParser {
                             null,
                             null,
                         )!!
-                    } catch (_: Exception) {
+                    } catch (e2: Exception) {
+                        e2.rethrowAnyCancellationException()
                         throw e
                     }
                 }
@@ -131,6 +134,7 @@ object SpriteParser {
             bytesBuffer.close()
             size
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             null
         }
     }
@@ -165,6 +169,7 @@ object SpriteParser {
             imageCount(spriteFile)
                 ?: return defaultVariant
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return defaultVariant
         }
         if (extension == "s16") {
@@ -230,11 +235,13 @@ class SpriteFileHolder(sprites: List<SpriteFile>, val fileName: String, private 
                         try {
                             it.image()
                         } catch (e: Exception) {
+                            e.rethrowAnyCancellationException()
                             Log.e("Failed to async frame to Bitmap32; ${e.formatted(true)}")
                             throw e
                         }
                     }
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     Log.e("Failed to convert list of AsyncFrames to list of Bitmap32s; ${e.formatted(true)}")
                     throw e
                 }
@@ -257,12 +264,14 @@ class SpriteFileHolder(sprites: List<SpriteFile>, val fileName: String, private 
             val bitmaps = try {
                 images.await()
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 Log.e("Failed to convert deferred images list to actual image list; ${e.formatted(true)}")
                 throw e
             }
             try {
                 bitmaps.map(Bitmap32::toAwt)
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 Log.e("Failed to convert korim.Bitmap32's into Java BufferedImage; ${e.formatted(true)}")
                 throw e
             }

@@ -2,8 +2,8 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
 import com.badahori.creatures.plugins.intellij.agenteering.injector.GameInterfaceName
 import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInjectorInterface
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.GameInterfaceListConverter
-import com.badahori.creatures.plugins.intellij.agenteering.utils.JsonToXMLStringConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.StringListConverter
 import com.bedalton.common.util.formatted
@@ -153,6 +153,7 @@ class CaosInjectorApplicationSettingsService :
             return try {
                 super.fromString(value)
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to deserialize Caos injector settings; ${e.formatted(false)}\nValue:\n\t$value;")
                 null
             }
@@ -202,7 +203,8 @@ class CaosInjectorApplicationSettingsService :
                         listener(oldState, newState)
                     }
                 })
-            } catch (ignored: Exception) {
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
         }
 
@@ -230,8 +232,8 @@ class CaosInjectorApplicationSettingsService :
             }
             try {
                 ApplicationManager.getApplication().messageBus.connect(disposable).subscribe(TOPIC, listener)
-            } catch (ignored: Exception) {
-
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
         }
 

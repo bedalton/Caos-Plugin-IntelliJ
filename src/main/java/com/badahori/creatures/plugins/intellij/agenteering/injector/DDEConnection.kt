@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.project.Project
 import com.pretty_tools.dde.client.DDEClientConversation
@@ -67,6 +68,7 @@ internal class DDEConnection(override val variant: CaosVariant, private val data
         try {
             conn.poke("Macro", processedCaos + 0.toChar())
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return InjectionStatus.Bad(
                 fileName,
                 descriptor,
@@ -82,6 +84,7 @@ internal class DDEConnection(override val variant: CaosVariant, private val data
             }
             InjectionStatus.Ok(fileName, descriptor, response)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Request failed after poke with dde error: ${e.message}")
             InjectionStatus.Bad(
                 fileName,
@@ -120,6 +123,7 @@ internal class DDEConnection(override val variant: CaosVariant, private val data
             connection = null
             true
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to disconnect from DDE Vivarium with error: ${e.message}")
             false
         }
@@ -168,6 +172,7 @@ internal class DDEConnection(override val variant: CaosVariant, private val data
             connection = conn
             conn
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             e.printStackTrace()
             LOGGER.severe("Connection to the vivarium failed. Ensure ${variant.fullName} is running. Error: " + e.message)
             null

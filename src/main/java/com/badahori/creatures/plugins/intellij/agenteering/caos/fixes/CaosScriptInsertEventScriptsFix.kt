@@ -73,6 +73,7 @@ class CaosScriptInsertEventScriptsFix(
         try {
             invoke(editor, file, element)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to insert event scripts. ${e.formatted(true)}")
         }
     }
@@ -386,10 +387,12 @@ class CaosScriptInsertEventScriptsFix(
                 manager.commitDocument(document)
                 manager.doPostponedOperationsAndUnblockDocument(document)
             } catch (e: Throwable) {
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to commit document with throwable; ${e.className}: ${e.message ?: ""}")
             } catch (e: Error) {
                 LOGGER.severe("Failed to commit document with error; ${e.className}: ${e.message ?: ""}")
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to commit document with exception; ${e.className}: ${e.message ?: ""}")
             }
         }

@@ -107,6 +107,7 @@ val PsiElement.isFolded: Boolean
                     !it.isExpanded && startOffset in it.startOffset..it.endOffset
                 }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return false
         }
     }
@@ -127,6 +128,7 @@ val PsiElement.isNotFolded: Boolean
                     /*!it.isExpanded &&*/ (startOffset in it.startOffset..it.endOffset || endOffset in it.startOffset..it.endOffset)
                 }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return false
         }
     }

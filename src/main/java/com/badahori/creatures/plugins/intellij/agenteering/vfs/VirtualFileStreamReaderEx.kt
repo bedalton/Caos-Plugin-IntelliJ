@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.vfs
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.common.util.className
 import com.bedalton.io.bytes.ByteStreamReader
 import com.bedalton.io.bytes.InputStreamByteReader
@@ -25,17 +26,13 @@ internal class VirtualFileStreamReader(
                         try {
                             virtualFile.inputStream
                         } catch (e: Exception) {
-                            if (e is ProcessCanceledException) {
-                                throw e
-                            }
+                            e.rethrowAnyCancellationException()
                             LOGGER.severe("VirtualByteStreamReader getInputStream failed; ${e.className}: ${e.message}\n${e.stackTraceToString()}")
                             null
                         }
                     }
             } catch (e: Exception) {
-                if (e is ProcessCanceledException) {
-                    throw e
-                }
+                e.rethrowAnyCancellationException()
             }
         }
         var rawBytes = virtualFile.contentsToByteArray()

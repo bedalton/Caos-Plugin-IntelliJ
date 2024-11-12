@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnkno
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.randomString
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.common.util.OS
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -398,7 +399,8 @@ interface IsNet {
                 if (temp.protocol.nullIfEmpty() != null) {
                     return temp
                 }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
             val prefix = if (schema.isNullOrBlank()) {
                 ""
@@ -409,7 +411,8 @@ interface IsNet {
             }
             return try {
                 URL("$prefix$url")
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 null
             }
         }

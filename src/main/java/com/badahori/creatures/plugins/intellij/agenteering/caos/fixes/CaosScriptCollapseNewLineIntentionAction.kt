@@ -73,8 +73,8 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
         if (!ApplicationManager.getApplication().isDispatchThread) {
             try {
                 collapseLines(file, collapseChar)
-            } catch (_: Exception) {
-
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
             return
         }
@@ -83,18 +83,20 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
             PsiDocumentManager.getInstance(project).commitDocument(document)
         }
         val message = try {
-            if (collapseLines(file, collapseChar) == null)
+            if (collapseLines(file, collapseChar) == null) {
                 "Failed to collapse script to single line"
-            else
+            } else {
                 null
+            }
         } catch (e:Exception) {
+            e.rethrowAnyCancellationException()
             e.message
         }
         if (message != null) {
             try {
                 CaosNotifications.showError(project, "Collapse Script Error", message)
-            } catch (_: Exception) {
-
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
         }
     }
@@ -202,6 +204,7 @@ abstract class CaosScriptCollapseNewLineIntentionAction(
                             }
                         }
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     null
                 }.apply {
                     LOGGER.severe("Document was null. Attempting to create new item: ${this?.text}")

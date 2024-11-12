@@ -4,6 +4,7 @@ import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.POS_NEG_NUMBER_REGEX
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import java.time.format.DateTimeFormatter
 
 enum class CobTagFormat(val formatDescriptor: String, val validate: (value:String) -> Boolean) {
@@ -48,10 +49,12 @@ private fun isDate(value: String): Boolean {
         DateTimeFormatter.ISO_LOCAL_DATE.parse(value.stripSurroundingQuotes())
         true
     } catch(e: Exception) {
+        e.rethrowAnyCancellationException()
         try {
             DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(value.stripSurroundingQuotes())
             return true
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             false
         }
     }

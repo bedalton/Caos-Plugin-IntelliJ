@@ -66,9 +66,7 @@ class CaosScriptCls2ToClasFix(element: CaosScriptCAssignment) : IntentionAction,
             clas = CaosAgentClassUtils.toClas(family, genus, species)
             "setv clas $clas"
         } catch (e:Exception) {
-            if (e is ProcessCanceledException) {
-                throw e
-            }
+            e.rethrowAnyCancellationException()
             null
         }
     }

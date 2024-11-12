@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.endOffset
 import com.badahori.creatures.plugins.intellij.agenteering.utils.repeat
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.common.util.ensureEndsWith
 import com.bedalton.common.util.ensureStartsWith
 import com.intellij.openapi.application.runWriteAction
@@ -82,6 +83,7 @@ object CaosScriptPsiElementFactory {
         val file = try {
             createFileFromText(project, script, CaosVariant.DS)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return null
         } catch (_: Error) {
             return null

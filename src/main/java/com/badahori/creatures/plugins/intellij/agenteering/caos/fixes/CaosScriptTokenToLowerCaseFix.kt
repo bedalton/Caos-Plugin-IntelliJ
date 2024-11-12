@@ -12,6 +12,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptShouldBeLowerCase
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 
 class CaosScriptTokenToLowerCaseFix(element: CaosScriptShouldBeLowerCase) : LocalQuickFix, IntentionAction {
 
@@ -45,7 +46,9 @@ class CaosScriptTokenToLowerCaseFix(element: CaosScriptShouldBeLowerCase) : Loca
                 ?: return
         try {
             PsiDocumentManager.getInstance(project).commitDocument(document)
-        } catch (e:Exception) {}
+        } catch (e:Exception) {
+            e.rethrowAnyCancellationException()
+        }
         EditorUtil.replaceText(document, element.textRange, element.text.lowercase())
     }
 

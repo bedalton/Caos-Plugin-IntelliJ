@@ -5,6 +5,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport.DEFAULT_POSE_STRING_VERSION
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosVariantConverter
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ProjectSettingsConverter
@@ -343,7 +344,8 @@ class CaosProjectSettingsService(
                         listener(oldState, newState)
                     }
                 })
-            } catch (ignored: Exception) {
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
         }
 
@@ -375,8 +377,8 @@ class CaosProjectSettingsService(
             }
             try {
                 project.messageBus.connect(disposable).subscribe(TOPIC, listener)
-            } catch (ignored: Exception) {
-
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
         }
 

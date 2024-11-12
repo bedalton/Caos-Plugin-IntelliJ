@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorImpl;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility;
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttMessages;
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
@@ -18,6 +19,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
@@ -25,6 +27,7 @@ import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.JBColor;
 import com.intellij.uiDesigner.core.Spacer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,6 +40,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.CancellationException;
 
 import static javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW;
 
@@ -699,8 +703,13 @@ public class AttEditorPanel implements HasSelectedCell, AttEditorController.View
             this.part.setSelectedIndex(part - 'a');
             controller.setPart(part);
             onPartChange(part);
-        } catch (Exception ignored) {
-
+        } catch (Exception e) {
+            if (e instanceof ProcessCanceledException) {
+                throw (ProcessCanceledException)e;
+            }
+            if (e instanceof CancellationException) {
+                throw (CancellationException)e;
+            }
         }
     }
 

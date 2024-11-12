@@ -57,6 +57,7 @@ internal class StringListConverter : Converter<List<String>>() {
         val decoded = try {
             value.trim().decodeBase64().decodeToString()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             value.trim()
         }
 
@@ -64,6 +65,7 @@ internal class StringListConverter : Converter<List<String>>() {
             return try {
                 json.decodeFromString<List<String>>(decoded).toList()
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to deserialize JSON string; ${e.className}:${e.message}")
                 emptyList()
             }
@@ -71,6 +73,7 @@ internal class StringListConverter : Converter<List<String>>() {
         return try {
             fromStringOld(decoded)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             fromStringOld(value)
         }
     }
@@ -122,7 +125,8 @@ internal class GameInterfaceConverter : Converter<GameInterfaceName?>() {
     override fun fromString(value: String): GameInterfaceName? {
         val decoded = try {
             decodeBase64(value).decodeToString()
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             value
         }
         return GameInterfaceName.fromString(decoded)
@@ -144,13 +148,15 @@ internal object GameInterfaceListConverter : Converter<List<GameInterfaceName>>(
     override fun fromString(rawSerialized: String): List<GameInterfaceName> {
         val decoded = try {
             decodeBase64(rawSerialized).decodeToString()
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             rawSerialized
         }
         if (decoded.startsWith('[') && decoded.contains('{') && decoded.endsWith(']')) {
             try {
                 return GameInterfaceName.json.decodeFromString<Array<GameInterfaceName>>(decoded).toList()
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to deserialize array of game interfaces: ${e.className}: ${e.message}")
             }
         }
@@ -188,6 +194,7 @@ abstract class JsonToXMLStringConverter<T>: Converter<T>() {
             else -> try {
                 value.decodeBase64().decodeToString()
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to decode BASE64 encoded string. Proceeding as plain text; ${e.className}:${e.message}\n${e.stackTraceToString()}")
                 return null
             }
@@ -195,6 +202,7 @@ abstract class JsonToXMLStringConverter<T>: Converter<T>() {
         return try {
             json.decodeFromString(deserializer, jsonString)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to decode json using ${deserializer.className}\n${e.className}:${e.message}\n${e.stackTraceToString()}")
             null
         }
@@ -209,6 +217,7 @@ abstract class JsonToXMLStringConverter<T>: Converter<T>() {
                 .encodeToByteArray()
                 .toBase64()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to encode ${value.className} to JSON -> BASE64 encoded string.\n${e.className}:${e.message}\n${e.stackTraceToString()}")
             null
         }

@@ -128,6 +128,7 @@ private class CaosFileCaos2ChangedListener(
                     return
                 }
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 caos2 = null
                 return
             }

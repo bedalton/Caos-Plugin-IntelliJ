@@ -8,10 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SFC_DECOMPIL
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcDecompiledFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcObjectPtr
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.Ptr.SfcSceneryPtr
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.equalsIgnoreCase
-import com.badahori.creatures.plugins.intellij.agenteering.utils.filterNotNull
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.bedalton.io.bytes.ByteStreamReader
 import com.intellij.openapi.vfs.VirtualFile
@@ -233,7 +230,8 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
                     ae.printStackTrace()
                     SfcFileDataHolder(error = "Failed to parse SFC with error: ${ae.message}")
                 } else throw SfcReadException(ae.localizedMessage)
-            }catch (e: Exception) {
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 if (safe) {
                     LOGGER.severe("Failed to parse SFC with error: ${e.message}")
                     e.printStackTrace()

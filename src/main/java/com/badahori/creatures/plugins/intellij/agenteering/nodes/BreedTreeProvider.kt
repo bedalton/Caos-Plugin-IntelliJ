@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.nodes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey.Companion.isPartName
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.PathUtil.getExtension
 import com.bedalton.common.util.formatted
@@ -117,7 +118,8 @@ class BreedTreeProvider : TreeStructureProvider {
                     children,
                     viewSettings
                 )
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to create breed node: ${e.message}")
                 e.printStackTrace()
                 null
@@ -146,7 +148,8 @@ class BreedTreeProvider : TreeStructureProvider {
                         nodes = children,
                         viewSettings = viewSettings
                     ))
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
+                    e.rethrowAnyCancellationException()
                     LOGGER.severe("Failed to add breed node by slot; ${e.formatted(true)}")
                     out.addAll(children)
                 }

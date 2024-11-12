@@ -2,7 +2,6 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
-import com.bedalton.creatures.common.structs.BreedKey
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.Pose
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorImpl.BreedSelectionChangeListener
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer
@@ -22,6 +21,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifica
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
+import com.bedalton.creatures.common.structs.BreedKey
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -31,7 +31,6 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
-import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
 import com.intellij.openapi.util.Disposer
@@ -275,9 +274,7 @@ internal class AttEditorModel(
                             LOGGER.severe("Failed to properly maintain scale in image.")
                         }
                     } catch (e: Exception) {
-                        if (e is ProcessCanceledException) {
-                            throw e
-                        }
+                        e.rethrowAnyCancellationException()
                     }
                 }
             }
@@ -322,8 +319,8 @@ internal class AttEditorModel(
             if (attFile.isValid) {
                 attFile.getPsiFile(project)?.document?.removeDocumentListener(this)
             }
-        } catch (_: Exception) {
-        } catch (_: Error) {
+        } catch (e: Throwable) {
+            e.rethrowAnyCancellationException()
         }
         LocalFileSystem.getInstance().removeVirtualFileListener(this)
         attChangeListener = null
@@ -524,11 +521,9 @@ internal class AttEditorModel(
             if (!writeFile(attData)) {
                 LOGGER.severe("Failed to write Att file data")
             }
-//            attChangeListener.onAttUpdate()
-        } catch (e: java.lang.Exception) {
-            if (e is ProcessCanceledException) {
-                throw e
-            }
+            attChangeListener?.onAttUpdate()
+        } catch (e: Throwable) {
+            e.rethrowAnyCancellationException()
             e.printStackTrace()
         }
     }
@@ -1035,10 +1030,8 @@ private data class RelativeAtt(
             parse(project, file).also {
                 mAttModel = it
             }
-        } catch (e: Exception) {
-            if (e is ProcessCanceledException) {
-                throw e
-            }
+        } catch (e: Throwable) {
+            e.rethrowAnyCancellationException()
             null
         }
 
@@ -1075,17 +1068,16 @@ private data class RelativeAtt(
             ?: return false
         try {
             EditorUtil.replaceText(document, psi.textRange, updated.toFileText(variant))
-        } catch (e: Exception) {
-            if (e is ProcessCanceledException) {
-                throw e
-            }
+        } catch (e: Throwable) {
+            e.rethrowAnyCancellationException()
             return false
         }
         return try {
             PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
             PsiDocumentManager.getInstance(project).commitDocument(document)
             true
-        } catch (_: Exception) {
+        } catch (e: Throwable) {
+            e.rethrowAnyCancellationException()
             false
         }
     }

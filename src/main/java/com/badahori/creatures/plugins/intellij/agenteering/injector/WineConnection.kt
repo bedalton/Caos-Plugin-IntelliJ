@@ -11,6 +11,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CLIInjectFla
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.common.util.*
 import com.bedalton.io.bytes.decodeToWindowsCP1252
 import com.bedalton.log.Log
@@ -106,6 +107,7 @@ internal class WineConnection(
         return try {
             process(project, fileName, descriptor, args)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             throw e
         } finally {
 //            try {
@@ -165,6 +167,7 @@ internal class WineConnection(
                         tempFile.delete()
                     }
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     LOGGER.severe("Failed to delete temp CAOS file")
                 }
             }
@@ -187,6 +190,7 @@ internal class WineConnection(
         val file = try {
             this.file
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             throw Exception("Failed to copy injector EXE to run directory. Error: ${e.message}.")
         }
         if (!file.exists()) {
@@ -201,6 +205,7 @@ internal class WineConnection(
         val exists = try {
             tempDir.exists()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to check if temp file $tempDir exists")
             e.printStackTrace()
             false
@@ -210,6 +215,7 @@ internal class WineConnection(
             val newExists = try {
                 tempDir.exists()
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to check if alternate injector directory exists")
                 e.printStackTrace()
                 false
@@ -227,7 +233,8 @@ internal class WineConnection(
                 if (file.exists()) {
                     continue
                 }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 continue
             }
             tempFile = file
@@ -240,7 +247,9 @@ internal class WineConnection(
                 if (tempFile.exists()) {
                     tempFile.delete()
                 }
+                e.rethrowAnyCancellationException()
             } catch (e2: Exception) {
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to delete temp CAOS file")
                 e.printStackTrace()
             }
@@ -264,11 +273,13 @@ internal class WineConnection(
         try {
             assertExeWasCopied()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return Pair(e.message ?: CaosBundle.message("caos.injector.failed-to-copy-executable"), null)
         }
         val caosOrFile = try {
             prepareCaos(caos, cliFlag)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return Pair(
                 e.message ?: CaosBundle.message("caos.injector.errors.failed-to-prepare-script", "script"),
                 null
@@ -284,6 +295,7 @@ internal class WineConnection(
         val tempFile = try {
             writeTempFile(caos)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             throw Exception(e.message ?: "Failed to write CAOS to temp file for inject")
         }
         return tempFile.path
@@ -329,6 +341,7 @@ internal class WineConnection(
         try {
             proc = processBuilder.start()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             e.printStackTrace()
             LOGGER.severe(
                 "Failed to run command:\n\tWINEDEBUG=-all WINEPREFIX=\"${data.prefix.escape()}\" \"$wineExec\" $argsString"
@@ -355,6 +368,7 @@ internal class WineConnection(
                         "Failed to run command:\n\tWINEDEBUG=-all WINEPREFIX=\"${data.prefix.escape()}\" \"$wineExec\" $argsString\nSTDERR: $error"
                     )
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     e.printStackTrace()
                     InjectionStatus.Bad(
                         fileName,
@@ -365,6 +379,7 @@ internal class WineConnection(
             }
             getResponseFromProcess(fileName, descriptor, proc)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Caos injection failed with error: " + e.message)
             e.printStackTrace()
             InjectionStatus.Bad(
@@ -392,6 +407,7 @@ internal class WineConnection(
         val response = try {
             Json.decodeFromString(WineResult.serializer(), stripped)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Malformed WINE response <$responseString> as <$stripped>")
             return InjectionStatus.Bad(
                 fileName,
@@ -430,6 +446,7 @@ internal class WineConnection(
             try {
                 File(executable).parent
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 unixPath
             }
         } else {
@@ -543,6 +560,7 @@ internal class WineConnection(
             javaClass.classLoader.getResourceAsStream(pathTemp)
                 ?: throw Exception("Failed to get injector EXE resource as stream")
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             throw Exception("Failed to get injector EXE resource as stream. Error: ${e.message}")
         }
         // always write to different location
@@ -562,6 +580,7 @@ internal class WineConnection(
                 try {
                     fileOut.delete()
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     LOGGER.severe("Failed to delete prior injector EXE")
                 }
             } else {
@@ -572,6 +591,7 @@ internal class WineConnection(
             val success = try {
                 CaosFileUtil.copyStreamToFile(stream, fileOut, true)
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 throw IOException("Failed to copy Injector EXE by stream to run directory. Error: ${e.message}")
             }
             if (!success) {
@@ -610,6 +630,7 @@ private fun which(name: String): String? {
         ProcessBuilder("type", "-a", name)
             .start()
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         LOGGER.warning("Failed to find wine through which; ${e.className}: ${e.message}")
         return null
     }
@@ -618,6 +639,7 @@ private fun which(name: String): String? {
         val error = try {
             proc.errorStream?.readAllBytes()?.decodeToString() ?: "<NONE>"
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             "${e.className}: ${e.message}"
         }
         LOGGER.severe("PROC call for which returned error code: $returnCode; Error: $error")
@@ -636,6 +658,7 @@ private fun which(name: String): String? {
                 LOGGER.info("Path to wine: $it")
             }
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         Log.eIf(DEBUG_INJECTOR) {
             "Failed to find $name exec with WHICH in bash. ${e.message ?: ""}\n${e.stackTraceToString()}"
         }

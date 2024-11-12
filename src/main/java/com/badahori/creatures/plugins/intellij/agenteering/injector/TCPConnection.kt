@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil.isWindows
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.common.util.*
 import com.bedalton.io.bytes.decodeToWindowsCP1252
 import com.bedalton.io.bytes.encodeToWindowsCP1252EncodedBytes
@@ -129,6 +130,7 @@ internal class TCPConnection(
         val clientSocket = try {
             Socket(host, port)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to connect to TCP @ $host:$port; ${e.formatted(true)}")
             return InjectionStatus.BadConnection(
                 fileName,
@@ -155,6 +157,7 @@ internal class TCPConnection(
         val output = try {
             socket.getOutputStream()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to get output stream for TCP")
             return InjectionStatus.BadConnection(
                 fileName,
@@ -176,6 +179,7 @@ internal class TCPConnection(
         val input = try {
             socket.getInputStream()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to get input stream for TCP response")
             return InjectionStatus.BadConnection(
                 fileName,
@@ -224,6 +228,7 @@ internal class TCPConnection(
         try {
             output.write(encoded)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to write to TCP stream @ $host:$port; ${e.formatted(true)}")
             return InjectionStatus.BadConnection(
                 fileName,
@@ -246,6 +251,7 @@ internal class TCPConnection(
             }
             return getResponseStatus(fileName, descriptor, response)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to read from TCP stream @ $host:$port; ${e.formatted(true)}")
             return InjectionStatus.BadConnection(
                 fileName,

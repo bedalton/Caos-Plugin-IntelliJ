@@ -421,9 +421,7 @@ object CaosDefPsiImplUtil {
                 ValuesListEq.GREATER_THAN -> try {
                     key.toInt() > it.key.replace("[^0-9]".toRegex(), "").toInt()
                 } catch (e: Exception) {
-                    if (e is ProcessCanceledException) {
-                        throw e
-                    }
+                    e.rethrowAnyCancellationException()
                     false
                 }
             }

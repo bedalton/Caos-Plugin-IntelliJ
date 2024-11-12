@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.injector.C3Connection.Companion.MAX_CAOS_FILE_LENGTH
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.openapi.project.Project
 import java.io.BufferedReader
 import java.io.IOException
@@ -67,6 +68,7 @@ internal class PostConnection(
                 close()
             }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return InjectionStatus.BadConnection(
                 fileName,
                 descriptor,
@@ -86,6 +88,7 @@ internal class PostConnection(
             inputStream.close()
             content.toString()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return InjectionStatus.Bad(
                 fileName,
                 descriptor,
@@ -97,6 +100,7 @@ internal class PostConnection(
             val status = try {
                 it.get("status").asString
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Invalid injection response. Response: <$response> not valid JSON; Error: " + e.message)
                 e.printStackTrace()
                 return InjectionStatus.Bad(fileName, descriptor, message("caos.injector.errors.json-invalid", response))
@@ -104,6 +108,7 @@ internal class PostConnection(
             val message = try {
                 it.get("response").asString ?: ""
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 ""
             }
             if (message.contains("{@}"))

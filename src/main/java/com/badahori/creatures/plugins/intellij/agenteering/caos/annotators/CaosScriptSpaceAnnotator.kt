@@ -1,14 +1,16 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.annotators
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptFixTooManySpaces
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertBeforeFix
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptReplaceElementFix
+import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptTrimErrorSpaceBatchFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptArgument
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
@@ -16,7 +18,6 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
-import com.intellij.psi.TokenType
 import com.intellij.psi.TokenType.WHITE_SPACE
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.elementType
@@ -31,6 +32,7 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
        try {
            annotateElement(element, holder)
        } catch (e: Exception) {
+           e.rethrowAnyCancellationException()
            LOGGER.severe("Failed to annotate space: ${e.message ?: ""}")
            e.printStackTrace();
        }
@@ -86,6 +88,7 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
         if ((element.containingFile as? CaosScriptFile)?.hasCaos2Tags != false) {
             return
         }
+
         annotateExtraSpaces(element, annotationHolder = holder)
     }
 

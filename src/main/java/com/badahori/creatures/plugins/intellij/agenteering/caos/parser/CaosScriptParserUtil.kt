@@ -218,6 +218,7 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
                 return false
             }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return false
         } catch (e: Error) {
             return false

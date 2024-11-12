@@ -105,12 +105,14 @@ class InsertToknBeforeToken(private val afterInsert: InsertHandler<LookupElement
         }
         val toknRvalue = try {
             CaosScriptPsiElementFactory.createToknCommandWithToken(element.project, token)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             null
         } ?: return false
         return try {
             element.replace(toknRvalue) != null
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             false
         }
     }
@@ -157,8 +159,8 @@ object EqualSignInsertHandler : InsertHandler<LookupElement> {
             else
                 " = "
             EditorUtil.insertText(context, text, true)
-        } catch (_: Exception) {
-
+        } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
         }
     }
 }

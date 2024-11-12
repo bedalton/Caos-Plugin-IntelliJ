@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import java.awt.image.BufferedImage
 import java.io.File
@@ -17,6 +18,7 @@ internal data class ImageTransferItem(internal val fileName:String, override val
         val bytes = try {
             image.toPngByteArray()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return@lazy null
         }
         val tempDirectory = Files.createTempDirectory(null).toFile()

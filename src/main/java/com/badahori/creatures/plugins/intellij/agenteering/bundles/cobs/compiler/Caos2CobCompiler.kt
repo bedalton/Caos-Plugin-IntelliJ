@@ -45,6 +45,7 @@ object Caos2CobCompiler {
             compilationResult.failures++
             return false
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe(e.message)
             e.printStackTrace()
             return false
@@ -146,6 +147,7 @@ object Caos2CobCompiler {
             )
             null
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             CaosNotifications.showError(
                 project,
                 "CAOS2Cob Failure",
@@ -434,7 +436,8 @@ object Caos2CobCompiler {
                 VfsUtil.findFile(targetIoFile.toPath(), true)?.let { thisFile ->
                     VfsUtil.markDirtyAndRefresh(true, false, true, thisFile)
                 }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
             true
         } catch (e: Exception) {

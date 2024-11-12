@@ -92,9 +92,11 @@ class CaosScriptEditorToolbar(
             panel.add(headerComponent)
         } catch (e: ProcessCanceledException) {
             LOGGER.severe("Process was canceled during notification panel creation")
+            e.rethrowAnyCancellationException()
             e.printStackTrace()
             return panel
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("ERROR creating header component. ${e.className}(${e.message}) @ ${virtualFile.name}")
         }
         return panel
@@ -128,6 +130,7 @@ internal fun createCaosScriptHeaderComponent(
     val pointer = try {
         SmartPointerManager.createPointer(caosFile)
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         LOGGER.severe("Failed to create smart pointer for CAOSScriptFile. ${e.className}(${e.message})")
         e.printStackTrace()
         return null
@@ -311,7 +314,8 @@ private fun populate(
                 ?: return@run
             try {
                 BlockSupport.getInstance(project).reparseRange(file, 0, file.endOffset, file.text)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
         }
         file = pointer.element
@@ -326,6 +330,7 @@ private fun populate(
                 moduleVariant.isC3DS) &&
                 pointer.element?.virtualFile !is CaosVirtualFile
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         false
     }
 

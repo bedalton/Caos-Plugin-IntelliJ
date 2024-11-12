@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
-import com.badahori.creatures.plugins.intellij.agenteering.utils.errorNotification
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.myModuleFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.warningNotification
@@ -135,6 +135,7 @@ private fun addModuleToModifiableModel(project: Project, modifiableModel: Modifi
                 VfsUtil.createDirectories(it)
             }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             errorNotification(project, "Failed to create root directory.")
         }
     }

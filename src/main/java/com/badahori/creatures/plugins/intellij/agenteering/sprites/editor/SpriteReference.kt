@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.randomString
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.openapi.application.PathManager
@@ -35,6 +36,7 @@ data class SpriteReference(
                     getFrameImage(virtualFile, cacheDirectory, i, padding)
                 }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             null
         }
     }

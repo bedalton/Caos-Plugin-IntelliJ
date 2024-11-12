@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStream
 import com.bedalton.io.bytes.ByteStreamReader;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
@@ -22,8 +23,8 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.locks.Lock;
+import java.util.*;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Logger;
 
 @SuppressWarnings("UseJBColor")
@@ -127,6 +128,12 @@ public class SprFileEditor implements DumbAware {
                     }
                 }
             } catch (Exception e) {
+                if (e instanceof CancellationException) {
+                    throw (CancellationException) e;
+                }
+                if (e instanceof ProcessCanceledException) {
+                    throw (ProcessCanceledException) e;
+                }
                 rawImages = Lists.newArrayList();
                 ApplicationManager.getApplication().invokeLater(() -> {
                     e.printStackTrace();
@@ -272,26 +279,32 @@ public class SprFileEditor implements DumbAware {
             final String fullFileName
     ) {
         this.images.addAll(images);
-            imageList.setListData(new ImageTransferItem[0]);
-            imageList.updateUI();
-            imageList.setListData(images.toArray(new ImageTransferItem[0]));
-            if (lastSize == images.size()) {
-                try {
-                    imageList.setSelectedIndices(selection);
-                } catch (Exception e) {
-                    LOGGER.severe("Failed to preserve selection on reload in file " + fullFileName);
+        imageList.setListData(new ImageTransferItem[0]);
+        imageList.updateUI();
+        imageList.setListData(images.toArray(new ImageTransferItem[0]));
+        if (lastSize == images.size()) {
+            try {
+                imageList.setSelectedIndices(selection);
+            } catch (Exception e) {
+                if (e instanceof CancellationException) {
+                    throw (CancellationException) e;
                 }
+                if (e instanceof ProcessCanceledException) {
+                    throw (ProcessCanceledException) e;
+                }
+                LOGGER.severe("Failed to preserve selection on reload in file " + fullFileName);
             }
-            if (scrollPane != null) {
-                if (loadingLabel != null) {
-                    scrollPane.remove(loadingLabel);
-                }
-                loadingLabel = null;
-                if (imageList != null) {
-                    imageList.setVisible(true);
-                    scrollPane.setViewportView(imageList);
-                }
+        }
+        if (scrollPane != null) {
+            if (loadingLabel != null) {
+                scrollPane.remove(loadingLabel);
             }
+            loadingLabel = null;
+            if (imageList != null) {
+                imageList.setVisible(true);
+                scrollPane.setViewportView(imageList);
+            }
+        }
     }
 
     private void initBackgroundColors() {

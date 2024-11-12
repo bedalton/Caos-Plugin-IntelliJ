@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang
 
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.fileTypes.impl.FileTypeOverrider
@@ -36,6 +36,7 @@ class PrayFileOverrider : FileTypeOverrider {
         val contents = try {
             virtualFile.contents
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return null
         }
         // If file passes pray validation, return pray file type

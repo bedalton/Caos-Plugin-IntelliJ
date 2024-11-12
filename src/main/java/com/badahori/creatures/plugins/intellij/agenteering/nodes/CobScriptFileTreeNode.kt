@@ -53,6 +53,7 @@ internal class CobFileTreeNode(
                     file.nameWithoutExtension
                 )
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 Log.e { "Failed to parse COB. ${e.formatted(true)}" }
                 CobFileData.InvalidCobData("Failed to parse COB. ${e.message}")
             }

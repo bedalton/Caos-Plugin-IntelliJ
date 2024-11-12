@@ -129,6 +129,7 @@ object CaosScriptInferenceUtil {
         var vars: List<CaosScriptNamedGameVar> = try {
             getNamedGameVarElements(project, element, false, element.varTypes)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return emptyList()
         }
         vars = vars.filter { thisVar ->

@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 import com.bedalton.common.util.className
 import com.badahori.creatures.plugins.intellij.agenteering.caos.exceptions.CaosInvalidTokenLengthException
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.psi.PsiElement
 import kotlin.math.pow
 
@@ -17,7 +18,8 @@ internal fun token(token: String): Int {
 internal fun token(token: Int): String? {
     return try {
         "${(token shr 24 and 0xFF).toChar() }${(token shr 16 and 0xFF).toChar() }${(token shr 8 and 0xFF).toChar() }${(token and 0xFF).toChar() }"
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         null
     }
 }
@@ -40,6 +42,7 @@ internal fun PsiElement.toTokenOrNull(lowercase: Boolean = true): Int? {
         try {
             token(if (lowercase) text.lowercase() else text)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Element to token failed: ${e.className}: ${e.message}")
             null
         }

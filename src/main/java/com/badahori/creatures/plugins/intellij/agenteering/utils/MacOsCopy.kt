@@ -55,6 +55,7 @@ private fun ensurePasteboardLibWasCopied(): String? {
         val success = try {
             CaosFileUtil.copyStreamToFile(stream, fileOut, true)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             throw IOException("Failed to copy JNI Pasteboard dylib by stream to run directory. ${e.className}: ${e.message}")
         }
         if (!success) {

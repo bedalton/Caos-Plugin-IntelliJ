@@ -1,7 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.common
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
+import com.bedalton.common.exceptions.rethrowCancellationException
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileChooser.FileChooserFactory
 import com.intellij.openapi.fileChooser.FileSaverDescriptor
@@ -31,7 +33,8 @@ internal fun saveImageWithDialog(
     val startDirectory = startDirectoryString?.let {
         try {
             VfsUtil.findFileByIoFile(File(startDirectoryString), false)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             null
         }
     }
@@ -48,6 +51,7 @@ internal fun saveImageWithDialog(
             doSave(kind, saver.file, image)
         }
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         false
     }
 }
@@ -76,6 +80,7 @@ private fun doSave(kind: String, outputFile: File, image: BufferedImage): Boolea
                 LOGGER.severe(e.localizedMessage)
                 e.printStackTrace()
             } catch (e: Exception) {
+                e.rethrowCancellationException()
                 e.printStackTrace()
             }
             if (bytes == null || bytes.size < 20) {

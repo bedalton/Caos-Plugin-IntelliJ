@@ -236,9 +236,7 @@ fun init(
         PsiFileFactory.getInstance(project)
             .createFileFromText(fileName, AttFileType, text)
     } catch (e: Exception) {
-        if (e is ProcessCanceledException) {
-            throw e
-        }
+        e.rethrowAnyCancellationException()
         LOGGER.severe("Failed to create ATT file for ${file.name}")
         e.printStackTrace()
         return false
@@ -252,9 +250,7 @@ fun init(
         }
         true
     } catch (e: Exception) {
-        if (e is ProcessCanceledException) {
-            throw e
-        }
+        e.rethrowAnyCancellationException()
         LOGGER.severe("Failed to add new ATT to parent directory")
         e.printStackTrace()
         false

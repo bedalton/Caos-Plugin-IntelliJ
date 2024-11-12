@@ -3,6 +3,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.settings
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ApplicationSettingsConverter
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
@@ -204,7 +205,8 @@ class CaosApplicationSettingsService :
                         listener(oldState, newState)
                     }
                 })
-            } catch (ignored: Exception) {
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
         }
 
@@ -232,8 +234,8 @@ class CaosApplicationSettingsService :
             }
             try {
                 ApplicationManager.getApplication().messageBus.connect(disposable).subscribe(TOPIC, listener)
-            } catch (ignored: Exception) {
-
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
         }
 

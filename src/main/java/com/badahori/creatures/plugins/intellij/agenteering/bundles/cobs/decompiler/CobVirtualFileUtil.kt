@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompi
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.badahori.creatures.plugins.intellij.agenteering.utils.toPngByteArray
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
@@ -59,6 +60,7 @@ object CobVirtualFileUtil {
                     LOGGER.severe("Failed to decompile COB: '${cobFile.name}'")
                 }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to decompile cob: '${cobFile.name}'; ${e.className}: ${e.message}")
             e.printStackTrace()
             return emptyList()
@@ -164,6 +166,7 @@ object CobVirtualFileUtil {
         val virtualFile = try {
             parent.createChildWithContent(fileName, text, false)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to create virtual file. Error: ${e.message}")
             e.printStackTrace()
             throw e
@@ -222,6 +225,7 @@ object CobVirtualFileUtil {
             parent.createChildWithContent(fileName, code, false)
                 .apply { this.setVariant(variant, true) }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to create virtual file. Error: ${e.message}")
             e.printStackTrace()
             throw e

@@ -312,18 +312,16 @@ object BodyPartsIndex {
             readNonBlocking(coroutineScope) {
                 supplier(newScope)
             }
-        } catch (e: Exception) {
-            if (e !is ProcessCanceledException) {
-                LOGGER.severe("Exception encountered in match sprites to atts. Error: ${e.message}")
-                e.printStackTrace()
-            }
+        } catch (e: Throwable) {
+            e.rethrowAnyCancellationException()
+            LOGGER.severe("Exception encountered in match sprites to atts. ${e.formatted(true)}")
             return emptyList()
         }
 
         // Match sprites to ATTs
         val files = try {
             matchSpritesToAtts(project, baseFiles, searchScope, variant, progressIndicator)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             if (e !is ProcessCanceledException) {
                 LOGGER.severe("variantParts() -> Exception encountered in match sprites to atts. Error: ${e.message}")
             }

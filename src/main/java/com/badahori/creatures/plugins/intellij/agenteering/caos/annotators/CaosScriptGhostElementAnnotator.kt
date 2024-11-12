@@ -41,6 +41,7 @@ class CaosScriptGhostElementAnnotator : Annotator, DumbAware {
                     }
                 }
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 if (parent is CaosScriptQuoteStringLiteral) {
                     parent.stringText?.textRange ?: parent.textRange
                 } else {

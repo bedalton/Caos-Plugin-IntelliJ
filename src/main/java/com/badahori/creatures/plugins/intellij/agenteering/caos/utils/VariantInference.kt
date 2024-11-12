@@ -124,7 +124,8 @@ private fun VirtualFile.inferVariantSimple(): CaosVariant? {
             }
         }
     } catch (e: Exception) {
-        LOGGER.severe("Failed to replace strings and comments in $path")
+        e.rethrowAnyCancellationException()
+        LOGGER.severe("Failed to replace strings and comments in $path; ${e.formatted(true)}")
         return null
     }
     val matchC1 = C1_ITEMS.containsMatchIn(text)
@@ -344,7 +345,10 @@ private fun variantInScopeFinal(
             try {
                 inputStream = it.inputStream
                 inputStream.read(buffer) == 4 && buffer.contentEquals(cobHeader)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                inputStream?.close()
+                inputStream = null
+                e.rethrowAnyCancellationException()
                 false
             } finally {
                 inputStream?.close()
@@ -362,6 +366,7 @@ private fun variantInScopeFinal(
             caosFiles.randomOrNull()?.contents
                 ?: continue
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return null
         }
         val withoutQuotes = Regex.escape(file.replace(COMMENTS, " "))

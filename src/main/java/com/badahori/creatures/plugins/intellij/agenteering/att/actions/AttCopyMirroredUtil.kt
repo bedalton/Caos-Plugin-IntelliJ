@@ -6,9 +6,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVa
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.toFileText
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.io.bytes.CREATURES_CHARACTER_ENCODING
 import com.intellij.openapi.application.runUndoTransparentWriteAction
-import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.runBlocking
@@ -78,9 +78,7 @@ internal object AttCopyMirroredUtil {
                 )
             }
         } catch (e: Exception) {
-            if (e is ProcessCanceledException) {
-                throw e
-            }
+            e.rethrowAnyCancellationException()
             // Most likely thrown from images being null
             return AttCopyResult.Error("Invalid or empty sprite encountered")
         }

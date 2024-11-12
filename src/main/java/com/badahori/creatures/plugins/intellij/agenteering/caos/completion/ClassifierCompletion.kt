@@ -199,7 +199,8 @@ object ClassifierCompletion {
         }
         return try {
             token(element.text)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             null
         }
     }

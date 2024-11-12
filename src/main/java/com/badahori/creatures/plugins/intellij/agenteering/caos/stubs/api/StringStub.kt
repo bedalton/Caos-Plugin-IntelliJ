@@ -45,7 +45,8 @@ enum class StringStubKind(val extensions: Set<String>? = null) {
             }
             return try {
                 valueOf(value.uppercase())
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 null
             }
         }
@@ -243,6 +244,7 @@ private fun getArgumentStubType(variant: CaosVariant, argument: CaosScriptArgume
     val first = try {
         commandDefinition.command.substring(0, 4)
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         return null
     }
 

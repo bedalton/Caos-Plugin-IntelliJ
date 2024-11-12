@@ -14,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptScriptElement
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.collectElementsOfType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.bedalton.common.exceptions.rethrowCancellationException
 import com.intellij.navigation.NavigationItem
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -629,18 +630,21 @@ internal fun copyForJect(variant: CaosVariant?, gameInterfaceName: GameInterface
 
     val tempFile = try {
         getJectTempFile(gameInterfaceName)
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         null
     } ?: return null
 
     return try {
         tempFile.writeText(caos)
         tempFile
-    } catch (_: Exception) {
+    } catch (e: Exception) {
         try {
             tempFile.delete()
-        } catch (_: Exception) {
+        } catch (e2: Exception) {
+            e2.rethrowCancellationException()
         }
+        e.rethrowAnyCancellationException()
         null
     }
 }
@@ -708,7 +712,8 @@ private fun getWineFallbackPath(root: File, gameInterfaceName: WineInjectorInter
             return null
         }
         return temp
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         return null
     }
 }
@@ -805,6 +810,7 @@ private fun findPossiblePsiElementOffsets(
                 out.add(pointer)
             }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to get element at index: $errorStart in <$text>; ${e.className}: ${e.message ?: ""}")
         }
         match = regex.find(text, match.range.last)

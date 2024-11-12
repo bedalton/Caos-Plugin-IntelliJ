@@ -42,7 +42,8 @@ internal fun getFilesWithExtension(
     }
     return try {
         FilenameIndex.getAllFilesByExt(project, fileExtension, theSearchScope).toList()
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         if (virtualFile != null) {
             getFilesWithExtensionWithoutIndex(virtualFile, fileExtension).filter {
                 theSearchScope.accept(it)

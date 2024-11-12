@@ -1,13 +1,22 @@
 package com.github.timmyovo.nspasteboard;
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.MacOsCopyKt;
+import com.intellij.openapi.progress.ProcessCanceledException;
+
+import java.util.concurrent.CancellationException;
 
 public class NSPasteboardAPI {
 
     static {
         try {
             MacOsCopyKt.ensureMacOsCopyLib();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            if (e instanceof CancellationException) {
+                throw (CancellationException) e;
+            }
+            if (e instanceof ProcessCanceledException) {
+                throw (ProcessCanceledException) e;
+            }
         }
     }
 

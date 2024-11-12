@@ -6,11 +6,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.count
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
 import com.intellij.openapi.application.*
-import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -375,9 +375,7 @@ internal class SubScriptLeafNode(
                 }
             }
         } catch (e: Exception) {
-            if (e is ProcessCanceledException) {
-                return null
-            }
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Error when getting virtual file in CaosScriptTreeNode")
             e.printStackTrace()
             null

@@ -9,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.common.util.className
 import com.bedalton.common.util.toListOf
 import com.intellij.notification.NotificationType
@@ -57,6 +58,7 @@ object Injector {
                 CaosVariant.C2
             }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             fallbackVariant
         }
     }
@@ -97,6 +99,7 @@ object Injector {
                     e.message ?: message("caos.errors.unknown-plugin-error")
                 )
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 InjectionStatus.Bad(
                     caosFile.name,
                     null,
@@ -146,6 +149,7 @@ object Injector {
                     message("caos.injector.errors.internal-plugin-error", e.messageOrNoneText())
                 )
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 InjectionStatus.Bad(
                     fileName,
                     null,
@@ -207,6 +211,7 @@ object Injector {
         return try {
             injectPrivate(project, fallbackVariant, gameInterfaceName, fileName, run)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             if (returnExceptionAsInjectionStatusAndNotAsNullValue) {
                 InjectionStatus.Bad(fileName, null, (e.message ?: "Plugin threw unhandled exception"))
             } else {
@@ -269,6 +274,7 @@ object Injector {
         return try {
             getConnectionObject(variant, gameInterfaceName).supportsJect
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             false
         }
     }

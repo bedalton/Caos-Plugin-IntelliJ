@@ -1,3 +1,5 @@
+@file:Suppress("ActionPresentationInstantiatedInCtor")
+
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileDetector
@@ -7,6 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessag
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.bedalton.common.structs.Pointer
 import com.bedalton.creatures.agents.pray.parser.parsePrayAgentToFiles
@@ -193,6 +196,7 @@ class DumpAgentAction : AnAction(
             )
             false
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to dump agent file: ${file.name} to $parentPath with error: ${e.message}")
             e.printStackTrace()
             false

@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.indices
 
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startsAndEndsWith
 import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.project.Project
@@ -11,7 +12,6 @@ import java.util.logging.Logger
 import java.util.regex.Pattern
 
 abstract class CaosScriptCaseInsensitiveStringIndexBase<PsiT : PsiElement>
-
 /**
  * Const
  * @param indexedElementClass the psi element class for the elements in this index
@@ -162,6 +162,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
         val pattern: Pattern = try {
             Pattern.compile(patternString.lowercase())
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             Pattern.compile(Pattern.quote(patternString.lowercase()))
         }
         for (key in getAllKeys(project)) {

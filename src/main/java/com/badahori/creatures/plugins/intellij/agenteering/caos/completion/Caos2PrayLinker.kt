@@ -343,12 +343,14 @@ internal class LinkFilesInsertHandler(
             val pathRegex = try {
                 "(.*?/)?$regexRaw".toRegex(RegexOption.IGNORE_CASE)
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 null
             }
 
             val regex = try {
                 regexRaw.toRegex(RegexOption.IGNORE_CASE)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 filtered.text = "Regex error"
                 filtered.foreground = JBColor.red
                 null
@@ -358,7 +360,8 @@ internal class LinkFilesInsertHandler(
                 try {
                     regex?.matches(it.virtualFile.name) == true ||
                             pathRegex?.matches(it.virtualFile.path) == true
-                } catch (_: Exception) {
+                } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     filtered.text = "Regex error"
                     filtered.foreground = JBColor.red
                     false

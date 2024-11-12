@@ -210,6 +210,7 @@ fun String.toIntSafe(): Int? {
     return try {
         this.toInt()
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         null
     }
 }
@@ -218,6 +219,7 @@ fun String.toFloatSafe(): Float? {
     return try {
         this.toFloat()
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         null
     }
 }

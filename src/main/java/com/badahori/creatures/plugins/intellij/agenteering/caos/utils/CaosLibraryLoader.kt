@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.CaosFileUtil
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.common.util.formatted
 import java.io.File
 import java.io.InputStream
@@ -28,8 +29,8 @@ object CaosLibraryLoader {
             if (fileOut.exists()) {
                 try {
                     fileOut.delete()
-                } catch (_: Exception) {
-
+                } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                 }
             }
 
@@ -38,6 +39,7 @@ object CaosLibraryLoader {
                     CaosFileUtil.copyStreamToFile(inputStream, fileOut, true)
                 }
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 if (!fileOut.exists()) {
                     return false
                 }

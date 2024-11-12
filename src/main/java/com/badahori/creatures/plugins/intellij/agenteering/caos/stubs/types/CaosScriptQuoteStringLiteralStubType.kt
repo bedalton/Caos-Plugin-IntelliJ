@@ -8,14 +8,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.String
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptQuoteStringLiteralStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 
-class CaosScriptQuoteStringLiteralStubType(debugName: String)
-    : CaosScriptStubElementType<CaosScriptQuoteStringLiteralStub, CaosScriptQuoteStringLiteralImpl>(debugName) {
+class CaosScriptQuoteStringLiteralStubType(debugName: String) :
+    CaosScriptStubElementType<CaosScriptQuoteStringLiteralStub, CaosScriptQuoteStringLiteralImpl>(debugName) {
 
     override fun createPsi(stub: CaosScriptQuoteStringLiteralStub): CaosScriptQuoteStringLiteralImpl {
         return CaosScriptQuoteStringLiteralImpl(stub, this)
@@ -41,11 +42,19 @@ class CaosScriptQuoteStringLiteralStubType(debugName: String)
         )
     }
 
-    override fun createStub(element: CaosScriptQuoteStringLiteralImpl, parent: StubElement<*>): CaosScriptQuoteStringLiteralStub {
+    override fun createStub(
+        element: CaosScriptQuoteStringLiteralImpl,
+        parent: StubElement<*>,
+    ): CaosScriptQuoteStringLiteralStub {
         return CaosScriptQuoteStringLiteralStubImpl(
             parent = parent,
             kind = element.stringStubKind,
-            value = try { element.stringValue } catch (e: Exception) { "" },
+            value = try {
+                element.stringValue
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
+                ""
+            },
             meta = element.meta
         )
     }
@@ -60,6 +69,7 @@ class CaosScriptQuoteStringLiteralStubType(debugName: String)
         val text = try {
             node.text
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             null
         } ?: return false
         return text.length > 2 && text[0] == '"' && text.last() == '"'

@@ -2,14 +2,15 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.indices
 
-import com.bedalton.common.util.className
-import com.bedalton.common.util.nullIfEmpty
-import com.bedalton.common.util.stripSurroundingQuotes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.MyDataIndexer.Companion.DELIMITER
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.lang.CatalogueFileType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.FileIndexUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
+import com.bedalton.common.exceptions.rethrowCancellationException
+import com.bedalton.common.util.*
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.search.GlobalSearchScope
@@ -107,6 +108,8 @@ class ClassifierToAgentNameIndex : FileBasedIndexExtension<String, String>() {
                     }
                     FileIndexUtil.getKeysAndValues(NAME, projectScope)
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
+                    e.rethrowCancellationException()
                     LOGGER.severe("Failed to get all classifiers; ${e.className}: ${e.message}")
                     emptyList()
                 }
@@ -149,16 +152,21 @@ class ClassifierToAgentNameIndex : FileBasedIndexExtension<String, String>() {
                     }
 
                     var projectScope = GlobalSearchScope.projectScope(project)
+
                     if (scope != null) {
                         projectScope = projectScope.intersectWith(scope)
                     }
+
                     FileBasedIndex.getInstance()
                         .getValues(
                             NAME,
                             classifier,
                             projectScope
                         )
-                } catch (_: Exception) {
+
+                } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
+                    e.rethrowCancellationException()
                     emptyList()
                 }
             } as List<String>

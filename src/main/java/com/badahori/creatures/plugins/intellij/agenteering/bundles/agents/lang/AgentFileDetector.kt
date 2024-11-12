@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.token
 import com.badahori.creatures.plugins.intellij.agenteering.utils.charAt
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.fileTypes.impl.FileTypeOverrider
 import com.intellij.openapi.progress.ProcessCanceledException
@@ -37,9 +38,7 @@ class AgentFileOverrider : FileTypeOverrider {
             val bytes = virtualFile.inputStream.readNBytes(4)
             ByteArraySequence(bytes)
         } catch (e: Exception) {
-            if (e is ProcessCanceledException) {
-                throw e
-            }
+            e.rethrowAnyCancellationException()
             return null
         }
         // If file passes pray validation, return pray file type

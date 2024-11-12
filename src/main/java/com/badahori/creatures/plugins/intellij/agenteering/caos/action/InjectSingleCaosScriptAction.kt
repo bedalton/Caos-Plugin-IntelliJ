@@ -283,6 +283,7 @@ private fun caosInject(
     try {
         injectActual(project, variant, gameInterfaceName, scriptPointer)
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         LOGGER.severe("Inject actual failed: ${e.message}")
         e.printStackTrace()
     }
@@ -350,6 +351,7 @@ private class IgnoreAndInject(
         try {
             injectActual(project, variant, gameInterfaceName, scriptPointer)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Inject ignored for session failed: ${e.message}")
             e.printStackTrace()
         }
@@ -409,6 +411,7 @@ private fun injectActual(
                         scripts = mapOf(jectType to listOf(struct)),
                     )
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     LOGGER.severe("Failed to inject script through command; ${e.formatted(true)}")
                     e.printStackTrace()
                 }

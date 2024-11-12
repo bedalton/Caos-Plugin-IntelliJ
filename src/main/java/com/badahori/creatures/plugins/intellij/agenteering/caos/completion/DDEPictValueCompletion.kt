@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.NUMBER_REGEX
 import com.intellij.openapi.application.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.codeInsight.completion.InsertHandler
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.codeInsight.lookup.LookupElement
@@ -64,7 +65,8 @@ private class PictDimensionsForm(val position: Int, private val editor: Editor) 
             try {
                 val dimensions = "${widthVal}|${heightVal}"
                 EditorUtil.insertText(editor, dimensions, position, true)
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
         }
         super.doOKAction()
@@ -85,6 +87,7 @@ private class PictDimensionsForm(val position: Int, private val editor: Editor) 
             try {
                 it.toInt()
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 return ValidationInfo("Int value invalid", field)
             }
         }

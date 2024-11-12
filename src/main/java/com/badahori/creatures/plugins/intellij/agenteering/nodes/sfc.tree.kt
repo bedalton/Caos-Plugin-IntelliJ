@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcFile
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcFileDataHolder
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.lang.SfcDecompiledFilePropertyPusher
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.reader.SfcReader
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.intellij.ide.projectView.PresentationData
@@ -42,6 +43,7 @@ internal class SfcFileTreeNode(project: Project, myVirtualFile: VirtualFile, pri
                 // Caching is handled by read file method in SfcReader
                 SfcReader.readFile(myVirtualFile, cache = true, safe = true).data
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 val error = "Failed to parse SFC file: '${myVirtualFile.path}' with error:\n\t${e.message}"
                 SfcDecompiledFilePropertyPusher.writeToStorage(myVirtualFile, SfcFileDataHolder(error = error))
                 LOGGER.severe(error)

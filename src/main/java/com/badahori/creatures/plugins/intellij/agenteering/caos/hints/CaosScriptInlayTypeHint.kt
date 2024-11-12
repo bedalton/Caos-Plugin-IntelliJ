@@ -617,7 +617,8 @@ internal fun getBitFlagText(typeList: CaosValuesList, bitFlagValue: Int, delimit
                 ?: continue
             if (bitFlagValue and typeListValueValue > 0)
                 values.add(typeListValue.name)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
         }
     }
     return values.joinToString(delimiter)

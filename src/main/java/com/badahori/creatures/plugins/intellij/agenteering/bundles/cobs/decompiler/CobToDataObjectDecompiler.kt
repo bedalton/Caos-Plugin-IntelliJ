@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompi
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.token
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.common.util.formatted
 import com.bedalton.common.util.trySilent
 import com.bedalton.io.bytes.*
@@ -21,6 +22,7 @@ object CobToDataObjectDecompiler {
                     decompile(this, virtualFile.nameWithoutExtension)
                 }
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to decompile COB: ${virtualFile.name}; ${e.formatted(true)}")
                 null
             }
@@ -44,6 +46,7 @@ object CobToDataObjectDecompiler {
                 try {
                     decompileC1Cob(decompressed, fileName)
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     throw Exception("Could not parse cob data for $fileName; ${e.formatted(true)}")
                 }
             }
@@ -61,6 +64,7 @@ object CobToDataObjectDecompiler {
             val decompressedBytes = decompressed.toByteArray()
             MemoryByteStreamReader(decompressedBytes)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return null
         }
     }

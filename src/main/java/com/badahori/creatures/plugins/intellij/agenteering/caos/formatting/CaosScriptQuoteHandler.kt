@@ -1,11 +1,10 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.codeInsight.editorActions.QuoteHandler
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.highlighter.HighlighterIterator
-import com.intellij.openapi.util.TextRange
-import com.intellij.psi.PsiElement
 import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IElementType
 
@@ -44,7 +43,8 @@ class CaosScriptQuoteHandler : QuoteHandler {
             if (iterator.start != offset && iterator.tokenType !in openingTokens) {
                 return false
             }
-        } catch (_:Exception) {
+        } catch (e:Exception) {
+            e.rethrowAnyCancellationException()
             return false
         }
         val firstToken = iterator.getTokenSafe()
@@ -57,7 +57,8 @@ class CaosScriptQuoteHandler : QuoteHandler {
         while (!iterator.atEnd() && iterator.tokenType in insideTokens && iterator.tokenType !in closingTokens) {
             try {
                 iterator.advance()
-            } catch (ignored: Exception) {
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 break
             }
         }
@@ -70,7 +71,8 @@ class CaosScriptQuoteHandler : QuoteHandler {
     override fun hasNonClosedLiteral(editor: Editor, iterator: HighlighterIterator, offset: Int): Boolean {
         val start = try {
             iterator.start
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return false
         }
 
@@ -126,7 +128,8 @@ class CaosScriptQuoteHandler : QuoteHandler {
 private fun HighlighterIterator.getTokenSafe(): IElementType? {
     return try {
         this.tokenType
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         return null
     }
 }

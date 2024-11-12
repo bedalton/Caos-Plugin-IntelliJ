@@ -186,7 +186,8 @@ fun ByteArray.decompress() : ByteArray {
         val decompressor = InflaterOutputStream(decompressed)
         decompressor.write(this)
         decompressed.toByteArray()
-    } catch (e:Exception) {
+    } catch (e:Throwable) {
+        e.rethrowAnyCancellationException()
         this
     } ?: this
 }

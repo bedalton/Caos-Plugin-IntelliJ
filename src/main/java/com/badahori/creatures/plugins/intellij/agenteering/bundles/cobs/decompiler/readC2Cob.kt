@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.decompi
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScriptType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.common.util.ensureEndsWith
 import com.bedalton.creatures.sprite.parsers.parseS16FrameAtCurrentPosition
 import com.bedalton.creatures.sprite.util.ColorEncoding
@@ -15,6 +16,7 @@ internal fun ByteStreamReader.readC2CobBlock() : CobBlock? {
     val type = try {
         string(4)
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         return null
     }
     val size = uInt32()

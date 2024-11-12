@@ -52,9 +52,7 @@ internal class PrayFileTreeNode(
             try {
                 parsePrayAgentBlocks(stream, "*")
             } catch (e: Exception) {
-                if (e is ProcessCanceledException) {
-                    throw e
-                }
+                e.rethrowAnyCancellationException()
                 return@runBlocking emptyList()
             }
         }
@@ -92,9 +90,7 @@ internal class PrayFileTreeNode(
                                 this.isWritable = false
                             }
                         } catch (e: Exception) {
-                            if (e is ProcessCanceledException) {
-                                throw e
-                            }
+                            e.rethrowAnyCancellationException()
                             LOGGER.severe("Failed to get data for [${block.blockTag}]->${block.blockName}; ${e.className}: ${e.message}")
                             return@map null
                         })
@@ -103,9 +99,7 @@ internal class PrayFileTreeNode(
                 try {
                     PrayBlockTreeNode(project, directory, block, viewSettings)
                 } catch (e: Exception) {
-                    if (e is ProcessCanceledException) {
-                        throw e
-                    }
+                    e.rethrowAnyCancellationException()
                     LOGGER.severe("Failed to get block tree node for [${block.blockTag}]->${block.blockName}; ${e.className}: ${e.message}")
                     e.printStackTrace()
                     return@lazy emptyList()
@@ -165,9 +159,7 @@ internal class PrayBlockTreeNode(
                     .any { it.tag like "Agent Type" }
             }
         } catch (e: Exception) {
-            if (e is ProcessCanceledException) {
-                throw e
-            }
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to parse block [${prayBlock.blockTag}]->${prayBlock.blockName}")
             e.printStackTrace()
             return@lazy emptyList()
@@ -186,9 +178,7 @@ internal class PrayBlockTreeNode(
             try {
                 prayBlock.stringTags
             } catch (e: Exception) {
-                if (e is ProcessCanceledException) {
-                    throw e
-                }
+                e.rethrowAnyCancellationException()
                 emptyArray()
             }
         }
@@ -208,9 +198,7 @@ internal class PrayBlockTreeNode(
                     text
                 )
             } catch (e: Exception) {
-                if (e is ProcessCanceledException) {
-                    throw e
-                }
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to create agent CAOS file; ${e.className}: ${e.message};\n${e.stackTrace}")
                 return@map null
             }
@@ -230,9 +218,7 @@ internal class PrayBlockTreeNode(
         return try {
             childNodes
         } catch (e: Exception) {
-            if (e is ProcessCanceledException) {
-                throw e
-            }
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to get child nodes for [${prayBlock.blockTag}]->${prayBlock.blockName}")
             e.printStackTrace()
             emptyList()

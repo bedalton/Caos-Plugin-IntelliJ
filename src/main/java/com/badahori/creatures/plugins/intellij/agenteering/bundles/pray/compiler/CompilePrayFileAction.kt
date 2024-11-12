@@ -7,10 +7,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Pray
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.bedalton.common.structs.Pointer
 import com.bedalton.common.util.className
 import com.bedalton.common.util.nullIfEmpty
 import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions
+import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptionsWithLinkWithFileName
 import com.bedalton.creatures.agents.pray.compiler.PrayCompilerTask
 import com.bedalton.creatures.agents.pray.compiler.compilePrayAndWrite
 import com.bedalton.creatures.agents.pray.compiler.pray.PrayParseValidationFailException
@@ -23,17 +23,15 @@ import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
-import com.intellij.openapi.progress.runBackgroundableTask
-import com.intellij.openapi.progress.util.BackgroundTaskUtil.BackgroundTask
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import icons.CaosScriptIcons
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.io.File
-import kotlin.coroutines.coroutineContext
 
 class CompilePrayFileAction(private val transient: Boolean = true) : AnAction({ "Compile PRAY Agent" }) {
 
@@ -181,6 +179,7 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction({ 
             try {
                 return compilePrayAndWrite(coroutineContext = coroutineContext, LocalFileSystem!!, fileOpts, false)
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 invokeLater {
                     if (e is PrayParseValidationFailException) {
                         CaosNotifications.showError(

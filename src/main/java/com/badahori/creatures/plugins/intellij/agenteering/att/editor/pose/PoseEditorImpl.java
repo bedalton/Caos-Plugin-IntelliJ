@@ -49,6 +49,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.CancellationException;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -378,6 +379,12 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         try {
             setVariant(variant);
         } catch (Exception e) {
+            if (e instanceof ProcessCanceledException) {
+                throw (ProcessCanceledException)e;
+            }
+            if (e instanceof CancellationException) {
+                throw (CancellationException)e;
+            }
             LOGGER.severe("Failed to set variant");
             setVariant(variant);
         }
@@ -693,6 +700,12 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
                 try {
                     highlighter.removeAllHighlights();
                 } catch (Exception e) {
+                    if (e instanceof ProcessCanceledException) {
+                        throw (ProcessCanceledException)e;
+                    }
+                    if (e instanceof CancellationException) {
+                        throw (CancellationException)e;
+                    }
                     LOGGER.severe("Failed to remove highlights");
                 }
                 setPoseFromString(newPoseRaw);
@@ -1083,18 +1096,21 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
             return;
         }
 //        ApplicationManager.getApplication().runReadAction(() -> {
-            try {
-                model.requestRender(theParts, breedChanged);
-                dirty = false;
-                breedChanged = false;
-            } catch (final Exception e) {
-                if (e instanceof ProcessCanceledException) {
-                    throw e;
-                }
-                LOGGER.severe("Failed to render; " + e.getLocalizedMessage());
-                //noinspection CallToPrintStackTrace
-                e.printStackTrace();
+        try {
+            model.requestRender(theParts, breedChanged);
+            dirty = false;
+            breedChanged = false;
+        } catch (final Exception e) {
+            if (e instanceof ProcessCanceledException) {
+                throw (ProcessCanceledException)e;
             }
+            if (e instanceof CancellationException) {
+                throw (CancellationException)e;
+            }
+            LOGGER.severe("Failed to render; " + e.getLocalizedMessage());
+            //noinspection CallToPrintStackTrace
+            e.printStackTrace();
+        }
 //        });
     }
 
@@ -1421,6 +1437,12 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
             try {
                 menu.addItem(item);
             } catch (Exception e) {
+                if (e instanceof ProcessCanceledException) {
+                    throw (ProcessCanceledException)e;
+                }
+                if (e instanceof CancellationException) {
+                    throw (CancellationException)e;
+                }
                 LOGGER.warning("Failed to set menu item: " + item.toString() + " into combo box");
             }
         }
@@ -1591,6 +1613,12 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
             resetIfNeeded();
             updatePose(ALL_PARTS);
         } catch (Exception e) {
+            if (e instanceof ProcessCanceledException) {
+                throw (ProcessCanceledException)e;
+            }
+            if (e instanceof CancellationException) {
+                throw (CancellationException)e;
+            }
             LOGGER.severe("Failed to reset pose combo boxes; " + e.getClass().getSimpleName() + ": " + e.getLocalizedMessage());
             e.printStackTrace();
         }
@@ -2751,8 +2779,14 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
             }
             try {
                 Disposer.register(parent, this);
-            } catch (final Exception ignored) {
+            } catch (final Exception e) {
                 dispose();
+                if (e instanceof ProcessCanceledException) {
+                    throw (ProcessCanceledException)e;
+                }
+                if (e instanceof CancellationException) {
+                    throw (CancellationException)e;
+                }
                 return;
             }
 

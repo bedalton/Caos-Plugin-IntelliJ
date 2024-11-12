@@ -90,6 +90,7 @@ internal fun caosInject(
     try {
         injectActual(project, variant, gameInterfaceName, caosFile)
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         LOGGER.severe("Inject actual failed: ${e.message}")
         e.printStackTrace()
     }
@@ -117,6 +118,7 @@ private fun injectActual(
                         tryJect = project.settings.useJectByDefault
                     )
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     LOGGER.severe("Failed to inject C2e: ${e.message}")
                     e.printStackTrace()
                 }
@@ -151,6 +153,7 @@ private fun injectActual(
                         tryJect = false
                     )
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     LOGGER.severe("Failed to inject through command ${e.message}")
                     e.printStackTrace()
                 }
@@ -203,6 +206,7 @@ private fun injectC3WithDialog(file: CaosScriptFile, gameInterfaceName: GameInte
         val linkedScripts = getLinkedScripts(project, file)
         ScriptBundle(variant, linkedScripts)
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         val message = "<html>${(e.message ?: "Failed parsing linked files")}.<br />Continue without linked files</html>"
 
         val shouldContinue = DialogBuilder()

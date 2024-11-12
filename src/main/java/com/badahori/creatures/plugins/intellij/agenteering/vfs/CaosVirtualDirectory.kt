@@ -3,6 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.vfs
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.intellij.openapi.application.invokeLater
 import com.badahori.creatures.plugins.intellij.agenteering.utils.randomString
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.common.util.className
 import com.bedalton.common.util.ensureEndsWith
 import com.intellij.ide.projectView.ProjectView
@@ -175,7 +176,8 @@ class CaosVirtualDirectory(
             if (isEmpty) {
                 delete(requestor)
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
         }
         children.clear()
         this.refresh(true, true)

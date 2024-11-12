@@ -118,6 +118,7 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
             CodeStyleManager.getInstance(project)
                 .reformatText(file, blockToReformat.startOffset, blockToReformat.endOffset)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             Log.e(
                 "Failed to de-dent at token;\n\tChar: $c;\n\tElement: ${blockToReformat.className}[${blockToReformat.text}]\n${
                     e.formatted(
@@ -138,6 +139,7 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
                 true
             } ?: false
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             false
         }
     }
@@ -168,6 +170,7 @@ class CaosScriptEndWordIndenter : TypedHandlerDelegate() {
         return try {
             token(text)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             Log.e("Element ${element.text} caused error on token; ${e.className}: ${e.message}")
             null
         }

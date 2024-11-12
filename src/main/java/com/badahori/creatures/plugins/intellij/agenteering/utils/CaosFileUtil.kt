@@ -67,7 +67,8 @@ fun Collection<VirtualFile>.getFirstPsiFile(project: Project): PsiFile? {
     return firstNotNullOfOrNull {
         try {
             it.getPsiFile(project)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             null
         }
     }
@@ -186,6 +187,7 @@ object CaosFileUtil {
                 throw IOException("Failed to create all parent directories for path: ${directory.absolutePath}")
             }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to create destination parent folders.")
             e.printStackTrace()
             if (throws)

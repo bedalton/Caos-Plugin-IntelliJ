@@ -1,19 +1,15 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosBundleSourcesRegistrationUtil
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.library.CaosSdkProjectRootsChangeListener
 import com.badahori.creatures.plugins.intellij.agenteering.indices.BreedPartKey
-import com.badahori.creatures.plugins.intellij.agenteering.utils.ENABLE_INTELLIJ_LOGS
-import com.badahori.creatures.plugins.intellij.agenteering.utils.INTELLIJ_LOG
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getModule
-import com.intellij.openapi.application.invokeLater
-import com.badahori.creatures.plugins.intellij.agenteering.utils.virtualFile
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.bedalton.log.Log
 import com.intellij.AppTopics
 import com.intellij.ProjectTopics
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManagerListener
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -39,8 +35,8 @@ class CaosProjectStartupActivity : StartupActivity {
             }
             try {
                 registerOnAny()
-            } catch (_: Exception) {
-
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
         }
     }
@@ -111,15 +107,15 @@ class CaosProjectStartupActivity : StartupActivity {
                 }
                 try {
                     registerOnAny()
-                } catch (_: Exception) {
-
+                } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                 }
             }
         } else {
             try {
                 registerOnAny()
-            } catch (_: Exception) {
-
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
         }
     }
@@ -191,8 +187,8 @@ class CaosProjectStartupActivity : StartupActivity {
             DumbService.getInstance(project).runWhenSmart {
                 try {
                     registerOnAny()
-                } catch (_: Exception) {
-
+                } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                 }
             }
             return

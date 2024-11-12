@@ -253,7 +253,8 @@ internal class BlkPreviewViewImpl(project: Project, file: VirtualFile) : UserDat
             ApplicationManager.getApplication().invokeLater {
                 setImage(stitched.toAwt())
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
+            e.rethrowAnyCancellationException()
             val error = if (e.message?.length.orElse(0) > 0) {
                 "${e::className}: ${e.message}"
             } else {

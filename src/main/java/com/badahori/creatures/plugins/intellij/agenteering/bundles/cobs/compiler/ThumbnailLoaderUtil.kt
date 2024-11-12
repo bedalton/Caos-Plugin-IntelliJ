@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.Sprite
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getAllBytes
 import com.badahori.creatures.plugins.intellij.agenteering.utils.likeAny
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.io.bytes.MemoryByteStreamReader
 import com.intellij.openapi.vfs.LocalFileSystem
 import korlibs.image.bitmap.Bitmap32
@@ -36,6 +37,7 @@ internal val loadThumbnail: (pictureUrl: String) -> Bitmap32? = { pictureUrl: St
 
         } ?: throw Caos2CobException("Failed to located virtual file for image: '$url'")
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         LOGGER.severe("PictureURL to image Exception: " + e.message)
         e.printStackTrace()
         throw e

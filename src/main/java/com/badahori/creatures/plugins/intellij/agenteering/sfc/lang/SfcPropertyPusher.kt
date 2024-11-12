@@ -4,6 +4,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.sfc.lang
 
 import com.badahori.creatures.plugins.intellij.agenteering.sfc.SfcFileDataHolder
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.google.gson.Gson
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -32,6 +33,7 @@ class SfcDecompiledFilePropertyPusher private constructor() : FilePropertyPusher
                 ?: try {
                     readFromStorage(file)
                 } catch (e:Exception) {
+                    e.rethrowAnyCancellationException()
                     LOGGER.severe("Failed to deserialize SFC data with error: ${e.message}")
                     e.printStackTrace()
                     null
@@ -46,6 +48,7 @@ class SfcDecompiledFilePropertyPusher private constructor() : FilePropertyPusher
         try {
             writeToStorage(file, data)
         } catch (e:Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to write SFC data holder with exception: ${e.message}")
             e.printStackTrace()
         }
@@ -78,6 +81,7 @@ class SfcDecompiledFilePropertyPusher private constructor() : FilePropertyPusher
             try {
                 return Gson().fromJson(out.toString(), SfcFileDataHolder::class.java)
             } catch (e:Exception) {
+                e.rethrowAnyCancellationException()
                 return null
             }
         }
@@ -92,8 +96,8 @@ class SfcDecompiledFilePropertyPusher private constructor() : FilePropertyPusher
                 stream.writeInt(json.length)
                 stream.writeChars(json)
                 stream.close()
-            } catch (_: Exception) {
-
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
             }
         }
     }

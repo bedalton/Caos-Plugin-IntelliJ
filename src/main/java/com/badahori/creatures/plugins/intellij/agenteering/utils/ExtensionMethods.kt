@@ -63,5 +63,6 @@ fun ByteSequence.charAtOrNull(i: Int): Char? = try {
         null
     }
 } catch (e: Exception) {
+    e.rethrowAnyCancellationException()
     null
 }

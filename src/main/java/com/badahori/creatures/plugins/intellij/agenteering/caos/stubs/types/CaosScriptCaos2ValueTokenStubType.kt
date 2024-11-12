@@ -7,14 +7,15 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.String
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.impl.CaosScriptCaos2ValueTokenStubImpl
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.readNameAsString
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.lang.ASTNode
 import com.intellij.psi.stubs.IndexSink
 import com.intellij.psi.stubs.StubElement
 import com.intellij.psi.stubs.StubInputStream
 import com.intellij.psi.stubs.StubOutputStream
 
-class CaosScriptCaos2ValueTokenStubType(debugName: String)
-    : CaosScriptStubElementType<CaosScriptCaos2ValueTokenStub, CaosScriptCaos2ValueTokenImpl>(debugName) {
+class CaosScriptCaos2ValueTokenStubType(debugName: String) :
+    CaosScriptStubElementType<CaosScriptCaos2ValueTokenStub, CaosScriptCaos2ValueTokenImpl>(debugName) {
 
     override fun createPsi(stub: CaosScriptCaos2ValueTokenStub): CaosScriptCaos2ValueTokenImpl {
         return CaosScriptCaos2ValueTokenImpl(stub, this)
@@ -37,11 +38,19 @@ class CaosScriptCaos2ValueTokenStubType(debugName: String)
         )
     }
 
-    override fun createStub(element: CaosScriptCaos2ValueTokenImpl, parent: StubElement<*>): CaosScriptCaos2ValueTokenStub {
+    override fun createStub(
+        element: CaosScriptCaos2ValueTokenImpl,
+        parent: StubElement<*>,
+    ): CaosScriptCaos2ValueTokenStub {
         return CaosScriptCaos2ValueTokenStubImpl(
             parent = parent,
             kind = element.stringStubKind,
-            value = try { element.stringValue } catch (e: Exception) { "" },
+            value = try {
+                element.stringValue
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
+                ""
+            },
         )
     }
 

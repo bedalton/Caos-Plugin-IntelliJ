@@ -98,7 +98,8 @@ class AutoPreview : AnAction() {
                                     Pair(parts.first(), parts.getOrNull(1) ?: "")
                                 }
                         }
-                } catch (_: Exception) {
+                } catch (e: Throwable) {
+                    e.rethrowAnyCancellationException()
                     emptyList()
                 }
             }
@@ -152,7 +153,8 @@ class AutoPreview : AnAction() {
                 GlobalScope.async {
                     try {
                         renderFromHeadSprite(project, projectFile, headFile, zoom)
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
+                        e.rethrowAnyCancellationException()
                         LOGGER.severe("Failed to render breed file for head image: ${headFile.name}")
                         null
                     }
@@ -166,14 +168,16 @@ class AutoPreview : AnAction() {
                 // Simply refreshes the files to ensure that they show up in project view
                 VfsUtil.findFileByIoFile(rendered, true)
                     ?: throw Exception("Failed to find virtual file after render at ${rendered.path}")
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
+                e.rethrowAnyCancellationException()
                 invokeLater {
                     try {
                         val errorFile = File(projectFile ?: rendered.parentFile, "BreedPreviewError.txt")
                         if (!errorFile.exists())
                             errorFile.createNewFile()
                         errorFile.appendText("\nError: ${e.message} in ${rendered.path}")
-                    } catch (e2: Exception) {
+                    } catch (e2: Throwable) {
+                        e2.rethrowAnyCancellationException()
                         CaosNotifications.showError(
                             project,
                             "Breed Preview Error",
@@ -227,7 +231,8 @@ class AutoPreview : AnAction() {
                     }
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
+            e.rethrowAnyCancellationException()
 
             invokeLater {
                 try {
@@ -237,7 +242,8 @@ class AutoPreview : AnAction() {
                         errorFile.createNewFile()
                     }
                     errorFile.appendText("\nRender failed with error [${key.code}]: ${e.message} in ${headFile.parent.path}")
-                } catch (e2: Exception) {
+                } catch (e2: Throwable) {
+                    e2.rethrowAnyCancellationException()
                     CaosNotifications.showError(
                         project,
                         "Breed Preview Error",
@@ -317,7 +323,8 @@ class AutoPreview : AnAction() {
                 GlobalScope.launch {
                     try {
                         render(variantIn, project, directory, key, zoom)
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
+                        e.rethrowAnyCancellationException()
                         CaosNotifications.showError(project,
                             "Breed Preview Error",
                             "Render failed for ${key.code} in ${directory.path}. ${e::className}: ${e.message}")

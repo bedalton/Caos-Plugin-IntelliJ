@@ -184,6 +184,7 @@ class DumpSpriteAction : AnAction(
             // Returns true if all images were written, false if some were not written
             dump(parentFile, file, createdFiles)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to write sprite file: ${file.name} with error: ${e.message}")
             e.printStackTrace()
             false
@@ -213,6 +214,7 @@ class DumpSpriteAction : AnAction(
                 write(parentVirtualFile, file.nameWithoutExtension + ".png", png, createdFiles)
                 true
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 false
             }
         }

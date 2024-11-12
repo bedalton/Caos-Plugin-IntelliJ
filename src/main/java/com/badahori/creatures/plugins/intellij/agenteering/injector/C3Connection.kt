@@ -104,6 +104,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
         try {
             assertExeWasCopied()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("C3 Injector EXE was not copied")
             return InjectionStatus.BadConnection(
                 fileName,
@@ -115,6 +116,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
         val preparedCaos = try {
             prepareCaos(caos, cliTypeFlag)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return InjectionStatus.BadConnection(
                 fileName,
                 descriptor,
@@ -144,6 +146,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
             Log.iIf(DEBUG_INJECTOR) { "Process with args: <${args.joinToString(" ")}>" }
             process(fileName, descriptor, args)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             throw e
         } finally {
             try {
@@ -152,6 +155,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
                     tempFile.delete()
                 }
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to delete temp CAOS file")
             }
         }
@@ -162,6 +166,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
         val file = try {
             this.file
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             throw Exception("Failed to copy injector EXE to run directory. Error: ${e.message}.")
         }
         if (!file.exists()) {
@@ -179,7 +184,9 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
                 if (tempFile.exists()) {
                     tempFile.delete()
                 }
+                e.rethrowAnyCancellationException()
             } catch (e2: Exception) {
+                e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to delete temp CAOS file")
                 e.printStackTrace()
             }
@@ -219,6 +226,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
         try {
             assertExeWasCopied()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return InjectionStatus.BadConnection(
                 fileName,
                 descriptor,
@@ -229,6 +237,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
         val caosOrFile = try {
             prepareCaos(caos, cliFlag)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             return InjectionStatus.BadConnection(
                 fileName,
                 descriptor,
@@ -270,6 +279,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
         val tempFile = try {
             writeTempFile(caos)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             throw Exception(e.message ?: "Failed to write CAOS to temp file for inject")
         }
         return tempFile.path
@@ -285,6 +295,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
             Log.iIf(DEBUG_INJECTOR) { "C3Injector: Start C3 process: <${args.joinToString(" ") { if (it.contains(' ')) "\"$it\"" else it }}>" }
             proc = Runtime.getRuntime().exec(args)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             e.printStackTrace()
             return InjectionStatus.BadConnection(
                 fileName,
@@ -307,6 +318,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
                         error ?: message("caos.injector.errors.injector-crashed-or-failed", "").trim()
                     )
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     e.printStackTrace()
                     InjectionStatus.Bad(
                         fileName,
@@ -361,6 +373,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
                 }
             }
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Caos injection failed with error: " + e.message)
             e.printStackTrace()
             InjectionStatus.Bad(
@@ -411,6 +424,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
             javaClass.classLoader.getResourceAsStream(pathTemp)
                 ?: throw Exception("Failed to get injector EXE resource as stream")
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             throw Exception("Failed to get injector EXE resource as stream. Error: ${e.message}")
         }
         // always write to different location
@@ -420,6 +434,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
                 try {
                     fileOut.delete()
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     LOGGER.severe("Failed to delete prior injector EXE")
                 }
             } else {
@@ -430,6 +445,7 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
             val success = try {
                 CaosFileUtil.copyStreamToFile(stream, fileOut, true)
             } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
                 throw IOException("Failed to copy Injector EXE by stream to run directory. Error: ${e.message}")
             }
             if (!success) {

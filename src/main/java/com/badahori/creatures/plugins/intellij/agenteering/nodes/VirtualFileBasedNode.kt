@@ -4,6 +4,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getFileIcon
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ViewSettings
@@ -86,7 +87,8 @@ private fun createTransferable(virtualFile: VirtualFile): Transferable {
             if (file.exists())
                 return FileTransferable(file)
         }
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
     }
     val directory = FileUtil.createTempDirectory(virtualFile.name, null, true).apply {
         createNewFile()

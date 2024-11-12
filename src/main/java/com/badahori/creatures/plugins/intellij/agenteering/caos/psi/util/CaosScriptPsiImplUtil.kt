@@ -804,6 +804,7 @@ object CaosScriptPsiImplUtil {
         return try {
             element.parent.replace(newElement)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             Log.eIf(INTELLIJ_LOG) {
                 "Failed to replace CAOS2 value; ${e.formatted(true)}"
             }
@@ -1920,6 +1921,7 @@ object CaosScriptPsiImplUtil {
                         it.text.toInt()
                     }
                 } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
                     null
                 }
             }
@@ -2084,6 +2086,7 @@ object CaosScriptPsiImplUtil {
         return try {
             script.stub?.eventNumber ?: script.eventNumberElement?.text?.toIntOrNull() ?: -1
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             -1
         }
     }
@@ -2344,11 +2347,13 @@ object CaosScriptPsiImplUtil {
         val val1 = try {
             element.minElement?.text?.toInt()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             null
         }
         val val2 = try {
             element.maxElement?.text?.toInt()
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             null
         }
         return Pair(val1, val2)

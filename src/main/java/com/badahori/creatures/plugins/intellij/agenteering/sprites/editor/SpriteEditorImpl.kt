@@ -9,6 +9,7 @@ import com.bedalton.log.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ensureMacOsCopyLib
 import com.badahori.creatures.plugins.intellij.agenteering.utils.md5
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorLocation
@@ -48,7 +49,8 @@ internal class SpriteEditorImpl(project: Project?, file: VirtualFile) : UserData
         Log.setMode(SPR_SHORT_DEBUG_LOGGING, true)
         try {
             ensureMacOsCopyLib()
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
         }
         val editor = SprFileEditor(myProject, myFile)
         this.editor = editor

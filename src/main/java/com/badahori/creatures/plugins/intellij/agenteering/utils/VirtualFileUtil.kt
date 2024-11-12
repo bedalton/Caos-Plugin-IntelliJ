@@ -323,6 +323,7 @@ private fun getFileViewProvider(project: Project, virtualFile: VirtualFile): Fil
     return try {
         fileManager.findViewProvider(virtualFile)
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         LOGGER.severe("Failed to get view provider for artificial navigation item: ${virtualFile.path}")
         null
     }
@@ -399,6 +400,7 @@ internal inline fun <T> readFromStorageStream(
         try {
             readFromStorageActual(file, attribute, key, convert)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             null
         }
     } else {
@@ -425,6 +427,7 @@ private inline fun <T> readFromStorageActual(
     return try {
         convert(stream)
     } catch (e: Exception) {
+        e.rethrowAnyCancellationException()
         throw e
     } finally {
         stream.close()

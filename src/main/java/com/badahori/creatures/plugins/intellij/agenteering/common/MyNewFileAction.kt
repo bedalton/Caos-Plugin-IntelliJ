@@ -7,6 +7,7 @@ import com.bedalton.common.util.ensureEndsWith
 import com.bedalton.common.util.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.ide.actions.CreateFileFromTemplateAction
 import com.intellij.ide.actions.CreateFileFromTemplateDialog
 import com.intellij.ide.fileTemplates.FileTemplate
@@ -86,6 +87,7 @@ abstract class MyNewFileAction(
                         theDir = theDir.findSubdirectory(partTrimmed)
                             ?: theDir.createSubdirectory(partTrimmed)
                     } catch (e: Exception) {
+                        e.rethrowAnyCancellationException()
                         CaosNotifications.showError(project, title, "Invalid path component \"$partTrimmed\" for parent directory\n${e.className}::${e.message}")
                         return null
                     }
@@ -97,6 +99,7 @@ abstract class MyNewFileAction(
                 .create()
                 .containingFile
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             LOG.error("Error while creating new $kind", e)
             null
         }

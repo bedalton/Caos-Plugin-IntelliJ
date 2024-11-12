@@ -1,12 +1,14 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module;
 
 import com.au.id.mcc.adapted.swing.SVGIcon;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.util.ImageLoader;
 import com.intellij.util.ui.JBImageIcon;
 
 import javax.swing.*;
 import java.awt.*;
 import java.net.URL;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Logger;
 
 public class ModuleLandingPage {
@@ -56,6 +58,12 @@ public class ModuleLandingPage {
             }
             return new JBImageIcon(image);
         } catch (Exception e) {
+            if (e instanceof ProcessCanceledException) {
+                throw (ProcessCanceledException)e;
+            }
+            if (e instanceof CancellationException) {
+                throw (CancellationException)e;
+            }
             Logger.getAnonymousLogger().severe("Error loading egg image from resource stream");
             e.printStackTrace();
             return null;
@@ -71,6 +79,12 @@ public class ModuleLandingPage {
             }
             return new SVGIcon(path, width, height);
         } catch (Exception e) {
+            if (e instanceof ProcessCanceledException) {
+                throw (ProcessCanceledException)e;
+            }
+            if (e instanceof CancellationException) {
+                throw (CancellationException)e;
+            }
             Logger.getAnonymousLogger().severe("Error loading egg image from resource");
             e.printStackTrace();
             return null;

@@ -25,6 +25,7 @@ object MD5 {
         return try {
             getFileChecksum(md5Digest, file)
         } catch (e:Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to get checksum for file: ${file.path}. Error: " + e.localizedMessage)
             null
         }
@@ -44,6 +45,7 @@ object MD5 {
         return try {
             getFileChecksum(md5Digest, byteArray)
         } catch (e:Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to get checksum for file. Error: " + e.localizedMessage)
             null
         }
@@ -55,6 +57,7 @@ object MD5 {
             //Use MD5 algorithm
             MessageDigest.getInstance("MD5")
         } catch (e:Exception) {
+            e.rethrowAnyCancellationException()
             LOGGER.severe("Failed to create MD5 digest object. Error: " + e.localizedMessage)
             return null
         }

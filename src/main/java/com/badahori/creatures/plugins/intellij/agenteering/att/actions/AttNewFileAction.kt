@@ -14,6 +14,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.Sprit
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.EditorUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.document
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.bedalton.common.util.PathUtil
 import com.intellij.ide.actions.CreateFileFromTemplateDialog
 import com.intellij.ide.fileTemplates.FileTemplate
@@ -106,10 +107,8 @@ class AttNewFileAction :  MyNewFileAction(
         val file =  try {
             super.createFileFromTemplate(fileName, template, dir)
                 ?: return null
-        } catch (e: Exception) {
-            if (e is ProcessCanceledException) {
-                throw e
-            }
+        } catch (e: Throwable) {
+            e.rethrowAnyCancellationException()
             LOG.error("Error while creating new ATT file", e)
             return null
         }
@@ -158,10 +157,8 @@ class AttNewFileAction :  MyNewFileAction(
                 EditorUtil.insertText(document, text, 0)
                 PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document)
                 true
-            } catch (e: Exception) {
-                if (e is ProcessCanceledException) {
-                    throw e
-                }
+            } catch (e: Throwable) {
+                e.rethrowAnyCancellationException()
                 LOG.error("Failed to set initial ATT text. ${e.message}", e)
                 e.printStackTrace()
                 false

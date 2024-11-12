@@ -6,6 +6,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.stubs.StringStubIndexExtension
 import com.intellij.psi.stubs.StubIndex
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.CAOS_SCRIPT_STUB_VERSION
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.badahori.creatures.plugins.intellij.agenteering.utils.startsAndEndsWith
 import java.util.logging.Logger
 import java.util.regex.Pattern
@@ -160,6 +161,7 @@ internal constructor(private val indexedElementClass: Class<PsiT>) : StringStubI
         val pattern: Pattern = try {
             Pattern.compile(patternString)
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             Pattern.compile(Pattern.quote(patternString))
         }
 
