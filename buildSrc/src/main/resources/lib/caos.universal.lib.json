@@ -18686,6 +18686,7 @@
             "requiresOwnr": 0,
             "requiresCreatureOwnr": false,
             "variants": [
+                "C1",
                 "C2"
             ]
         },
@@ -35431,6 +35432,7 @@
                 "NEW: GENE": 11,
                 "NEW: LIFT": 7,
                 "NEW: PART": 5,
+                "NEW: SCEN": 1,
                 "NEW: SIMP": 2,
                 "NEW: VHCL": 6,
                 "NEXT": 89,
