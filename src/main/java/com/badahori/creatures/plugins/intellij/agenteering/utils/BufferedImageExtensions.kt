@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.utils
 
 import com.bedalton.io.bytes.toBase64
+import com.bedalton.log.Log
 import org.apache.commons.imaging.palette.Dithering
 import org.apache.commons.imaging.palette.Palette
 import java.awt.*
@@ -30,10 +31,11 @@ fun BufferedImage.ditherCopy(palette: Palette): BufferedImage {
     }
 }
 
-fun BufferedImage.createTransformed(at: AffineTransform) : BufferedImage {
+fun BufferedImage.createTransformed(at: AffineTransform): BufferedImage {
     val newImage = BufferedImage(
-            width, height,
-            BufferedImage.TYPE_INT_ARGB)
+        width, height,
+        BufferedImage.TYPE_INT_ARGB
+    )
     val g = newImage.createGraphics()
     g.transform(at)
     g.drawImage(this, 0, 0, null)
@@ -41,28 +43,29 @@ fun BufferedImage.createTransformed(at: AffineTransform) : BufferedImage {
     return newImage
 }
 
-fun BufferedImage.flipVertical() : BufferedImage {
+fun BufferedImage.flipVertical(): BufferedImage {
     val at = AffineTransform()
     at.concatenate(AffineTransform.getScaleInstance(1.0, -1.0))
     at.concatenate(AffineTransform.getTranslateInstance(0.0, -height.toDouble()))
     return createTransformed(at)
 }
-fun BufferedImage.flipHorizontal() : BufferedImage {
+
+fun BufferedImage.flipHorizontal(): BufferedImage {
     val at = AffineTransform()
     at.concatenate(AffineTransform.getScaleInstance(-1.0, 1.0))
     at.concatenate(AffineTransform.getTranslateInstance(-width.toDouble(), 0.0))
     return createTransformed(at)
 }
 
-fun RenderedImage.toPngByteArray() : ByteArray {
+fun RenderedImage.toPngByteArray(): ByteArray {
     return toByteArray("png")
 }
 
-fun RenderedImage.toJpgByteArray() : ByteArray {
+fun RenderedImage.toJpgByteArray(): ByteArray {
     return toByteArray("jpg")
 }
 
-fun RenderedImage.toByteArray(formatName:String) : ByteArray {
+fun RenderedImage.toByteArray(formatName: String): ByteArray {
     ImageIO.getWriterFormatNames().let { formats ->
         assert(formatName in formats) {
             "Cannot convert image to byte array for format: '$formatName'. Available types: [${formats.joinToString()}]"
@@ -73,10 +76,11 @@ fun RenderedImage.toByteArray(formatName:String) : ByteArray {
     return outputStream.toByteArray()
 }
 
-fun RenderedImage.toPngDataUri() : String {
+fun RenderedImage.toPngDataUri(): String {
     return "data:image/png;base64," + toPngByteArray().toBase64()
 }
-fun RenderedImage.toJpgDataUri() : String {
+
+fun RenderedImage.toJpgDataUri(): String {
     return "data:image/jpg;base64," + toJpgByteArray().toBase64()
 }
 
@@ -132,11 +136,11 @@ internal fun BufferedImage.contentsEqual(otherImage: BufferedImage): Boolean {
         return false;
     }
 
-    val width  = width
+    val width = width
     val height = height
 
     // Loop over every pixel.
-    repeat (height) { y ->
+    repeat(height) { y ->
         repeat(width) { x ->
             // Compare the pixels for equality.
             if (getRGB(x, y) != otherImage.getRGB(x, y)) {
@@ -160,14 +164,18 @@ private fun waitForImage(image: Image) {
         mMediaTracker.removeImage(image)
     }
 }
-val Image.width: Int get() {
-    waitForImage(this)
-    return getWidth(mImageObserver)
-}
-val Image.height: Int get() {
-    waitForImage(this)
-    return getHeight(mImageObserver)
-}
+
+val Image.width: Int
+    get() {
+        waitForImage(this)
+        return getWidth(mImageObserver)
+    }
+
+val Image.height: Int
+    get() {
+        waitForImage(this)
+        return getHeight(mImageObserver)
+    }
 
 fun Image.scaleNearestNeighbor(scale: Double): BufferedImage {
     val newWidth = (width * scale).toInt()
@@ -178,4 +186,48 @@ fun Image.scaleNearestNeighbor(scale: Double): BufferedImage {
     g2.drawImage(this, 0, 0, newWidth, newHeight, null)
     g2.dispose()
     return destinationBufferedImage
+}
+
+fun BufferedImage.trim(): BufferedImage {
+    var minX: Int? = null
+    var maxX: Int? = null
+    var minY: Int? = null
+    var maxY: Int? = null
+
+    repeat(height) { y ->
+        repeat(width) x@{ x ->
+            val pixel = getRGB(x, y)
+
+            if ((pixel shr 24) == 0x00) {
+                return@x
+            }
+
+            if (minY == null || y < minY!!) {
+                minY = y
+            }
+            if (maxY == null || y > maxY!!) {
+                maxY = y
+            }
+            if (minX == null || x < minX!!) {
+                minX = x
+            }
+            if (maxX == null || x > maxX!!) {
+                maxX = x
+            }
+        }
+    }
+
+    if (minX == null || maxX == null || minY == null || maxY == null) {
+        Log.i("No solid pixels")
+        return blankImage
+    }
+
+    val trimmedWidth = (maxX!! - minX!!) + 1
+    val trimmedHeight = (maxY!! - minY!!) + 1
+    Log.i("Trimming image ${width}x$height to ${trimmedWidth}x$trimmedHeight")
+    return getSubimage(minX!!, minY!!, trimmedWidth, trimmedHeight)
+}
+
+private val blankImage by lazy {
+    BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB)
 }
