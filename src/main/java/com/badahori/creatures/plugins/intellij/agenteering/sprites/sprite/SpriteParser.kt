@@ -233,7 +233,7 @@ class SpriteFileHolder(sprites: List<SpriteFile>, val fileName: String, private 
                 try {
                     deferred.await().mapAsync {
                         try {
-                            it.image()
+                            it.image(keepBlack = false)
                         } catch (e: Exception) {
                             e.rethrowAnyCancellationException()
                             Log.e("Failed to async frame to Bitmap32; ${e.formatted(true)}")
@@ -369,8 +369,8 @@ private fun List<SpriteFrameAsync>.getBodyImageAt(i: Int): BufferedImage {
         }
     }
     image = when (i) {
-        in 0..3 -> get(i + 4).image().toAwt()
-        in 4..7 -> get(i - 4).image().toAwt()
+        in 0..3 -> get(i + 4).image(keepBlack = false).toAwt()
+        in 4..7 -> get(i - 4).image(keepBlack = false).toAwt()
         else -> image
     }
     return image.flipHorizontal()
