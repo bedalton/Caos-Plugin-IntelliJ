@@ -253,16 +253,17 @@ SWIFT_ESCAPE=\\\([^)]*\)
 CAOS_2_COB=[*]{2}[Cc][Aa][Oo][Ss][2][Cc][Oo][Bb](\s*[Cc][12])?
 CAOS_2_PRAY=[*]{2}[Cc][Aa][Oo][Ss][2][Pp][Rr][Aa][Yy]
 CAOS_2_ID=[^\s\"'=]+
-COMMENT_AT_DIRECTIVE=\*{2}@((([^\n;]|[;][^;])+;;)|[^\n]+)
+COMMENT_AT_DIRECTIVE=\*{2}\s*@((([^\n;]|[;][^;])+;;)|[^\n]+)
 JS_INSIDE_BRACES=[$]?\{[^}]*[}]
 JS_BODY=[$][{]({JS_INSIDE_BRACES}|[^}])*[}]
 DDE_PICT=[^\s]{3}
-%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME IN_CAOS_2 IN_SINGLE_QUOTE_STRING IN_JS HAS_NEXT_NEXT
+CAOS2PRAY_TAIL_ITEM=[a-zA-Z_0-9@+=$\-]+
+%state START_OF_LINE IN_LINE IN_BYTE_STRING IN_TEXT IN_CONST IN_COMMENT COMMENT_START IN_CONST IN_VAR IN_PICT IN_STRING IN_CHAR IN_SUBROUTINE_NAME IN_CAOS_2 IN_SINGLE_QUOTE_STRING IN_JS HAS_NEXT_NEXT IN_CAOS2_PRAY_HEADER
 %%
 
 <START_OF_LINE> {
 	{CAOS_2_COB} 			{ return CaosScript_CAOS_2_COB_HEADER; }
-	{CAOS_2_PRAY} 			{ return CaosScript_CAOS_2_PRAY_HEADER; }
+	{CAOS_2_PRAY} 			{ yypush(IN_CAOS2_PRAY_HEADER); return CaosScript_CAOS_2_PRAY_HEADER; }
 	\n						{ return CaosScript_NEWLINE; }
 	[ \t]					{ return WHITE_SPACE; }
     "*#"					{ yypush(IN_CAOS_2); return CaosScript_CAOS_2_COMMENT_START; }//if (isTrueStartOfLine()) { yypush(IN_CAOS_2); return CaosScript_CAOS_2_COMMENT_START; } else { yybegin(COMMENT_START); return CaosScript_COMMENT_START; } }
@@ -283,6 +284,12 @@ DDE_PICT=[^\s]{3}
   	//{N_VAR}				{ yybegin(IN_VAR); return CaosScript_N_VAR; }
     //[ \t]					{ return WHITE_SPACE; }
     [^]						{ yybegin(IN_COMMENT); yypushback(yylength()); }
+}
+<IN_CAOS2_PRAY_HEADER> {
+  [ \t]					{ return WHITE_SPACE; }
+  {CAOS2PRAY_TAIL_ITEM} { return CaosScript_CAOS2PRAY_HEADER_ITEM; }
+  \n					{ yypop(); return CaosScript_NEWLINE; }
+  [^]					{ yypop(); yypushback(yylength()); }
 }
 <IN_CAOS_2> {
     "="						{ return CaosScript_EQUAL_SIGN; }

@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptTokenSets
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
@@ -9,10 +10,10 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.TokenType
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.formatter.common.AbstractBlock
-import com.intellij.psi.util.elementType
 
 
 class CaosScriptBlock internal constructor(
+    private val variant: CaosVariant?,
     node: ASTNode,
     wrap: Wrap?,
     alignment: Alignment?,
@@ -21,7 +22,7 @@ class CaosScriptBlock internal constructor(
 ) : AbstractBlock(node, wrap, alignment) {
 
     private val spacingProcessor: CaosScriptSpacingProcessor by lazy {
-        CaosScriptSpacingProcessor(node, settings)
+        CaosScriptSpacingProcessor(variant, node, settings, caosSettings)
     }
     private val indentProcessor: CaosScriptIndentProcessor by lazy {
         if (caosSettings == null) {
@@ -38,6 +39,7 @@ class CaosScriptBlock internal constructor(
         while (child != null) {
             if (child.elementType !in CaosScriptTokenSets.WHITESPACES || child.text.isNotBlank()) {
                 val block: Block = CaosScriptBlock(
+                    variant,
                     child,
                     NONE_WRAP,
                     Alignment.createAlignment(),
