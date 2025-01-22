@@ -28,6 +28,47 @@ import org.jetbrains.annotations.Contract
 // Alias to allow swapping out builder implementation
 internal typealias MyAnnotationBuilder = com.intellij.lang.annotation.AnnotationBuilder
 
+
+fun AnnotationHolder.newAnnotationBuilder(
+    severity: HighlightSeverity,
+    message: String
+) = AnnotationBuilder(this, severity, message)
+
+
+fun AnnotationHolder.newErrorAnnotationBuilder(
+    message: String
+) = AnnotationBuilder(this, HighlightSeverity.ERROR, message)
+
+
+fun AnnotationHolder.newWarningAnnotationBuilder(
+    message: String
+) = AnnotationBuilder(this, HighlightSeverity.WARNING, message)
+
+fun AnnotationHolder.newWeakWarningAnnotationBuilder(
+    message: String
+) = AnnotationBuilder(this, HighlightSeverity.WEAK_WARNING, message)
+
+fun AnnotationHolder.newInfoAnnotationBuilder(
+    message: String
+) = AnnotationBuilder(this, HighlightSeverity.INFORMATION, message)
+
+fun AnnotationHolder.newTextAttributes(
+    message: String,
+    textAttributes: TextAttributes
+): AnnotationBuilder {
+    return AnnotationBuilder(this, HighlightSeverity.TEXT_ATTRIBUTES, message)
+        .enforcedTextAttributes(textAttributes)
+}
+
+fun AnnotationHolder.newTextAttributes(
+    message: String,
+    textAttributesKey: TextAttributesKey
+): AnnotationBuilder {
+    return AnnotationBuilder(this, HighlightSeverity.TEXT_ATTRIBUTES, message)
+        .textAttributes(textAttributesKey)
+}
+
+
 ///**
 // * Annotation wrapper to try to unify calls in Intellij 191 and 201, where some annotation commands were deprecated
 // */
@@ -186,6 +227,14 @@ class AnnotationBuilder private constructor(
         return FixBuilder._createFixBuilder(
             this,
             FixBuilderData(quickFix = quickFix, problemDescriptor = problemDescriptor)
+        )
+    }
+
+    @Contract(pure = true)
+    fun newLocalQuickFix(quickFix: LocalQuickFix): FixBuilder {
+        return FixBuilder._createFixBuilder(
+            this,
+            FixBuilderData(quickFix = quickFix)
         )
     }
 
