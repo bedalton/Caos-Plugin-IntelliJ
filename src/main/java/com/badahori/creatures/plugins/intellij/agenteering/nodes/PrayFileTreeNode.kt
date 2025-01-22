@@ -1,28 +1,28 @@
 package com.badahori.creatures.plugins.intellij.agenteering.nodes
 
-import com.bedalton.creatures.agents.pray.data.BlockWithTags
-import com.bedalton.creatures.agents.pray.data.DataBlock
-import com.bedalton.creatures.agents.pray.data.PrayBlock
-import com.bedalton.creatures.agents.pray.parser.parsePrayAgentBlocks
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.AgentScript
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFileSystem
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
-import com.bedalton.creatures.agents.pray.data.PrayDataBlockDecompressionException
-import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.bedalton.common.util.className
+import com.bedalton.creatures.agents.pray.compiler.data.CompilerBlockWithTags
+import com.bedalton.creatures.agents.pray.compiler.data.CompilerDataBlock
+import com.bedalton.creatures.agents.pray.compiler.data.CompilerPrayBlock
+import com.bedalton.creatures.agents.pray.compiler.data.PrayDataBlockDecompressionException
 import com.bedalton.creatures.agents.pray.compiler.getLinkFilenameReferenceFromCaosText
+import com.bedalton.creatures.agents.pray.parser.parsePrayAgentBlocks
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.util.treeView.AbstractTreeNode
-import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.tree.LeafState
 import icons.CaosScriptIcons
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 
 private val PRAY_TREE_CHILD_CACHE_KEY = Key<Pair<String, List<AbstractTreeNode<*>>>>("bedalton.node.pray.PRAY_CHILDREN")
@@ -46,11 +46,13 @@ internal class PrayFileTreeNode(
     /**
      * PRAY blocks in file
      */
-    private val blocks: List<PrayBlock> by lazy {
+    private val blocks: List<CompilerPrayBlock> by lazy {
         val stream = VirtualFileStreamReader(file)
         runBlocking {
             try {
-                parsePrayAgentBlocks(stream, "*")
+                coroutineScope {
+                    parsePrayAgentBlocks(this, stream, "*")
+                }
             } catch (e: Exception) {
                 e.rethrowAnyCancellationException()
                 return@runBlocking emptyList()
@@ -66,7 +68,7 @@ internal class PrayFileTreeNode(
             }
         }
         blocks.mapNotNull map@{ block ->
-            if (block is DataBlock) {
+            if (block is CompilerDataBlock) {
                 val name = block.blockName.text
                 val file = directory[name] ?: (
                         try {
@@ -74,6 +76,7 @@ internal class PrayFileTreeNode(
                                 try {
                                     block.data()
                                 } catch (e: PrayDataBlockDecompressionException) {
+                                    e.rethrowAnyCancellationException()
                                     if (!gzipError) {
                                         gzipError = true
                                         CaosNotifications.createErrorNotification(
@@ -129,9 +132,9 @@ internal class PrayFileTreeNode(
 internal class PrayBlockTreeNode(
     project: Project,
     private val parentDirectory: CaosVirtualFile,
-    private val prayBlock: PrayBlock,
+    private val prayBlock: CompilerPrayBlock,
     private val viewSettings: ViewSettings,
-) : AbstractTreeNode<PrayBlock>(project, prayBlock) {
+) : AbstractTreeNode<CompilerPrayBlock>(project, prayBlock) {
 
     private val directory: CaosVirtualFile by lazy {
         parentDirectory.createChildDirectory(prayBlock.blockTag.text + '.' + prayBlock.blockName.text)
@@ -149,7 +152,7 @@ internal class PrayBlockTreeNode(
 
 
     private val childNodes: List<AbstractTreeNode<*>> by lazy {
-        if (prayBlock !is BlockWithTags) {
+        if (prayBlock !is CompilerBlockWithTags) {
             return@lazy emptyList()
         }
 
@@ -233,7 +236,7 @@ internal class PrayBlockTreeNode(
     }
 
     override fun getLeafState(): LeafState {
-        return if (prayBlock !is BlockWithTags) {
+        return if (prayBlock !is CompilerBlockWithTags) {
             LeafState.ALWAYS
         } else {
             LeafState.ASYNC
