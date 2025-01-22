@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.Pra
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertAfterFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptInsertBeforeFix
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2Block
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCaos2BlockComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComment
@@ -20,9 +21,10 @@ import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.*
+import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.PsiTreeUtil
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
-import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 import kotlin.math.min
 
@@ -53,14 +55,16 @@ open class PrayBlockIsValidInspection : LocalInspectionTool(), DumbAware {
         if (blockText.isNullOrBlank())
             return
         val errors = try {
-            PrayDataValidator.validate(
-                coroutineContext,
-                LocalFileSystem!!,
-                containingFile.virtualFile.path,
-                blockText,
-                false
-            )
-                .ifEmpty { null }
+            coroutineScope {
+                PrayDataValidator.validate(
+                    this,
+                    LocalFileSystem!!,
+                    containingFile.virtualFile.path,
+                    blockText,
+                    false
+                )
+                    .ifEmpty { null }
+            }
         } catch (e: Throwable) {
             e.rethrowAnyCancellationException()
             holder.registerProblem(
@@ -165,8 +169,17 @@ class Caos2PrayBlockIsValidInspection : PrayBlockIsValidInspection(), DumbAware 
                 }
 
                 val text = "${prefix?.text ?: ""}\n" + block.text.lowercase()
-                validateHasPrayFile(block, text, fix, holder)
-                validateHasBlockName(block, text, fix, holder)
+                    validateHasPrayFile(block, text, fix, holder)
+                val headerItems = block
+                    .caos2BlockHeader
+                    ?.caos2PrayHeader
+                    ?.node
+                    ?.getChildren(TokenSet.create(CaosScriptTypes.CaosScript_CAOS2PRAY_HEADER_ITEM))
+                    ?.map { it.text.lowercase() }
+                    .orEmpty()
+                if ("bundle" in headerItems) {
+                    validateHasBlockName(block, text, fix, holder)
+                }
             }
         }
     }
@@ -213,6 +226,7 @@ class Caos2PrayBlockIsValidInspection : PrayBlockIsValidInspection(), DumbAware 
         holder: ProblemsHolder,
     ) {
         if (!text.contains(hasBlockNameRegex)) {
+
             holder.registerProblem(
                 block,
                 TextRange(0, 2),
