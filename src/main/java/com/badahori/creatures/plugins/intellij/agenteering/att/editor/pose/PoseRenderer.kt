@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileDat
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.indices.SpriteBodyPart
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
+import com.badahori.creatures.plugins.intellij.agenteering.utils.trim
 import com.bedalton.common.util.toListOf
 import java.awt.AlphaComposite
 import java.awt.Graphics2D
@@ -66,19 +67,25 @@ object PoseRenderer {
         val raster = image.raster
         var rgba = IntArray(4)
         val rasterAlpha = (ghostAlpha * 255).toInt()
+
+
+
         repeat(zoomHeight) { y ->
             repeat(zoomWidth) x@{ x ->
                 rgba = raster.getPixel(x, y, rgba)
                 val sum = rgba[3]
-                if (sum == 0 || sum == 255)
+
+                if (sum == 0 || sum == 255) {
                     return@x
+                }
+
                 rgba[3] = rasterAlpha
                 raster.setPixel(x, y, rgba)
             }
         }
-        return image
-    }
 
+        return image.trim()
+    }
 
     private fun buildParts(
         variant: CaosVariant,
@@ -249,7 +256,7 @@ object PoseRenderer {
         }
 
         // Head layer
-        val headParts: List<RenderPart> = when (pose.head) {
+        val headParts: List<RenderPart> = when (pose.head % 16) {
             in 0..3 -> listOfNotNull(
                 leftEarPart,
                 headPart,
@@ -260,13 +267,21 @@ object PoseRenderer {
                 rightEarPart,
                 headPart,
                 hairPart,
-                rightEarPart
+                leftEarPart
             )
+
+            in 8 .. 11 -> listOfNotNull(
+                rightEarPart,
+                leftEarPart,
+                hairPart,
+                headPart
+            )
+
             else -> listOfNotNull(
                 headPart,
-                hairPart,
                 leftEarPart,
-                rightEarPart
+                rightEarPart,
+                hairPart,
             )
         }
 
@@ -320,7 +335,7 @@ object PoseRenderer {
                 in 0..3 -> leftArm + leftLeg + tail.getOrNull(0) + bodyPart + tail.getOrNull(1) + headParts + rightLeg + rightArm
                 in 4..7 -> rightArm + rightLeg + tail.getOrNull(0) + bodyPart + tail.getOrNull(1) + headParts + leftLeg + leftArm
                 in 8..11 -> tail + leftLeg.reversed() + rightLeg.reversed() + leftUpperArm + rightUpperArm + bodyPart + leftForearm + rightForearm + headParts
-                in 12..15 -> leftArm.reversed() + rightArm.reversed() + leftLeg.reversed() + rightLeg.reversed() + bodyPart + headParts + tail
+                in 12..15 -> leftArm.reversed() + rightArm.reversed() + leftLeg.last() + leftLeg.reversed().drop(1) + rightLeg.last() + rightLeg.reversed().drop(1) + bodyPart + headParts + tail
                 else -> null
             }
         }?.filterNotNull()
