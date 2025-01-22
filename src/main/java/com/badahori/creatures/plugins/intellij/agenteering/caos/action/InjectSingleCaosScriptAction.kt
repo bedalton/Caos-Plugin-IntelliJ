@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.CAOSScript
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.ActionsBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfNotConcrete
@@ -16,7 +17,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInj
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.gameInterfaceNames
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.injectionCheckDisabled
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
+import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.IS_OR_HAS_CAOS_FILES_DATA_KEY
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.inferVariantHard
+import com.badahori.creatures.plugins.intellij.agenteering.common.ConditionalAction
+import com.badahori.creatures.plugins.intellij.agenteering.common.updatePresentation
 import com.badahori.creatures.plugins.intellij.agenteering.injector.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.bedalton.common.util.formatted
@@ -29,6 +33,8 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
+import com.intellij.openapi.application.invokeLater
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Editor
@@ -43,39 +49,46 @@ import icons.CaosScriptIcons
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-class InjectSingleCaosScriptAction : AnAction(
-    {
-        CaosBundle.message(
-            "caos.injector.action.inject-script.title",
-            SCRIPT_NAME_DEFAULT
-        )
-    },
-    {
-        CaosBundle.message(
-            "caos.injector.action.inject-script.description", SCRIPT_NAME_DEFAULT
-        )
-    },
-    CaosScriptIcons.MODULE_ICON
-) {
+class InjectSingleCaosScriptAction : AnAction(), ConditionalAction {
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
+        return ActionUpdateThread.BGT
     }
 
     override fun update(e: AnActionEvent) {
         super.update(e)
 
-        val script = getScriptFromAction(e)
+        invokeLater {
 
-        val presentation = e.presentation
+            if (e.getData(PlatformDataKeys.EDITOR) != null) {
+                e.presentation.isEnabled = false
+            }
 
-        presentation.isEnabledAndVisible = script != null && e.getData(PlatformDataKeys.EDITOR) != null
+            val script = runReadAction {
+                try {
+                    getScriptFromAction(e)
+                } catch (e: Exception) {
+                    e.rethrowAnyCancellationException()
+                    null
+                }
+            }
 
-        val scriptDescriptor = script?.getDescriptor() ?: SCRIPT_NAME_DEFAULT
-        presentation.text = CaosBundle.message(
-            "caos.injector.action.inject-script.title",
-            scriptDescriptor
-        )
+            try {
+                updatePresentation(e) {
+                    val presentation = e.presentation
+                    presentation.isEnabled = script != null
+                    val scriptDescriptor = script?.getDescriptor() ?: SCRIPT_NAME_DEFAULT
+                    presentation.text = ActionsBundle.message(
+                        "action.com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectSingleCaosScriptAction.text",
+                        scriptDescriptor
+                    )
+                }
+            } catch (ex: Throwable) {
+                ex.rethrowAnyCancellationException()
+                val presentation = e.presentation
+                presentation.isVisible = false
+            }
+        }
     }
 
     private fun getScriptFromAction(e: AnActionEvent): CaosScriptScriptElement? {
@@ -101,6 +114,25 @@ class InjectSingleCaosScriptAction : AnAction(
         inject(project, editor, element)
     }
 
+    override fun isEnabled(e: AnActionEvent): Boolean {
+        if (e.getData(IS_OR_HAS_CAOS_FILES_DATA_KEY) != true) {
+            return false
+        }
+
+        if (e.getData(PlatformDataKeys.EDITOR) == null) {
+            return false
+        }
+
+        return runReadAction {
+            try {
+                getScriptFromAction(e) != null
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
+                false
+            }
+        }
+    }
+
 
 }
 
@@ -115,7 +147,7 @@ class InjectSingleCaosScriptIntentionAction : PsiElementBaseIntentionAction(), I
     override fun getFamilyName(): String = CAOSScript
 
     override fun getName(): String {
-        return CaosBundle.message("caos.injector.action.inject-script.title", "Script")
+        return ActionsBundle.message("action.com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectSingleCaosScriptIntentionAction.text")
     }
 
     override fun startInWriteAction(): Boolean {
@@ -123,7 +155,7 @@ class InjectSingleCaosScriptIntentionAction : PsiElementBaseIntentionAction(), I
     }
 
     override fun getText(): String {
-        return CaosBundle.message("caos.injector.action.inject-script.title", "Script")
+        return ActionsBundle.message("action.com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectSingleCaosScriptAction.description")
     }
 
     override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
@@ -335,7 +367,7 @@ private class IgnoreAndInject(
 
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
+        return ActionUpdateThread.BGT
     }
 
     override fun actionPerformed(e: AnActionEvent) {

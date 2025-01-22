@@ -37,7 +37,7 @@ class AutoPreview : AnAction() {
 
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
+        return ActionUpdateThread.BGT
     }
 
     fun setDefaultZoom(newDefault: Int) {
@@ -47,7 +47,7 @@ class AutoPreview : AnAction() {
     override fun update(e: AnActionEvent) {
         super.update(e)
         val visible = isVisible(e)
-        e.presentation.isEnabledAndVisible = visible
+        e.presentation.isEnabled = visible
     }
 
     private fun isVisible(e: AnActionEvent): Boolean {

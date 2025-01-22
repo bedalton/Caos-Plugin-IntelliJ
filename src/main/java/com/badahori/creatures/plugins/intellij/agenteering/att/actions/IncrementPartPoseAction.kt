@@ -1,17 +1,28 @@
+@file:Suppress("ActionPresentationInstantiatedInCtor")
+
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorImpl
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttMessages
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.PartNames
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
+import java.util.function.Supplier
 
-@Suppress("ComponentNotRegistered")
 open class IncrementPartPoseAction (
-    private val partName: String,
     private val partChar: Char,
 ): AnAction (
-    "Increment $partName Part Pose"
+    Supplier {
+        val partName = PartNames.getPartName(partChar)
+        AttMessages.message("increment-part-pose", partName)
+    },
+    Supplier {
+        val partName = PartNames.getPartName(partChar)
+        AttMessages.message("increment-part-pose-description", partName.lowercase())
+    },
+    null,
 ), AttEditorAction  {
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -26,19 +37,19 @@ open class IncrementPartPoseAction (
     override fun update(e: AnActionEvent) {
         super.update(e)
         val isAttFile = isVisible(e)
-        e.presentation.isEnabledAndVisible = isAttFile
+        e.presentation.isEnabled = isAttFile
     }
 
     fun isVisible(e: AnActionEvent): Boolean {
         val editor = e.getData(PlatformDataKeys.FILE_EDITOR)
             ?: return false
-        return editor.name == AttEditorImpl.NAME
+        return editor.name == AttEditorImpl.getEditorName()
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         val editor = e.getData(PlatformDataKeys.FILE_EDITOR)
             ?: return
-        if (editor.name != AttEditorImpl.NAME) {
+        if (editor.name != AttEditorImpl.getEditorName()) {
             return;
         }
         (editor as? AttEditorImpl)?.incrementPartPose(partChar)

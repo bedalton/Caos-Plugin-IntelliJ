@@ -5,7 +5,6 @@ package com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actio
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileDetector
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.AgentFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
@@ -30,18 +29,14 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileTooBigException
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import icons.CaosScriptIcons
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
 
-class DumpAgentAction : AnAction(
-    { AgentMessages.message("actions.dump-agent.title") },
-    { AgentMessages.message("actions.dump-agent.description") },
-    CaosScriptIcons.SDK_ICON
-), DumbAware {
+class DumpAgentAction : AnAction(), DumbAware {
 
     override fun isDumbAware(): Boolean = true
 
@@ -231,25 +226,27 @@ class DumpAgentAction : AnAction(
         val relativeWriter = RelativeFileSystem(LocalFileSystem!!, parentVirtualFile.path)
 
 //        val result = try {
-        val result = parsePrayAgentToFiles(
-            coroutineContext = coroutineContext,
-            fileName = file.name,
-            prefix = prefix,
-            reader = stream,
-            fileSystem = relativeWriter,
-            whitelist = "*"
-        ) { i, total, _, _ ->
-            if (progressIndicator.isIndeterminate) {
-                progressIndicator.isIndeterminate = false
-            }
-            if (total > 0) {
-                progressIndicator.fraction = i.toDouble() / total.toDouble()
-            }
-            if (i < total) {
-                progressIndicator.text2 = "Finished $i of $total; ${total - i} remaining"
-            } else {
-                progressIndicator.isIndeterminate = true
-                progressIndicator.text2 = "Writing files"
+        val result = coroutineScope {
+            parsePrayAgentToFiles(
+                coroutineScope = this,
+                fileName = file.name,
+                prefix = prefix,
+                reader = stream,
+                fileSystem = relativeWriter,
+                whitelist = "*"
+            ) { i, total, _, _,_ ->
+                if (progressIndicator.isIndeterminate) {
+                    progressIndicator.isIndeterminate = false
+                }
+                if (total > 0) {
+                    progressIndicator.fraction = i.toDouble() / total.toDouble()
+                }
+                if (i < total) {
+                    progressIndicator.text2 = "Finished $i of $total; ${total - i} remaining"
+                } else {
+                    progressIndicator.isIndeterminate = true
+                    progressIndicator.text2 = "Writing files"
+                }
             }
         }
 //        } catch (e: Exception) {
@@ -257,7 +254,9 @@ class DumpAgentAction : AnAction(
 //            return false
 //        }
         createdFiles.add(Pair(file, parentVirtualFile))
-        return result.files(coroutineContext).isNotEmpty()
+        return coroutineScope {
+            result.files(this).isNotEmpty()
+        }
     }
 
 

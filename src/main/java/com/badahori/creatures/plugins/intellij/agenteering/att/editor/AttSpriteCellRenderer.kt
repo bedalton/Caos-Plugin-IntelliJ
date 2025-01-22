@@ -2,6 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttMessages
 import com.badahori.creatures.plugins.intellij.agenteering.utils.ActionHelper
 import com.badahori.creatures.plugins.intellij.agenteering.utils.height
 import com.badahori.creatures.plugins.intellij.agenteering.utils.scaleNearestNeighbor
@@ -122,7 +123,7 @@ internal class AttSpriteCellComponent : JPanel() {
                 add(foldLabel)
             }
             foldLabel.foreground = REPLICATED_MESSAGE_FONT_COLOR
-            foldLabel.text = "  Duplicate image. Points are being replicated from cell above"
+            foldLabel.text = AttMessages.message("duplicate-image-points-are-being-replicated")
             foldLabel.isVisible = true
             width = maxOf(foldLabel.width, 10)
             height = maxOf(foldLabel.height, 160)
@@ -379,10 +380,8 @@ internal class AttSpriteCellList(
     fun setItems(newItems: List<AttSpriteCellData>) {
         this.listItems = newItems
         val size = newItems.size
-        if (pool.size > size) {
-            pool.slice(size..pool.size).forEach { component ->
-                component.isVisible = false
-            }
+        for (i in size..pool.size) {
+            pool.getOrNull(i)?.isVisible = false
         }
         reload()
     }
@@ -489,14 +488,14 @@ internal class AttSpriteCellList(
         ActionHelper.addKeyAction(
             actionMap,
             inputMap,
-            "Select previous cell",
+            AttMessages.message("select-previous-cell"),
             getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK),
             this::previousCell
         )
         ActionHelper.addKeyAction(
             actionMap,
             inputMap,
-            "Select previous cell (Keypad)",
+            AttMessages.message("select-previous-cell-keypad"),
             getKeyStroke(KeyEvent.VK_KP_UP, InputEvent.SHIFT_DOWN_MASK),
             this::previousCell
         )
@@ -504,14 +503,14 @@ internal class AttSpriteCellList(
         ActionHelper.addKeyAction(
             actionMap,
             inputMap,
-            "Select next cell",
+            AttMessages.message("select-next-cell"),
             getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_DOWN_MASK),
             this::nextCell
         )
         ActionHelper.addKeyAction(
             actionMap,
             inputMap,
-            "Select next cell (KP)",
+            AttMessages.message("select-next-cell-keypad"),
             getKeyStroke(KeyEvent.VK_KP_DOWN, InputEvent.SHIFT_DOWN_MASK),
             this::nextCell
         )
@@ -519,14 +518,14 @@ internal class AttSpriteCellList(
         ActionHelper.addKeyAction(
             actionMap,
             inputMap,
-            "Focus cell",
+            AttMessages.message("focus-cell"),
             getKeyStroke(KeyEvent.VK_SPACE, 0),
             this::focusCell
         )
 
         ActionHelper.addKeyAction(
             actionMap, inputMap,
-            "move.up",
+            AttMessages.message("move-up"),
             getKeyStroke(KeyEvent.VK_UP, 0)
         ) {
             shiftPoint(0, -1)
@@ -534,7 +533,7 @@ internal class AttSpriteCellList(
 
         ActionHelper.addKeyAction(
             actionMap, inputMap,
-            "move.up",
+            AttMessages.message("move-up"),
             getKeyStroke(KeyEvent.VK_KP_UP, 0)
         ) {
             shiftPoint(0, -1)
@@ -542,29 +541,23 @@ internal class AttSpriteCellList(
 
         ActionHelper.addKeyAction(
             actionMap, inputMap,
-            "move.up",
-            getKeyStroke(KeyEvent.VK_KP_UP, 0)
-        ) {
-            shiftPoint(0, -1)
-        }
-
-        ActionHelper.addKeyAction(
-            actionMap, inputMap,
-            "move.down",
+            AttMessages.message("move-down"),
             getKeyStroke(KeyEvent.VK_DOWN, 0)
         ) {
             shiftPoint(0, 1)
         }
+
         ActionHelper.addKeyAction(
             actionMap, inputMap,
-            "move.down",
+            AttMessages.message("move-down"),
             getKeyStroke(KeyEvent.VK_KP_DOWN, 0)
         ) {
             shiftPoint(0, 1)
         }
+
         ActionHelper.addKeyAction(
             actionMap, inputMap,
-            "move.right",
+            AttMessages.message("move-right"),
             getKeyStroke(KeyEvent.VK_RIGHT, 0)
         ) {
             shiftPoint(1, 0)
@@ -572,7 +565,7 @@ internal class AttSpriteCellList(
 
         ActionHelper.addKeyAction(
             actionMap, inputMap,
-            "move.right",
+            AttMessages.message("move-right"),
             getKeyStroke(KeyEvent.VK_KP_RIGHT, 0)
         ) {
             shiftPoint(1, 0)
@@ -580,14 +573,14 @@ internal class AttSpriteCellList(
 
         ActionHelper.addKeyAction(
             actionMap, inputMap,
-            "move.left",
+            AttMessages.message("move-left"),
             getKeyStroke(KeyEvent.VK_LEFT, 0)
         ) {
             shiftPoint(-1, 0)
         }
         ActionHelper.addKeyAction(
             actionMap, inputMap,
-            "move.left",
+            AttMessages.message("move-left"),
             getKeyStroke(KeyEvent.VK_KP_LEFT, 0)
         ) {
             shiftPoint(-1, 0)
@@ -665,13 +658,14 @@ private class AttCellCanvas(
             g.color = Color(0, 0, 0, 60)
             g.fillRect(0, 0, width, height)
             g.color = Color(255, 255, 255, 255)
-            g.drawCenteredString("Click to Edit", Rectangle(0, 0, width, height))
+            g.drawCenteredString(AttMessages.message("click-to-edit"), Rectangle(0, 0, width, height))
         }
         val g2 = g as Graphics2D
         if (selected) {
             scaledPoints.forEachIndexed { index, point ->
                 val label: String = if (labels)
-                    pointNames.getOrNull(index)?.let { name -> "${index + 1}: $name" } ?: "Point $index"
+                    pointNames.getOrNull(index)?.let { name -> "${index + 1}: $name" }
+                        ?: AttMessages.message("point-of", index)
                 else
                     "${index + 1}"
                 g2.color = colors[index]

@@ -1,8 +1,9 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttMessages
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileLine
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileParser
-import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.toFileText
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
@@ -44,15 +45,15 @@ internal object AttCopyMirroredUtil {
         }
         // Get sprites for the copyFrom file
         val copyFromSprite = getSprite(project, copyFrom)
-            ?: return AttCopyResult.Error("Failed to find copy to sprite")
+            ?: return AttCopyResult.Error(AttMessages.message("failed-to-find-copy-from-sprite"))
 
         // Get copy to sprites
         val copyToSprite = getSprite(project, copyTo)
-            ?: return AttCopyResult.Error("Failed to find copy to sprite")
+            ?: return AttCopyResult.Error(AttMessages.message("failed-to-find-copy-to-sprite"))
 
         // Ensure both files have the same number of sprites
         if (copyToSprite.size != copyFromSprite.size) {
-            return AttCopyResult.Error("Sprite file count mismatch")
+            return AttCopyResult.Error(AttMessages.message("sprite-count-mismatch"))
         }
 
         // TODO validate is corresponding sprite body
@@ -62,7 +63,7 @@ internal object AttCopyMirroredUtil {
 
         // Ensure there are enough ATT lines for the sprites in the file
         if (attLines.size < copyFromSprite.size) {
-            return AttCopyResult.Error("Not enough ATT lines to cover all images")
+            return AttCopyResult.Error(AttMessages.message("not-enough-att-lines-to-cover-image"))
         }
         val numSprites = copyToSprite.size
         // Offset all ATT lines for present images
@@ -80,7 +81,7 @@ internal object AttCopyMirroredUtil {
         } catch (e: Exception) {
             e.rethrowAnyCancellationException()
             // Most likely thrown from images being null
-            return AttCopyResult.Error("Invalid or empty sprite encountered")
+            return AttCopyResult.Error(AttMessages.message("invalid-or-empty-sprite-encountered"))
         }
         return AttCopyResult.OK(lines)
     }
@@ -140,16 +141,22 @@ internal object AttCopyMirroredUtil {
 
     private fun validateFileType(copyFrom: VirtualFile, copyTo: VirtualFile): AttCopyResult.Error? {
         var error: String? = null
-        if (copyTo.extension?.lowercase() != "att")
-            error = "Copy to file"
+        if (copyTo.extension?.lowercase() != "att") {
+            error = AttMessages.message("copy-to-file")
+        }
+
         if (copyFrom.extension?.lowercase() != "att")
-            error =
-                if (error != null) "$error and copy from file are not att files" else "Copy from file is not an att file"
+            error = if (error != null) {
+                AttMessages.message("copy-to-and-copy-from-file-are-not-att-files", error)
+            } else {
+                AttMessages.message("copy-from-file-is-not-att")
+            }
         if (error != null) {
-            return if (!error.endsWith("files") && !error.endsWith("file"))
-                AttCopyResult.Error("$error is not an att file")
-            else
+            return if (!error.endsWith("files") && !error.endsWith("file")) {
+                AttCopyResult.Error(AttMessages.message("error-is-not-an-att-file", error))
+            } else {
                 AttCopyResult.Error(error)
+            }
         }
         return null
     }

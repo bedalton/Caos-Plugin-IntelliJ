@@ -46,11 +46,22 @@
   </extensions>
   <actions>
     <!-- ========= NEW FILES ========= -->
+
+    <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction"
+            icon="CaosScriptIcons.ATT_FILE_ICON"
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction"
+    >
+      <add-to-group group-id="NewGroup" anchor="before" relative-to-action="CaosScript.NewFile"/>
+    </action>
+
     <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileFromSpritesAction"
-            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileFromSpritesAction">
+            class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileFromSpritesAction"
+            icon="CaosScriptIcons.ATT_FILE_ICON"
+    >
       <add-to-group group-id="NewGroup" anchor="after"
                     relative-to-action="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction"/>
     </action>
+
 
     <!-- ========= INCREMENT POSE ========= -->
     <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.IncrementHeadPartPose"

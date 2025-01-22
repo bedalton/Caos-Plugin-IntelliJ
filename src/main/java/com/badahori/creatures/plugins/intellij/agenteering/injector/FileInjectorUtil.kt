@@ -121,7 +121,7 @@ internal object FileInjectorUtil {
                 ) {
 
                     override fun getActionUpdateThread(): ActionUpdateThread {
-                        return ActionUpdateThread.EDT
+                        return ActionUpdateThread.BGT
                     }
 
                     override fun actionPerformed(e: AnActionEvent) {
@@ -519,7 +519,7 @@ private fun addPositionLink(
     val navigateToElementAction = object : AnAction(getText()) {
 
         override fun getActionUpdateThread(): ActionUpdateThread {
-            return ActionUpdateThread.EDT
+            return ActionUpdateThread.BGT
         }
 
         override fun update(e: AnActionEvent) {

@@ -62,8 +62,6 @@ class CaosScriptEditorToolbar(
     val project: Project
 ) : EditorNotifications.Provider<EditorNotificationPanel>(), DumbAware, Disposable {
 
-
-
     override fun getKey(): Key<EditorNotificationPanel> = KEY
 
     override fun createNotificationPanel(
@@ -79,7 +77,7 @@ class CaosScriptEditorToolbar(
         }
         ProgressIndicatorProvider.checkCanceled()
         val backgroundColor: Color = UIUtil.getPanelBackground()
-        val panel = EditorNotificationPanel(backgroundColor)
+        val panel = EditorNotificationPanel(fileEditor, backgroundColor)
         try {
             val headerComponent = createCaosScriptHeaderComponent(
                 project = project,
@@ -644,8 +642,11 @@ private class RunInjectorAction(
     }
 
     fun setAction(action: AnAction?, presentation: Presentation? = null) {
+        if (action == null) {
+            return
+        }
         if (action !is CaosInjectFileAction) {
-            LOGGER.severe("RunInjector action is not CAOS injector")
+            LOGGER.severe("RunInjector action is not CAOS injector; Action: ${action.className}")
             return
         }
         this.mAction = action
@@ -654,25 +655,25 @@ private class RunInjectorAction(
         }
     }
 
-    override fun update(e: AnActionEvent) {
-        super.update(e)
-        var injector: AnAction? = mAction
-        if (injector == null || injector is AddGameInterfaceAction) {
-            // Get the selected item
-            injector = injectors.selectItem(true) {
-                it !is AddGameInterfaceAction
-            }
-            // Set selected as an action
-            setAction(injector, e.presentation)
+    override fun update(e: AnActionEvent) = runReadAction {
+            super.update(e)
+            var injector: AnAction? = mAction
+            if (injector == null || injector is AddGameInterfaceAction) {
+                // Get the selected item
+                injector = injectors.selectItem(true) {
+                    it !is AddGameInterfaceAction
+                }
+                // Set selected as an action
+                setAction(injector, e.presentation)
 
-            // If injector is null, return
-            // NULL means this could be an AddGameInterfaceAction
-            if (injector == null) {
-                return
+                // If injector is null, return
+                // NULL means this could be an AddGameInterfaceAction
+                if (injector == null) {
+                    return@runReadAction
+                }
             }
+            updatePresentation(e.presentation, injector)
         }
-        updatePresentation(e.presentation, injector)
-    }
 
     private fun updatePresentation(presentation: Presentation, injector: AnAction?) {
         if (injector == null) {
@@ -682,7 +683,7 @@ private class RunInjectorAction(
         }
         val valid = injector !is AddGameInterfaceAction
         presentation.isEnabled = valid
-        presentation.text = injector.templateText ?: "Select Injector Interface"
+        presentation.text = "Select Injector Interface" // injector.templateText ?: "Select Injector Interface"
     }
 
     override fun actionPerformed(e: AnActionEvent) {

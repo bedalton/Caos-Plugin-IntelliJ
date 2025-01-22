@@ -1,9 +1,11 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttAutoFill
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.ActionsBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CAOS_SCRIPT_MODULE_INSTANCE
 import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.inferVariantHard
@@ -21,7 +23,6 @@ import com.intellij.ide.fileTemplates.FileTemplate
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.module.ModuleType
-import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -39,9 +40,9 @@ import icons.CaosScriptIcons
  * @todo implement multiple file types (ie. implementations or protocols)
  */
 class AttNewFileAction :  MyNewFileAction(
-    CaosBundle.message("att.actions.new-file.title"),
+    ActionsBundle.message("action.com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction.title"),
     "ATT file",
-    CaosBundle.message("att.actions.new-file.description"),
+    ActionsBundle.message("action.com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction.description"),
     "creatures-blank",
     "att",
     CaosScriptIcons.ATT_FILE_ICON
@@ -62,7 +63,7 @@ class AttNewFileAction :  MyNewFileAction(
         }
 
         val hasCaosModule = ModuleManager.getInstance(project).modules.any {
-            ModuleType.`is`(it, CaosScriptModuleType.INSTANCE)
+            ModuleType.`is`(it, CAOS_SCRIPT_MODULE_INSTANCE)
         }
 
         val showAction = hasCaosModule ||
@@ -76,11 +77,11 @@ class AttNewFileAction :  MyNewFileAction(
      * Builds the dialog object
      */
     override fun buildDialog(project: Project, directory: PsiDirectory, builder: CreateFileFromTemplateDialog.Builder) {
-        builder.setTitle(CaosBundle.message("caos.actions.new-file.title"))
+        builder.setTitle(CaosBundle.message("action.CaosScript.NewFile.text"))
             .setValidator(object : InputValidatorEx {
                 override fun canClose(inputString: String?) = checkInput(inputString)
                 override fun getErrorText(inputString: String?) =
-                    CaosBundle.message("att.actions.new-file.invalid", inputString.orEmpty())
+                    ActionsBundle.message("att.actions.new-file.invalid", inputString.orEmpty())
 
                 override fun checkInput(inputString: String?): Boolean {
                     if (inputString == null) {

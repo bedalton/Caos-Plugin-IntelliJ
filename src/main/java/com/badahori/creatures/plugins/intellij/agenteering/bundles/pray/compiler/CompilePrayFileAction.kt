@@ -5,6 +5,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.lang.Pra
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Pray
+import com.badahori.creatures.plugins.intellij.agenteering.common.ConditionalAction
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.bedalton.common.util.className
@@ -33,29 +34,25 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.io.File
 
-class CompilePrayFileAction(private val transient: Boolean = true) : AnAction({ "Compile PRAY Agent" }) {
+open class CompilePrayFileAction() : AnAction(), ConditionalAction {
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
+        return ActionUpdateThread.BGT
     }
 
     override fun update(e: AnActionEvent) {
         super.update(e)
 
         // Establish visibility
-        val visible = isVisible(e)
-        e.presentation.isEnabledAndVisible = visible
+        val visible = true
+        e.presentation.isEnabled = visible
+    }
 
-        if (!visible) {
-            return
-        }
-        e.presentation.icon = CaosScriptIcons.BUILD
+    override fun isEnabled(e: AnActionEvent): Boolean {
+        return isVisible(e)
     }
 
     private fun isVisible(e: AnActionEvent): Boolean {
-        if (!transient) {
-            return true
-        }
         val project = e.project
             ?: return false
         if (project.isDisposed) {
@@ -174,10 +171,12 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction({ 
                 .withLogProgress(false)
                 .withPrintStats(false)
                 .withCompressionLevel(opts.compressionLevel)
-                .withLinkWithFilenameReference(opts.linkWithFilenameReference)
+                .withLinkWithFilenameReference((opts as? PrayCompileOptionsWithLinkWithFileName?)?.linkWithFilenameReference ?: true)
             logProgress(true)
             try {
-                return compilePrayAndWrite(coroutineContext = coroutineContext, LocalFileSystem!!, fileOpts, false)
+                return coroutineScope {
+                    compilePrayAndWrite(coroutineScope = this, LocalFileSystem!!, fileOpts, false)
+                }
             } catch (e: Exception) {
                 e.rethrowAnyCancellationException()
                 invokeLater {
@@ -256,9 +255,6 @@ class CompilePrayFileAction(private val transient: Boolean = true) : AnAction({ 
 
             }
         }
-
-
     }
-
 
 }

@@ -1,13 +1,14 @@
+@file:Suppress("ActionPresentationInstantiatedInCtor")
+
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobCompiler
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.compiler.Caos2CobCompiler.CompilationResults
-import com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
+import com.badahori.creatures.plugins.intellij.agenteering.common.ConditionalAction
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.contents
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
@@ -20,23 +21,17 @@ import com.intellij.openapi.progress.ProgressIndicatorProvider
 import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import icons.CaosScriptIcons
 import kotlinx.coroutines.runBlocking
-import kotlin.math.min
 
 /**
  * Creates a file
  * @todo implement multiple file types (ie. implementations or protocols)
  */
-class CompileCaos2CobAction : AnAction(
-    { /* text = */ AgentMessages.message("cob.caos2cob.compile.title") },
-    {/* description = */ AgentMessages.message("cob.caos2cob.compile.description") },
-    /* icon = */ CaosScriptIcons.C1_COB_FILE_ICON
-) {
+class CompileCaos2CobAction : AnAction(), ConditionalAction {
 
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
+        return ActionUpdateThread.BGT
     }
 
     override fun actionPerformed(e: AnActionEvent) {
@@ -77,17 +72,14 @@ class CompileCaos2CobAction : AnAction(
         }
     }
 
+    override fun isEnabled(e: AnActionEvent): Boolean {
+        return isVisible(e)
+    }
 
     override fun update(event: AnActionEvent) {
         val visible = isVisible(event)
         val presentation = event.presentation
-        if (!visible) {
-            presentation.isEnabledAndVisible = false
-            return
-        }
-        presentation.isEnabledAndVisible = true
-//        presentation.text = AgentMessages.message("cob.caos2cob.compile.title")
-//        presentation.description = AgentMessages.message("cob.caos2cob.compile.description")
+        presentation.isEnabled = visible
     }
 
     // Static Methods
@@ -108,7 +100,7 @@ class CompileCaos2CobAction : AnAction(
             val compilationResult = CompilationResults(1)
             // Run compile phase in background
             // Requires read-access though, so will have to move back onto ui thread I think
-            runBackgroundableTask("Compile 1 Caos2Cob Files") { progressIndicator ->
+            runBackgroundableTask("Compile 1 Caos2Cob files") { progressIndicator ->
                 invokeLater {
                     progressIndicator.checkCanceled()
                     // Ensure in read action

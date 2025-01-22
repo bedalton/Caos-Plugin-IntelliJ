@@ -174,7 +174,7 @@ data class CaosNotification internal constructor(
         return addAction(object: AnAction(text) {
 
             override fun getActionUpdateThread(): ActionUpdateThread {
-                return ActionUpdateThread.EDT
+                return ActionUpdateThread.BGT
             }
 
             override fun actionPerformed(e: AnActionEvent) {
@@ -192,7 +192,7 @@ data class CaosNotification internal constructor(
         return addAction(object: AnAction(text, description, icon) {
 
             override fun getActionUpdateThread(): ActionUpdateThread {
-                return ActionUpdateThread.EDT
+                return ActionUpdateThread.BGT
             }
 
             override fun actionPerformed(e: AnActionEvent) {

@@ -1,6 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.action
 
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.ActionsBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.utils.copyToClipboard
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
@@ -31,8 +31,8 @@ class CaosScriptCopyForBoBCobAction : CopyAction(), DumbAware {
         val enabled = (dataContext.getData(PlatformDataKeys.PSI_FILE) as? CaosScriptFile)?.variant?.isOld.orFalse()
         presentation.isEnabled = enabled
         presentation.isVisible = enabled
-        presentation.text = CaosBundle.message("caos.actions.copy-for-bob-cob.title")
-        presentation.description = CaosBundle.message("caos.actions.copy-for-bob-cob.description")
+        presentation.text = ActionsBundle.message("action.com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction.text")
+        presentation.description = ActionsBundle.message("action.com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction.description")
         presentation.icon = AllIcons.Actions.Copy
     }
 

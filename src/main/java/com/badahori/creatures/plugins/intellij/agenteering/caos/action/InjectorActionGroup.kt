@@ -171,7 +171,7 @@ internal class CaosInjectFileAction(
 
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
+        return ActionUpdateThread.BGT
     }
 
     override fun update(e: AnActionEvent) {
@@ -205,7 +205,7 @@ internal class AddGameInterfaceAction(private val project: Project, private val 
     AnAction({ CaosBundle.message("caos.injector.action.add-interface") }) {
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
+        return ActionUpdateThread.BGT
     }
 
     override fun actionPerformed(e: AnActionEvent) {

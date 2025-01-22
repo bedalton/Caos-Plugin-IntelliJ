@@ -38,6 +38,13 @@
     <change-notes><![CDATA[
         <ul>
             <li>
+                <b>Version: 2024.2.3</b>
+                <b>Fixes</b>
+                <ul>
+                    <li>Simplify CAOS lib indexing</li>
+                </ul>
+            </li>
+            <li>
                 <b>Version: 2024.2.2</b>
                 <b>Fixes</b>
                 <ul>
@@ -117,7 +124,7 @@
   </change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="222.4554.10"/>
+    <idea-version since-build="232.10335.12"/>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
@@ -953,6 +960,8 @@
 
     </extensions>
 
+    <resource-bundle>com.badahori.creatures.plugins.intellij.actions-bundle</resource-bundle>
+
     <actions>
         <!-- Add your actions here -->
         <action
@@ -961,82 +970,84 @@
                 class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptNewFileAction">
             <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewFile"/>
         </action>
-        <action id="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction"
-                icon="CaosScriptIcons.ATT_FILE_ICON"
-                class="com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileAction">
-            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="CaosScript.NewFile"/>
-        </action>
 
-        <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction"
-                class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction"
-                text="Copy for BoBCob" description="Copy script for BoBCob file editor formatting as necessary">
-            <add-to-group group-id="CutCopyPasteGroup" anchor="before" relative-to-action="CopyPaths"/>
-        </action>
+        <group
+                id="com.bedalton.creatures.intellij.agenteering.caos"
+                class="com.badahori.creatures.plugins.intellij.agenteering.common.CaosActionGroup"
+                compact="true"
+        >
+            <separator />
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="CutCopyPasteGroup" />
 
-        <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"
-                class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"
-                text="Expand CAOS Commands"
-                description="Places each CAOS command onto its own line"
-        >
-            <add-to-group group-id="CutCopyPasteGroup" anchor="before" relative-to-action="CopyPaths"/>
-        </action>
+            <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction"
+                    class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.CaosScriptCopyForBoBCobAction">
+<!--                <add-to-group group-id="CutCopyPasteGroup" anchor="before" relative-to-action="CopyPaths"/>-->
+            </action>
 
-        <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.SetVariantAction"
-                class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.SetVariantAction"
-                text="Set CAOS Variant"
-                description="Set CAOS variant for selected folder or files"
-                icon="CaosScriptIcons.SDK_ICON"
-        >
-            <add-to-group group-id="CutCopyPasteGroup" anchor="after"
-                          relative-to-action="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"/>
-        </action>
+            <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"
+                    class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"
+                    icon="CaosScriptIcons.CAOS_FILE_ICON"
+            >
+<!--                <add-to-group group-id="CodeFormatGroup" anchor="before" relative-to-action="ReformatCode"/>-->
+            </action>
 
-        <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions.CompileCaos2CobAction"
-                class="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions.CompileCaos2CobAction"
-                text="Compile CAOS2Cob Files"
-                description="Compile CAOS2Cob CAOS files into C1/C2 COBs">
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="ExternalToolsGroup"/>
-        </action>
+            <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.SetVariantAction"
+                    class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.SetVariantAction"
+                    icon="CaosScriptIcons.SDK_ICON"
+            >
+<!--                <add-to-group group-id="CutCopyPasteGroup" anchor="after"-->
+<!--                              relative-to-action="com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction"/>-->
+            </action>
 
-        <action id="com.badahori.creatures.plugins.intellij.agenteering.sprites.actions.DumpSpriteAction"
-                class="com.badahori.creatures.plugins.intellij.agenteering.sprites.actions.DumpSpriteAction"
-                text="Dump Creatures Sprite" description="Dumps a creatures sprite file into a project directory"
-        >
-            <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"
-                          anchor="before"/>
-        </action>
+            <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions.CompileCaos2CobAction"
+                    class="com.badahori.creatures.plugins.intellij.agenteering.bundles.cobs.caos2cob.actions.CompileCaos2CobAction"
+                    icon="CaosScriptIcons.C1_COB_FILE_ICON"
+            >
+<!--                <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="ExternalToolsGroup"/>-->
+            </action>
 
-        <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectSingleCaosScriptAction"
-                class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectSingleCaosScriptAction"
-                text="Inject Selected Script"
-                description="Injects the currently focused script"
-        >
-            <add-to-group group-id="ProjectViewPopupMenu"
-                          relative-to-action="ProjectViewPopupMenuRunGroup"
-                          anchor="before"/>
-        </action>
-        <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions.DumpAgentAction"
-                class="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions.DumpAgentAction"
-                text="Dump Agent Files" description="Dumps all agent files and scripts into a directory"
-        >
-            <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"
-                          anchor="before"/>
-        </action>
+            <action id="com.badahori.creatures.plugins.intellij.agenteering.sprites.actions.DumpSpriteAction"
+                    class="com.badahori.creatures.plugins.intellij.agenteering.sprites.actions.DumpSpriteAction"
+            >
+<!--                <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"-->
+<!--                              anchor="before"/>-->
+            </action>
 
-        <action id="com.badahori.creatures.plugins.intellij.agenteering.poser.actions.AutoPreview"
-                class="com.badahori.creatures.plugins.intellij.agenteering.poser.actions.AutoPreview"
-                text="Generate Breed Previews" description="Generates breed preview images"
-        >
-            <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"
-                          anchor="before"/>
-        </action>
-        <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction"
-                class="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction"
-                text="Compile PRAY Agent"
-                description="Compiles a PRAY or CAOS2Pray file into a C3/DS agent"
-        >
-            <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"
-                          anchor="before"/>
-        </action>
+            <action id="com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectSingleCaosScriptAction"
+                    class="com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectSingleCaosScriptAction"
+                    icon="CaosScriptIcons.MODULE_ICON"
+            >
+<!--                <add-to-group group-id="ProjectViewPopupMenu"-->
+<!--                              relative-to-action="ProjectViewPopupMenuRunGroup"-->
+<!--                              anchor="before"/>-->
+            </action>
+            <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions.DumpAgentAction"
+                    class="com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.actions.DumpAgentAction"
+                    icon="CaosScriptIcons.SDK_ICON"
+            >
+<!--                <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"-->
+<!--                              anchor="before"/>-->
+            </action>
+
+            <action id="com.badahori.creatures.plugins.intellij.agenteering.poser.actions.AutoPreview"
+                    class="com.badahori.creatures.plugins.intellij.agenteering.poser.actions.AutoPreview"
+            >
+<!--                <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"-->
+<!--                              anchor="before"/>-->
+            </action>
+            <action id="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction"
+                    class="com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler.CompilePrayFileAction"
+                    icon="CaosScriptIcons.BUILD"
+            >
+<!--                <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"-->
+<!--                              anchor="before"/>-->
+            </action>
+            <action id="com.badahori.creatures.plugins.intellij.agenteering.sfc.DumpSfcAction"
+                    class="com.badahori.creatures.plugins.intellij.agenteering.sfc.DumpSfcAction"
+                    icon="CaosScriptIcons.MODULE_ICON">
+<!--                <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"-->
+<!--                              anchor="before"/>-->
+            </action>
+        </group>
     </actions>
 </idea-plugin>

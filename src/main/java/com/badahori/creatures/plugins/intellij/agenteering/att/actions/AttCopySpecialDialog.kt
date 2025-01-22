@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttMessages
 import com.badahori.creatures.plugins.intellij.agenteering.utils.lowercase
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.vfs.VirtualFile
@@ -38,19 +38,26 @@ class AttCopySpecialDialog(val project: Project, private val thisAtt: VirtualFil
     val index by lazy {
         thisAtt.nameWithoutExtension.substring(1).lowercase()
     }
-    private val copyLeftValuesOverRight = JRadioButton("Mirror Left values over Right in file")
-    private val copyRightValuesOverLeft = JRadioButton("Mirror Right values over Left in file")
+    private val copyLeftValuesOverRight = JRadioButton(AttMessages.message("mirror-left-values-over-right-in-file"))
+    private val copyRightValuesOverLeft = JRadioButton(AttMessages.message("mirror-right-values-over-left-in-file"))
 
-    private val copyThisOverOther =
-        JRadioButton("Mirror this att (${thisAtt.nameWithoutExtension}) over corresponding att ($mirroredPart${thisAtt.nameWithoutExtension})")
-    private val copyOtherOverThis =
-        JRadioButton("Mirror corresponding att ($mirroredPart${thisAtt.nameWithoutExtension}) over this att (${thisAtt.nameWithoutExtension})")
+    private val copyThisOverOther = JRadioButton(AttMessages.message(
+        "mirror-this-att-over-att",
+        thisAtt.nameWithoutExtension,
+        "$mirroredPart${thisAtt.nameWithoutExtension}"
+    ))
+
+    private val copyOtherOverThis = JRadioButton(AttMessages.message(
+        "mirror-corresponding-att-over-this-att",
+        "$mirroredPart${thisAtt.nameWithoutExtension}",
+        thisAtt.nameWithoutExtension
+    ))
 
     init {
 
         val panel = JPanel()
         panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
-        panel.add(JLabel("Choose ATT copy options"))
+        panel.add(JLabel(AttMessages.message("choose-att-copy-options")))
 
 
         val radioGroup = ButtonGroup()

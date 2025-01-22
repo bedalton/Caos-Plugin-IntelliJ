@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttMessages
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.getInitialVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter
@@ -54,7 +55,7 @@ internal class AttEditorImpl(
     }
 
     override fun getName(): String {
-        return NAME
+        return getEditorName()
     }
 
     override fun setState(state: FileEditorState) {}
@@ -128,9 +129,11 @@ internal class AttEditorImpl(
         controller.view.togglePartVisibility(part, visibility)
     }
 
-
     companion object {
-        internal const val NAME = "ATTEditor"
+        @JvmStatic
+        fun getEditorName(): String {
+            return AttMessages.message("att-editor.name")
+        }
     }
 }
 

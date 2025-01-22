@@ -10,9 +10,9 @@ import icons.CaosScriptIcons
 
 
 class CaosScriptNewFileAction : MyNewFileAction(
-    CaosBundle.message("caos.actions.new-file.title"),
+    CaosBundle.message("action.CaosScript.NewFile.text"),
     "CAOS File",
-    CaosBundle.message("caos.actions.new-file.description"),
+    CaosBundle.message("action.CaosScript.NewFile.description"),
     "cos-macro",
     "cos",
     CaosScriptIcons.CAOS_FILE_ICON

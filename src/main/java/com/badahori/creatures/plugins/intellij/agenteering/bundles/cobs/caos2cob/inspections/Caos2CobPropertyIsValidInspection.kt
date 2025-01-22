@@ -110,7 +110,7 @@ class Caos2CobPropertyIsValidInspection : LocalInspectionTool(), DumbAware {
                 return
             }
             fixes.addAll(getFixesForSimilar(variant, element, tagName))
-            val error = AgentMessages.message("errors..caos2properties.property-invalid.property-not-recognized", tagNameRaw, "CAOS2Cob")
+            val error = AgentMessages.message("errors.caos2properties.property-invalid.property-not-recognized", tagNameRaw, "CAOS2Cob")
             holder.registerProblem(element, error, *fixes.toTypedArray())
         }
 

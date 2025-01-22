@@ -26,8 +26,9 @@ class ExpandCaosCommandsAction : AnAction(), DumbAware {
 
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
+        return ActionUpdateThread.BGT
     }
+
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project
             ?: return
@@ -109,8 +110,8 @@ class ExpandCaosCommandsAction : AnAction(), DumbAware {
         val presentation = event.presentation
         presentation.isEnabled = enabled
         presentation.isVisible = enabled
-        presentation.text = CaosBundle.message("caos.actions.expand-caos-commands-in-file.title")
-        presentation.description = CaosBundle.message("caos.actions.expand-caos-commands-in-file.description")
+        presentation.text = CaosBundle.message("action.com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction.text")
+        presentation.description = CaosBundle.message("action.com.badahori.creatures.plugins.intellij.agenteering.caos.action.ExpandCaosCommandsAction.description")
     }
 }
 

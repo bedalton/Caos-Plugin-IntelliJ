@@ -9,10 +9,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifica
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.bedalton.common.util.PathUtil
 import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions
-import com.intellij.openapi.actionSystem.ActionGroup
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.progress.ProgressIndicator
@@ -61,6 +58,10 @@ private val KEY: Key<EditorNotificationPanel> = Key.create("creatures.pray.PRAYE
 
 private class EditorActionGroup(psiFile: PsiFile) : ActionGroup() {
 
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.EDT
+    }
+
     val pointer = SmartPointerManager.createPointer(psiFile)
 
     override fun update(e: AnActionEvent) {
@@ -70,7 +71,7 @@ private class EditorActionGroup(psiFile: PsiFile) : ActionGroup() {
 
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         return arrayOf(
-            CompilePrayFileAction(false)
+            CompilePrayFileAction()
         )
     }
 

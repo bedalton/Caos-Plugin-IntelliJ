@@ -54,7 +54,7 @@ internal fun caosInject(
                 .addAction(object : AnAction("Ignore for Session and Inject") {
 
                     override fun getActionUpdateThread(): ActionUpdateThread {
-                        return ActionUpdateThread.EDT
+                        return ActionUpdateThread.BGT
                     }
 
                     override fun actionPerformed(e: AnActionEvent) {
@@ -71,7 +71,7 @@ internal fun caosInject(
 
 
                     override fun getActionUpdateThread(): ActionUpdateThread {
-                        return ActionUpdateThread.EDT
+                        return ActionUpdateThread.BGT
                     }
 
                     override fun actionPerformed(e: AnActionEvent) {

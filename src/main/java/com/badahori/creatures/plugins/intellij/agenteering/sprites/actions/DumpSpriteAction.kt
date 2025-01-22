@@ -1,8 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.actions
 
-import com.bedalton.common.structs.Pointer
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.AgentMessages
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.blk.BlkFileType
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.c16.C16FileType
@@ -11,10 +9,12 @@ import com.badahori.creatures.plugins.intellij.agenteering.sprites.spr.SprFileTy
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
+import com.bedalton.common.structs.Pointer
 import com.bedalton.creatures.sprite.parsers.BlkParser
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.DumbAware
@@ -22,7 +22,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import korlibs.image.awt.toAwt
-import icons.CaosScriptIcons
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -31,27 +30,23 @@ import java.io.File
 import java.nio.file.Paths
 import java.util.concurrent.atomic.AtomicInteger
 
-class DumpSpriteAction : AnAction(
-    { AgentMessages.message("actions.dump-sprite.title") },
-    { AgentMessages.message("actions.dump-sprite.description") },
-    CaosScriptIcons.SDK_ICON
-), DumbAware {
+class DumpSpriteAction : AnAction(), DumbAware {
 
     override fun isDumbAware(): Boolean = true
-    
+
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
+        return ActionUpdateThread.BGT
     }
 
     override fun update(e: AnActionEvent) {
         e.presentation.isVisible = isVisible(e)
     }
 
-    private fun isVisible(e: AnActionEvent): Boolean {
+    private fun isVisible(e: AnActionEvent): Boolean = runReadAction {
         val files = e.files
         val fileCount = files.size
 
-        return when {
+        when {
             fileCount == 0 -> false
             fileCount > 15 -> true
             else -> files.any { it.fileType in spriteFileTypes }
@@ -149,6 +144,7 @@ class DumpSpriteAction : AnAction(
                     "Failed to dump all sprites. Failed (${failed.value}); Succeeded (${dumped.value})"
                 )
             }
+
             dumped.value > 0 -> {
                 CaosNotifications.showInfo(
                     project,
@@ -156,6 +152,7 @@ class DumpSpriteAction : AnAction(
                     if (dumped.value > 1) "Successfully dumped (${dumped.value}) sprites" else "Successfully dumped sprite"
                 )
             }
+
             else -> {
                 CaosNotifications.showInfo(project, "Sprite Dump", "No files were dumped")
             }

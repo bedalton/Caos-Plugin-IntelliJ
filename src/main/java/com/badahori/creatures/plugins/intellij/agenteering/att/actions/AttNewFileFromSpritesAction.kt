@@ -3,7 +3,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileType
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttAutoFill
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
+import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.ActionsBundle
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVariantExplicitOrImplicit
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.inferVariantHard
@@ -20,7 +20,6 @@ import com.intellij.openapi.command.UndoConfirmationPolicy
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
-import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
@@ -31,23 +30,22 @@ import com.intellij.psi.PsiFileFactory
 import icons.CaosScriptIcons
 import java.util.concurrent.atomic.AtomicInteger
 
-class AttNewFileFromSpritesAction : AnAction(
-    {/* text = */ CaosBundle.message("att.actions.new-file-from-sprites.multi.title") },
-    {/* description = */ CaosBundle.message("att.actions.new-file-from-sprites.multi.description") },
-    /* icon = */ CaosScriptIcons.ATT_FILE_ICON
-) {
+class AttNewFileFromSpritesAction : AnAction() {
 
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
+        return ActionUpdateThread.BGT
     }
+
 
     override fun update(e: AnActionEvent) {
         super.update(e)
         val project = e.project
             ?: return
+
         if (project.isDisposed) {
             return
         }
+
         if (DumbService.isDumb(project)) {
             return
         }
@@ -56,23 +54,26 @@ class AttNewFileFromSpritesAction : AnAction(
         val bodyPartSpriteCount = bodyPartSprites.size
 
         val hasSprites = bodyPartSpriteCount > 0
+
+        val presentation = e.presentation
+
         if (!hasSprites) {
-            e.presentation.isEnabledAndVisible = false
+            presentation.isEnabled = false
             return
         }
 
-        e.presentation.isEnabledAndVisible = true
+        presentation.isEnabled = true
 
-        e.presentation.text = if (bodyPartSpriteCount == 1) {
-            CaosBundle.message("att.actions.new-file-from-sprites.single.title", bodyPartSprites[0].name)
+        presentation.text = if (bodyPartSpriteCount == 1) {
+            ActionsBundle.message("att.actions.new-file-from-sprites.single.title", bodyPartSprites[0].name)
         } else {
-            CaosBundle.message("att.actions.new-file-from-sprites.multi.title")
+            ActionsBundle.message("action.com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileFromSpritesAction.text")
         }
 
-        e.presentation.description = if (bodyPartSpriteCount == 1) {
-            CaosBundle.message("att.actions.new-file-from-sprites.single.description", bodyPartSprites[0].name)
+        presentation.description = if (bodyPartSpriteCount == 1) {
+            ActionsBundle.message("action.actions.new-file-from-sprites.single.description", bodyPartSprites[0].name)
         } else {
-            CaosBundle.message("att.actions.new-file-from-sprites.multi.description")
+            ActionsBundle.message("action.com.badahori.creatures.plugins.intellij.agenteering.att.actions.AttNewFileFromSpritesAction.description")
         }
     }
 
@@ -132,9 +133,9 @@ class AttNewFileFromSpritesAction : AnAction(
 
         val groupId = NEW_FILE_ACTION_ID + (atomicId.incrementAndGet()).toString().padStart(4, '0')
         val commandText = if (singleFile) {
-            CaosBundle.message("att.actions.new-file-from-sprites.single.command-title", files[0].name)
+            ActionsBundle.message("att.actions.new-file-from-sprites.single.command-title", files[0].name)
         } else {
-            CaosBundle.message("att.actions.new-file-from-sprites.multi.command-title")
+            ActionsBundle.message("att.actions.new-file-from-sprites.multi.command-title")
         }
         WriteCommandAction.writeCommandAction(project)
             .withGlobalUndo()
@@ -282,12 +283,12 @@ private fun getTargetDirectory(project: Project, files: List<VirtualFile>): Virt
         .apply {
             roots = listOf(parents[0])
             description = if (files.size == 1) {
-                CaosBundle.message(
+                ActionsBundle.message(
                     "att.actions.new-file-from-sprites.single.file-chooser-description",
                     files[0].nameWithoutExtension + ".att"
                 )
             } else {
-                CaosBundle.message("att.actions.new-file-from-sprites.multi.file-chooser-description")
+                ActionsBundle.message("att.actions.new-file-from-sprites.multi.file-chooser-description")
             }
         }
     return FileChooser.chooseFiles(descriptor, project, parents[0])

@@ -1,19 +1,29 @@
+@file:Suppress("ActionPresentationInstantiatedInCtor")
+
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorImpl
-import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer
-import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility.GHOST
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility.HIDDEN
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttMessages
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.PartNames
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
+import java.util.function.Supplier
 
 open class HidePartAction (
-    private val partName: String,
-    private val partChar: Char,
+    private val partChar: Char
 ): AnAction(
-    "Set $partName to Ghost Visibility"
+    Supplier {
+        val partName = PartNames.getPartName(partChar)
+        AttMessages.message("hide-part", partName)
+    },
+    Supplier {
+        val partName = PartNames.getPartName(partChar)
+        AttMessages.message("hide-part-description", partName.lowercase())
+    },
+    null,
 ), AttEditorAction {
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -28,19 +38,19 @@ open class HidePartAction (
     override fun update(e: AnActionEvent) {
         super.update(e)
         val isAttFile = isVisible(e)
-        e.presentation.isEnabledAndVisible = isAttFile
+        e.presentation.isEnabled = isAttFile
     }
 
     fun isVisible(e: AnActionEvent): Boolean {
         val editor = e.getData(PlatformDataKeys.FILE_EDITOR)
             ?: return false
-        return editor.name == AttEditorImpl.NAME
+        return editor.name == AttEditorImpl.getEditorName()
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         val editor = e.getData(PlatformDataKeys.FILE_EDITOR)
             ?: return
-        if (editor.name != AttEditorImpl.NAME) {
+        if (editor.name != AttEditorImpl.getEditorName()) {
             return;
         }
         (editor as? AttEditorImpl)?.togglePartVisibility(partChar, HIDDEN)
@@ -48,58 +58,30 @@ open class HidePartAction (
 }
 
 
-class HideHeadPart: HidePartAction(
-    "Head", 'a'
-)
+class HideHeadPart: HidePartAction('a')
 
-class HideBodyPart: HidePartAction(
-    "Body", 'b'
-)
+class HideBodyPart: HidePartAction('b')
 
-class HideLeftThighPart: HidePartAction(
-    "Left Thigh", 'c'
-)
+class HideLeftThighPart: HidePartAction('c')
 
-class HideLeftShinPart: HidePartAction(
-    "Left Shin", 'd'
-)
+class HideLeftShinPart: HidePartAction('d')
 
-class HideLeftFootPart: HidePartAction(
-    "Left Foot", 'e'
-)
+class HideLeftFootPart: HidePartAction('e')
 
-class HideRightThighPart: HidePartAction(
-    "Right Thigh", 'f'
-)
+class HideRightThighPart: HidePartAction('f')
 
-class HideRightShinPart: HidePartAction(
-    "Right Shin", 'g'
-)
+class HideRightShinPart: HidePartAction('g')
 
-class HideRightFootPart: HidePartAction(
-    "Right Foot", 'h'
-)
+class HideRightFootPart: HidePartAction('h')
 
-class HideLeftHumerusPart: HidePartAction(
-    "Left Humerus", 'i'
-)
+class HideLeftHumerusPart: HidePartAction('i')
 
-class HideLeftRadiusPart: HidePartAction(
-    "Left Radius", 'j'
-)
+class HideLeftRadiusPart: HidePartAction('j')
 
-class HideRightHumerusPart: HidePartAction(
-    "Right Humerus", 'k'
-)
+class HideRightHumerusPart: HidePartAction('k')
 
-class HideRightRadiusPart: HidePartAction(
-    "Right Radius", 'l'
-)
+class HideRightRadiusPart: HidePartAction('l')
 
-class HideTailBasePart: HidePartAction(
-    "Tail Base", 'm'
-)
+class HideTailBasePart: HidePartAction('m')
 
-class HideTailTipPart: HidePartAction(
-    "Tail Tip", 'n'
-)
+class HideTailTipPart: HidePartAction('n')
