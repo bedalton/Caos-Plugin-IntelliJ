@@ -1,6 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.bedalton.creatures.breed.render.support.pose.PoseToSpriteIndex
 import com.intellij.openapi.progress.ProgressIndicator
 import java.util.logging.Logger
 import kotlin.math.floor
@@ -14,22 +16,9 @@ object PoseCalculator {
 
     @JvmStatic
     fun getEars(headPose: Int): Int {
-        val index = headPose % 16
-        if (headPose >= 160) {
-            return index + 16
+        return PoseToSpriteIndex.getEarSpriteIndex(headPose).also {
+            LOGGER.info("Ear pose: $it")
         }
-        if (headPose >= 128) {
-            return index + 48
-        }
-        if (headPose >= 96) {
-            return index + 32
-        }
-        if (headPose >= 64) {
-            return index + 16
-        }
-        return if (headPose >= 32) {
-            index + 32
-        } else index
     }
 
     /**
@@ -86,22 +75,22 @@ object PoseCalculator {
             if (direction >= 2 && oldDirection != direction) {
                 return Pair(
                     arrayOf(
-                        "Far Up",
-                        "Up",
-                        "Straight",
-                        "Down",
-                        if (direction == 2) "Forward" else "Backward"
+                        "direction.far-up",
+                        "direction.up",
+                        "direction.straight",
+                        "direction.down",
+                        if (direction == 2) "direction.forward" else "direction.backward"
                     ), 4
                 )
             } else if (oldDirection >= 2 && direction < 2) {
                 Pair(
                     arrayOf(
-                        "Far Up",
-                        "Up",
-                        "Straight",
-                        "Down",
-                        "Forward",
-                        "Backward"
+                        "direction.far-up",
+                        "direction.up",
+                        "direction.straight",
+                        "direction.down",
+                        "direction.forward",
+                        "direction.backward"
                     ), 2
                 )
             } else {
@@ -111,25 +100,25 @@ object PoseCalculator {
             if (direction == 2 && oldDirection != 2) {
                 Pair(
                     arrayOf(
-                        "Left",
-                        "Right",
-                        "Forward"
+                        "direction.left",
+                        "direction.right",
+                        "direction.forward"
                     ), 2
                 )
             } else if (direction == 3 && oldDirection != 3) {
                 Pair(
                     arrayOf(
-                        "Left",
-                        "Right",
-                        "Backward"
+                        "direction.left",
+                        "direction.right",
+                        "direction.backward"
                     ), 2
                 )
             } else if (direction < 2 && oldDirection != direction) {
                 Pair(
                     arrayOf(
-                        if (direction == 0) "Left" else "Right",
-                        "Forward",
-                        "Backward"
+                        if (direction == 0) "direction.left" else "direction.right",
+                        "direction.forward",
+                        "direction.backward"
                     ), 0
                 )
             } else {

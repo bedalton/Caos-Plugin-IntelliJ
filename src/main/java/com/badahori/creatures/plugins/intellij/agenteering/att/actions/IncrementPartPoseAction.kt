@@ -57,58 +57,30 @@ open class IncrementPartPoseAction (
 }
 
 
-class IncrementHeadPartPose: IncrementPartPoseAction(
-    "Head", 'a'
-)
+class IncrementHeadPartPose: IncrementPartPoseAction('a')
 
-class IncrementBodyPartPose: IncrementPartPoseAction(
-    "Body", 'b'
-)
+class IncrementBodyPartPose: IncrementPartPoseAction('b')
 
-class IncrementLeftThighPartPose: IncrementPartPoseAction(
-    "Left Thigh", 'c'
-)
+class IncrementLeftThighPartPose: IncrementPartPoseAction('c')
 
-class IncrementLeftShinPartPose: IncrementPartPoseAction(
-    "Left Shin", 'd'
-)
+class IncrementLeftShinPartPose: IncrementPartPoseAction('d')
 
-class IncrementLeftFootPartPose: IncrementPartPoseAction(
-    "Left Foot", 'e'
-)
+class IncrementLeftFootPartPose: IncrementPartPoseAction('e')
 
-class IncrementRightThighPartPose: IncrementPartPoseAction(
-    "Right Thigh", 'f'
-)
+class IncrementRightThighPartPose: IncrementPartPoseAction('f')
 
-class IncrementRightShinPartPose: IncrementPartPoseAction(
-    "Right Shin", 'g'
-)
+class IncrementRightShinPartPose: IncrementPartPoseAction('g')
 
-class IncrementRightFootPartPose: IncrementPartPoseAction(
-    "Right Foot", 'h'
-)
+class IncrementRightFootPartPose: IncrementPartPoseAction('h')
 
-class IncrementLeftHumerusPartPose: IncrementPartPoseAction(
-    "Left Humerus", 'i'
-)
+class IncrementLeftHumerusPartPose: IncrementPartPoseAction('i')
 
-class IncrementLeftRadiusPartPose: IncrementPartPoseAction(
-    "Left Radius", 'j'
-)
+class IncrementLeftRadiusPartPose: IncrementPartPoseAction('j')
 
-class IncrementRightHumerusPartPose: IncrementPartPoseAction(
-    "Right Humerus", 'k'
-)
+class IncrementRightHumerusPartPose: IncrementPartPoseAction('k')
 
-class IncrementRightRadiusPartPose: IncrementPartPoseAction(
-    "Right Radius", 'l'
-)
+class IncrementRightRadiusPartPose: IncrementPartPoseAction('l')
 
-class IncrementTailBasePartPose: IncrementPartPoseAction(
-    "Tail Base", 'm'
-)
+class IncrementTailBasePartPose: IncrementPartPoseAction('m')
 
-class IncrementTailTipPartPose: IncrementPartPoseAction(
-    "Tail Tip", 'n'
-)
+class IncrementTailTipPartPose: IncrementPartPoseAction('n')

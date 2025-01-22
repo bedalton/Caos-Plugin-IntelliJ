@@ -12,7 +12,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.validSpriteExtensions
 import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVariantGlobalSearchScope
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex
-import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.module.Module
@@ -32,6 +31,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.util.concurrent.Executors
+import com.bedalton.common.util.formatted
 
 private const val ATT_TO_SPRITE = false
 
@@ -102,7 +102,7 @@ object BodyPartsIndex {
             val filter = filter@{ virtualFile: VirtualFile ->
                 return@filter BreedPartKey.isPartName(virtualFile.nameWithoutExtension)
                         && virtualFile.getVariant(project, true).let {
-                            it == variant || (isC3DS && variant.isC3DS)
+                    it == variant || (isC3DS && variant.isC3DS)
                 }
 
             }
@@ -323,7 +323,7 @@ object BodyPartsIndex {
             matchSpritesToAtts(project, baseFiles, searchScope, variant, progressIndicator)
         } catch (e: Throwable) {
             if (e !is ProcessCanceledException) {
-                LOGGER.severe("variantParts() -> Exception encountered in match sprites to atts. Error: ${e.message}")
+                LOGGER.severe("variantParts() -> Exception encountered in match sprites to atts. ${e.formatted(true)}")
             }
             throw e
         }

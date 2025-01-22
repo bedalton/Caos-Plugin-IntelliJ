@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttMessages
 import com.badahori.creatures.plugins.intellij.agenteering.utils.DisposablePopupMenu
 import com.badahori.creatures.plugins.intellij.agenteering.utils.action
 import com.badahori.creatures.plugins.intellij.agenteering.utils.addClickListener
@@ -52,13 +53,15 @@ object AttEditorSupport {
         val inputMap = menu.inputMap
 
         for (part in relatedFileParts) {
-            val partText = PoseEditorSupport.getPartName(part)
-            val actionKey = partText ?: "Part $part"
+            val partText = PoseEditorSupport.getPartShortName(part)
+            val actionKey = partText ?: AttMessages.message("part-with-part-char", part)
+
             val labelText = if (partText != null) {
                 "${part.uppercaseChar()} - $partText"
             } else {
-                "${part.uppercaseChar()} - Part ${part.uppercaseChar()}"
+                part.uppercaseChar() + " - " + AttMessages.message("part-with-part-char", part)
             }
+
             val openPartButton = JBMenuItem(labelText)
             val action = action {
                 onSelect(part)

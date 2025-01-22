@@ -2,6 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose;
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorPanel;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttFileEditorProvider;
+import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttMessageBundleCellRenderer;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.PartBreedsProvider;
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility;
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData;
@@ -28,6 +29,9 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.components.JBScrollPane;
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
 import kotlin.Pair;
 import kotlin.Triple;
 import kotlin.Unit;
@@ -47,6 +51,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CancellationException;
@@ -63,12 +68,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
     private static final char[] ALL_PARTS = PoseEditorSupport.getAllParts();
     private final Project project;
     private final BreedPartKey baseBreed;
-    private final String[] directions = new String[]{
-            "Down",
-            "Straight",
-            "Up",
-            "Far Up"
-    };
 
     private static final List<BodyPartFiles> EMPTY_BODY_PARTS_LIST = Collections.emptyList();
     private final List<PoseChangeListener> poseChangeListeners = Lists.newArrayList();
@@ -115,6 +114,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
     private JFormattedTextField poseStringField;
     private JButton hidden;
     private JButton ghost;
+    private JPanel partsPanelControls;
     private List<BodyPartFiles> files;
     private CaosVariant variant;
     private Pose pose;
@@ -157,6 +157,20 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
 
     private final List<BreedSelectionChangeListener> breedSelectionChangeListeners = new ArrayList<>();
 
+    private static final String[] directionMessages = new String[]{
+            "direction.down",
+            "direction.straight",
+            "direction.up",
+            "direction.far-up"
+    };
+
+    private static final String[] headTiltMessages = new String[]{
+            "direction.far-up",
+            "direction.up",
+            "direction.straight",
+            "direction.down",
+    };
+
     public PoseEditorImpl(
             @NotNull final Project project,
             @NotNull final Disposable parent,
@@ -184,7 +198,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         model = new PoseEditorModel(project, variant, this);
     }
 
-
     public synchronized void init() {
         if (project.isDisposed()) {
             return;
@@ -192,6 +205,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         if (didInit) {
             return;
         }
+
         didInit = true;
         if (DumbService.isDumb(project)) {
             DumbService.getInstance(project).runWhenSmart(() -> this.init(variant));
@@ -392,9 +406,19 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
 
     private void initUI() {
         partsPanel.getVerticalScrollBar().setUnitIncrement(16);
+        partsPanel.setPreferredSize(null);
+        partsPanel.setMinimumSize(null);
+
+        panel1.setMinimumSize(null);
+        panel1.setPreferredSize(null);
+
+        partsPanelControls.setMinimumSize(null);
+        partsPanelControls.setPreferredSize(null);
+
         if (!eager && !shownOnce) {
             return;
         }
+
         initComboBoxes();
         addChangeHandlers();
         didInitOnce = true;
@@ -481,11 +505,19 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         if (!didInitComboBoxes) {
             zoom.setSelectedIndex(baseBreed.getAgeGroup() == null || baseBreed.getAgeGroup() >= 2 ? 1 : 2);
         }
+
+
+        final DefaultComboBoxModel<String> focusModeComboBoxModel = new DefaultComboBoxModel<>(FocusMode.getLocalizedOptions());
+        focusMode.setModel(focusModeComboBoxModel);
+        focusMode.setRenderer(new AttMessageBundleCellRenderer());
+
         initHeadComboBox(didInitComboBoxes ? headPose.getSelectedIndex() : 1, Integer.MAX_VALUE);
+        headPose.setRenderer(new AttMessageBundleCellRenderer());
 
-        assign(headDirection2, directions, didInitComboBoxes ? headPose.getSelectedIndex() : 2);
+        assign(headDirection2, headTiltMessages, didInitComboBoxes ? headPose.getSelectedIndex() : 2);
 
-        assign(mood, PoseEditorSupport.getMoodOptions(variant), didInitComboBoxes ? mood.getSelectedIndex() : 0);
+        assign(mood, PoseEditorSupport.getMoodMessages(variant), didInitComboBoxes ? mood.getSelectedIndex() : 0);
+        mood.setRenderer(new AttMessageBundleCellRenderer());
 //        freeze(headDirection2, !headDirection2.isEnabled(), variant.isOld());
 
 
@@ -497,22 +529,49 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
 //            assign(bodyTilt, directions, didInitComboBoxes ? bodyTilt.getSelectedIndex() : 2);
 //            reverse(directions);
 //        } else {
-        assign(bodyTilt, directions, didInitComboBoxes ? bodyTilt.getSelectedIndex() : 2);
+        assign(bodyTilt, directionMessages, didInitComboBoxes ? bodyTilt.getSelectedIndex() : 2);
+        bodyTilt.setRenderer(new AttMessageBundleCellRenderer());
 //        }
         assign(focusMode, FocusMode.toStringArray(), didInitComboBoxes ? focusMode.getSelectedIndex() : 0);
-        assign(focusMode, FocusMode.toStringArray(), didInitComboBoxes ? focusMode.getSelectedIndex() : 0);
-        assign(leftThighPose, directions, didInitComboBoxes ? leftThighPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'c', 2));
-        assign(leftShinPose, directions, didInitComboBoxes ? leftShinPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'd', 2));
-        assign(leftFootPose, directions, didInitComboBoxes ? leftFootPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'e', 2));
-        assign(rightThighPose, directions, didInitComboBoxes ? rightThighPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'f', 2));
-        assign(rightShinPose, directions, didInitComboBoxes ? rightShinPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'g', 2));
-        assign(rightFootPose, directions, didInitComboBoxes ? rightFootPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'h', 2));
-        assign(leftUpperArmPose, directions, didInitComboBoxes ? leftUpperArmPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'i', 1));
-        assign(leftForearmPose, directions, didInitComboBoxes ? leftForearmPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'j', 1));
-        assign(rightUpperArmPose, directions, didInitComboBoxes ? rightUpperArmPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'k', 1));
-        assign(rightForearmPose, directions, didInitComboBoxes ? rightForearmPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'l', 1));
-        assign(tailBasePose, directions, didInitComboBoxes ? tailBasePose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'm', 1));
-        assign(tailTipPose, directions, didInitComboBoxes ? tailTipPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'n', 1));
+        focusMode.setRenderer(new AttMessageBundleCellRenderer());
+
+        assign(leftThighPose, directionMessages, didInitComboBoxes ? leftThighPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'c', 2));
+        leftThighPose.setRenderer(new AttMessageBundleCellRenderer());
+
+        assign(leftShinPose, directionMessages, didInitComboBoxes ? leftShinPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'd', 2));
+        leftShinPose.setRenderer(new AttMessageBundleCellRenderer());
+
+        assign(leftFootPose, directionMessages, didInitComboBoxes ? leftFootPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'e', 2));
+        leftFootPose.setRenderer(new AttMessageBundleCellRenderer());
+
+        assign(rightThighPose, directionMessages, didInitComboBoxes ? rightThighPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'f', 2));
+        rightThighPose.setRenderer(new AttMessageBundleCellRenderer());
+
+        assign(rightShinPose, directionMessages, didInitComboBoxes ? rightShinPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'g', 2));
+        rightShinPose.setRenderer(new AttMessageBundleCellRenderer());
+
+        assign(rightFootPose, directionMessages, didInitComboBoxes ? rightFootPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'h', 2));
+        rightFootPose.setRenderer(new AttMessageBundleCellRenderer());
+
+        assign(leftUpperArmPose, directionMessages, didInitComboBoxes ? leftUpperArmPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'i', 1));
+        leftUpperArmPose.setRenderer(new AttMessageBundleCellRenderer());
+
+        assign(leftForearmPose, directionMessages, didInitComboBoxes ? leftForearmPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'j', 1));
+        leftForearmPose.setRenderer(new AttMessageBundleCellRenderer());
+
+        assign(rightUpperArmPose, directionMessages, didInitComboBoxes ? rightUpperArmPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'k', 1));
+        rightUpperArmPose.setRenderer(new AttMessageBundleCellRenderer());
+
+        assign(rightForearmPose, directionMessages, didInitComboBoxes ? rightForearmPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'l', 1));
+        rightForearmPose.setRenderer(new AttMessageBundleCellRenderer());
+
+        assign(tailBasePose, directionMessages, didInitComboBoxes ? tailBasePose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'm', 1));
+        tailBasePose.setRenderer(new AttMessageBundleCellRenderer());
+
+        assign(tailTipPose, directionMessages, didInitComboBoxes ? tailTipPose.getSelectedIndex() : initialPose.getTranslatedForComboBox(variant, 'n', 1));
+        tailTipPose.setRenderer(new AttMessageBundleCellRenderer());
+
+        headDirection2.setRenderer(new AttMessageBundleCellRenderer());
 
         // Update the actual breeds list here.
         // Must be done before the ear and hair combo boxes
@@ -550,8 +609,17 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         initOpenRelatedComboBox();
         initHiddenPartsComboBox();
         initGhostPartsComboBox();
+
     }
 
+    private String[] getDirectionComboBoxOptions() {
+        return new String[]{
+                "direction.down",
+                "direction.straight",
+                "direction.up",
+                "direction.far-up"
+        };
+    }
 
     public void openRelatedWithDialog() {
         if (openRelatedPopup == null) {
@@ -757,7 +825,13 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
                         headDirection2.setEditable(true);
                     }
                     justSetString = justSetStringBefore;
-                } catch (final Exception ignored) {
+                } catch (final Exception err) {
+                    if (err instanceof ProcessCanceledException) {
+                        throw (ProcessCanceledException)err;
+                    }
+                    if (err instanceof CancellationException) {
+                        throw (CancellationException)err;
+                    }
 
                 }
             }
@@ -1053,7 +1127,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
 
     private void onRedraw(final boolean valid) {
         this.valid = valid;
-        final java.util.function.Function<Boolean, Void> run = this.onRedrawCallback;
+        final Function<Boolean, Void> run = this.onRedrawCallback;
         if (run != null) {
             run.apply(valid);
         }
@@ -1179,8 +1253,15 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
     }
 
     @Override
-    public void updatePose(final char @NotNull ... parts) {
+    public void updatePose(char @NotNull ... parts) {
         final Pose oldPose = pose;
+
+        // Expand parts for head if needed
+        boolean isHeadPart = ArrayUtil.intersects(parts, 'a', 'o', 'p', 'q');
+        if (isHeadPart) {
+            parts = CharUtil.appendUnique(parts, 'a', 'o', 'p', 'q');
+        }
+
         final Pose newPose = PoseCalculator.getUpdatedPose(
                 null,
                 variant,
@@ -1197,6 +1278,15 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         if (dirty) {
             notifyChangeListeners();
         }
+    }
+
+    private boolean contains(char[] parts, char part) {
+        for (final char c : parts) {
+            if (c == part) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -1907,7 +1997,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         if (pose < 0) {
             return;
         }
-        if (partChar == 'a') {
+        if (partChar == 'a' || (partChar >= 'o' && partChar <= 'q')) {
             setHeadPose(getFacing(), pose);
             return;
         }
@@ -1946,7 +2036,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         if (variant.isOld()) {
             if (comboBox.getItemCount() == 1) {
                 // Pose is neither front nor back, so fill in directions if not already filled in
-                assign(bodyTilt, directions, 1);
+                assign(bodyTilt, directionMessages, 1);
             }
             if (pose < 8) {
                 pose = pose % 4;
@@ -1982,6 +2072,9 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
 
     private void createUIComponents() {
         imageHolder = new PoseRenderedImagePanel(project, project.getProjectFilePath());
+        partsPanel = new JBScrollPane();
+        partsPanel.setPreferredSize(null);
+        partsPanel.setViewportView(partsPanelControls);
     }
 
     private void notifyChangeListeners() {
@@ -2007,643 +2100,6 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
             return this.bodyDirection.getSelectedIndex();
         }
         return 0;
-    }
-
-    /**
-     * Method generated by IntelliJ IDEA GUI Designer
-     * >>> IMPORTANT!! <<<
-     * DO NOT edit this method OR call it in your code!
-     *
-     * @noinspection ALL
-     */
-    private void $$$setupUI$$$() {
-        createUIComponents();
-        panel1 = new JPanel();
-        panel1.setLayout(new BorderLayout(0, 0));
-        panel1.setMinimumSize(new Dimension(320, 269));
-        panel1.setPreferredSize(new Dimension(320, 600));
-        partsPanel = new JScrollPane();
-        partsPanel.setMinimumSize(new Dimension(260, 19));
-        panel1.add(partsPanel, BorderLayout.CENTER);
-        final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridBagLayout());
-        panel2.setMinimumSize(new Dimension(260, 650));
-        panel2.setPreferredSize(new Dimension(260, 650));
-        partsPanel.setViewportView(panel2);
-        final JPanel spacer1 = new JPanel();
-        GridBagConstraints gbc;
-        gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        gbc.gridy = 13;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(spacer1, gbc);
-        headBreed = new JComboBox();
-        headBreed.setMinimumSize(new Dimension(100, 25));
-        headBreed.setPreferredSize(new Dimension(100, 25));
-        headBreed.setToolTipText("Head Breed");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 7;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(headBreed, gbc);
-        final JLabel label1 = new JLabel();
-        label1.setText("Right Arm");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 17;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label1, gbc);
-        leftUpperArmPose = new JComboBox();
-        leftUpperArmPose.setMinimumSize(new Dimension(84, 25));
-        final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
-        leftUpperArmPose.setModel(defaultComboBoxModel1);
-        leftUpperArmPose.setPreferredSize(new Dimension(50, 25));
-        leftUpperArmPose.setToolTipText("Left upper arm pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 18;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(leftUpperArmPose, gbc);
-        rightUpperArmPose = new JComboBox();
-        rightUpperArmPose.setMinimumSize(new Dimension(84, 25));
-        rightUpperArmPose.setPreferredSize(new Dimension(76, 25));
-        rightUpperArmPose.setToolTipText("Right upper arm pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 18;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(rightUpperArmPose, gbc);
-        final JLabel label2 = new JLabel();
-        label2.setText("Left Arm");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 17;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label2, gbc);
-        leftForearmPose = new JComboBox();
-        leftForearmPose.setMinimumSize(new Dimension(84, 25));
-        leftForearmPose.setPreferredSize(new Dimension(76, 25));
-        leftForearmPose.setToolTipText("Left forearm and hand pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 19;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(leftForearmPose, gbc);
-        rightForearmPose = new JComboBox();
-        rightForearmPose.setMinimumSize(new Dimension(84, 25));
-        rightForearmPose.setPreferredSize(new Dimension(76, 25));
-        rightForearmPose.setToolTipText("Right forearm and hand pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 19;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(rightForearmPose, gbc);
-        final JLabel label3 = new JLabel();
-        label3.setText("Legs");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 21;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label3, gbc);
-        legsBreed = new JComboBox();
-        legsBreed.setMinimumSize(new Dimension(84, 25));
-        final DefaultComboBoxModel defaultComboBoxModel2 = new DefaultComboBoxModel();
-        legsBreed.setModel(defaultComboBoxModel2);
-        legsBreed.setPreferredSize(new Dimension(76, 25));
-        legsBreed.setToolTipText("Legs Breed");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 21;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(legsBreed, gbc);
-        leftThighPose = new JComboBox();
-        leftThighPose.setMinimumSize(new Dimension(81, 25));
-        leftThighPose.setPreferredSize(new Dimension(76, 25));
-        leftThighPose.setToolTipText("Left thigh pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 23;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(leftThighPose, gbc);
-        leftShinPose = new JComboBox();
-        leftShinPose.setMinimumSize(new Dimension(84, 25));
-        leftShinPose.setPreferredSize(new Dimension(76, 25));
-        leftShinPose.setToolTipText("left shin pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 24;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(leftShinPose, gbc);
-        leftFootPose = new JComboBox();
-        leftFootPose.setMinimumSize(new Dimension(84, 25));
-        final DefaultComboBoxModel defaultComboBoxModel3 = new DefaultComboBoxModel();
-        leftFootPose.setModel(defaultComboBoxModel3);
-        leftFootPose.setPreferredSize(new Dimension(76, 25));
-        leftFootPose.setToolTipText("left foot pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 25;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(leftFootPose, gbc);
-        rightThighPose = new JComboBox();
-        rightThighPose.setMinimumSize(new Dimension(84, 25));
-        rightThighPose.setPreferredSize(new Dimension(76, 25));
-        rightThighPose.setToolTipText("Right thigh pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 23;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(rightThighPose, gbc);
-        rightShinPose = new JComboBox();
-        rightShinPose.setMinimumSize(new Dimension(84, 25));
-        rightShinPose.setPreferredSize(new Dimension(76, 25));
-        rightShinPose.setToolTipText("Right shin pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 24;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(rightShinPose, gbc);
-        rightFootPose = new JComboBox();
-        rightFootPose.setMinimumSize(new Dimension(84, 25));
-        rightFootPose.setPreferredSize(new Dimension(76, 25));
-        rightFootPose.setToolTipText("Right foot pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 25;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(rightFootPose, gbc);
-        final JLabel label4 = new JLabel();
-        label4.setText("Left Leg");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 22;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label4, gbc);
-        final JLabel label5 = new JLabel();
-        label5.setText("Head");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 6;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label5, gbc);
-        final JLabel label6 = new JLabel();
-        label6.setText("Body");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 6;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label6, gbc);
-        headPose = new JComboBox();
-        headPose.setMinimumSize(new Dimension(84, 25));
-        final DefaultComboBoxModel defaultComboBoxModel4 = new DefaultComboBoxModel();
-        defaultComboBoxModel4.addElement("Far Up");
-        defaultComboBoxModel4.addElement("Up");
-        defaultComboBoxModel4.addElement("Straight");
-        defaultComboBoxModel4.addElement("Down");
-        defaultComboBoxModel4.addElement("Forward");
-        defaultComboBoxModel4.addElement("Back");
-        headPose.setModel(defaultComboBoxModel4);
-        headPose.setPreferredSize(new Dimension(76, 25));
-        headPose.setToolTipText("Head Pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 8;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(headPose, gbc);
-        bodyBreed = new JComboBox();
-        bodyBreed.setMinimumSize(new Dimension(80, 25));
-        final DefaultComboBoxModel defaultComboBoxModel5 = new DefaultComboBoxModel();
-        bodyBreed.setModel(defaultComboBoxModel5);
-        bodyBreed.setPreferredSize(new Dimension(100, 25));
-        bodyBreed.setToolTipText("Body Breed");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 7;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(bodyBreed, gbc);
-        earBreed = new JComboBox();
-        earBreed.setMinimumSize(new Dimension(81, 25));
-        final DefaultComboBoxModel defaultComboBoxModel6 = new DefaultComboBoxModel();
-        earBreed.setModel(defaultComboBoxModel6);
-        earBreed.setPreferredSize(new Dimension(76, 25));
-        earBreed.setToolTipText("Hair Breed");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 13;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(earBreed, gbc);
-        hairBreed = new JComboBox();
-        hairBreed.setMinimumSize(new Dimension(84, 25));
-        hairBreed.setPreferredSize(new Dimension(76, 25));
-        hairBreed.setToolTipText("Ear Breed");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 14;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(hairBreed, gbc);
-        armsBreed = new JComboBox();
-        armsBreed.setMinimumSize(new Dimension(84, 25));
-        final DefaultComboBoxModel defaultComboBoxModel7 = new DefaultComboBoxModel();
-        armsBreed.setModel(defaultComboBoxModel7);
-        armsBreed.setPreferredSize(new Dimension(76, 25));
-        armsBreed.setToolTipText("Arms Breed");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 16;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(armsBreed, gbc);
-        final JLabel label7 = new JLabel();
-        label7.setText("Arms");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 16;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label7, gbc);
-        tailLabel = new JLabel();
-        tailLabel.setText("Tail");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 27;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(tailLabel, gbc);
-        tailBreed = new JComboBox();
-        tailBreed.setMinimumSize(new Dimension(84, 25));
-        tailBreed.setPreferredSize(new Dimension(76, 25));
-        tailBreed.setToolTipText("Tail Breed");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 27;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(tailBreed, gbc);
-        tailBasePose = new JComboBox();
-        tailBasePose.setMinimumSize(new Dimension(84, 25));
-        tailBasePose.setPreferredSize(new Dimension(76, 25));
-        tailBasePose.setToolTipText("Tail base pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 28;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(tailBasePose, gbc);
-        tailTipPose = new JComboBox();
-        tailTipPose.setMinimumSize(new Dimension(84, 25));
-        tailTipPose.setPreferredSize(new Dimension(76, 25));
-        tailTipPose.setToolTipText("Tail tip pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 29;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(tailTipPose, gbc);
-        final JPanel spacer2 = new JPanel();
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 26;
-        gbc.fill = GridBagConstraints.VERTICAL;
-        panel2.add(spacer2, gbc);
-        final JPanel spacer3 = new JPanel();
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 20;
-        gbc.fill = GridBagConstraints.VERTICAL;
-        panel2.add(spacer3, gbc);
-        final JPanel spacer4 = new JPanel();
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 15;
-        gbc.fill = GridBagConstraints.VERTICAL;
-        panel2.add(spacer4, gbc);
-        final JLabel label8 = new JLabel();
-        label8.setText("Right Leg");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 22;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label8, gbc);
-        final JLabel label9 = new JLabel();
-        label9.setText("Breed");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 7;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label9, gbc);
-        final JLabel label10 = new JLabel();
-        label10.setText("Direction");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 8;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label10, gbc);
-        earLabel = new JLabel();
-        earLabel.setText("Ears");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 13;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(earLabel, gbc);
-        hairLabel = new JLabel();
-        hairLabel.setText("Hair");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 14;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(hairLabel, gbc);
-        final JLabel label11 = new JLabel();
-        label11.setText("Up. Arm");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 18;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label11, gbc);
-        final JLabel label12 = new JLabel();
-        label12.setText("Forearm");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 19;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label12, gbc);
-        final JLabel label13 = new JLabel();
-        label13.setText("Thigh");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 23;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label13, gbc);
-        final JLabel label14 = new JLabel();
-        label14.setText("Shin");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 24;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label14, gbc);
-        final JLabel label15 = new JLabel();
-        label15.setText("Foot");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 25;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label15, gbc);
-        tailBaseLabel = new JLabel();
-        tailBaseLabel.setText("Base");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 28;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(tailBaseLabel, gbc);
-        tailTipLabel = new JLabel();
-        tailTipLabel.setMaximumSize(new Dimension(100, 30));
-        tailTipLabel.setMinimumSize(new Dimension(40, 16));
-        tailTipLabel.setPreferredSize(new Dimension(40, 20));
-        tailTipLabel.setText("Tip");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 29;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(tailTipLabel, gbc);
-        final JLabel label16 = new JLabel();
-        label16.setText("Zoom");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label16, gbc);
-        zoom = new JComboBox();
-        zoom.setMinimumSize(new Dimension(84, 45));
-        final DefaultComboBoxModel defaultComboBoxModel9 = new DefaultComboBoxModel();
-        defaultComboBoxModel9.addElement("1x");
-        defaultComboBoxModel9.addElement("2x");
-        defaultComboBoxModel9.addElement("3x");
-        defaultComboBoxModel9.addElement("4x");
-        defaultComboBoxModel9.addElement("5x");
-        zoom.setModel(defaultComboBoxModel9);
-        zoom.setPreferredSize(new Dimension(78, 25));
-        zoom.setToolTipText("Zoom");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(zoom, gbc);
-        focusModeLabel = new JLabel();
-        focusModeLabel.setText("F.Mode");
-        focusModeLabel.setToolTipText("Focus Mode");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(focusModeLabel, gbc);
-        focusMode = new JComboBox();
-        focusMode.setMinimumSize(new Dimension(84, 25));
-        final DefaultComboBoxModel defaultComboBoxModel10 = new DefaultComboBoxModel();
-        defaultComboBoxModel10.addElement("Everything");
-        defaultComboBoxModel10.addElement("Ghost");
-        defaultComboBoxModel10.addElement("Ghost (Solo)");
-        defaultComboBoxModel10.addElement("Solo");
-        defaultComboBoxModel10.addElement("Solo (With Body)");
-        defaultComboBoxModel10.addElement("Solo (Ghost Body)");
-        focusMode.setModel(defaultComboBoxModel10);
-        focusMode.setPreferredSize(new Dimension(114, 25));
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(focusMode, gbc);
-        openRelatedLabel = new JLabel();
-        openRelatedLabel.setText("Open");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(openRelatedLabel, gbc);
-        openRelated = new JComboBox();
-        openRelated.setMinimumSize(new Dimension(84, 25));
-        final DefaultComboBoxModel defaultComboBoxModel11 = new DefaultComboBoxModel();
-        openRelated.setModel(defaultComboBoxModel11);
-        openRelated.setPreferredSize(new Dimension(78, 25));
-        openRelated.setToolTipText("Open related file");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(openRelated, gbc);
-        mood = new JComboBox();
-        mood.setMinimumSize(new Dimension(81, 25));
-        mood.setPreferredSize(new Dimension(76, 25));
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 10;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(mood, gbc);
-        headDirection2 = new JComboBox();
-        headDirection2.setMinimumSize(new Dimension(81, 25));
-        final DefaultComboBoxModel defaultComboBoxModel12 = new DefaultComboBoxModel();
-        defaultComboBoxModel12.addElement("Far Up");
-        defaultComboBoxModel12.addElement("Up");
-        defaultComboBoxModel12.addElement("Straight");
-        defaultComboBoxModel12.addElement("Down");
-        headDirection2.setModel(defaultComboBoxModel12);
-        headDirection2.setPreferredSize(new Dimension(76, 25));
-        headDirection2.setRequestFocusEnabled(false);
-        headDirection2.setToolTipText("Head Tilt");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 9;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(headDirection2, gbc);
-        final JLabel label17 = new JLabel();
-        label17.setText("Mood");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 10;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label17, gbc);
-        tiltLabel = new JLabel();
-        tiltLabel.setText("Tilt");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 9;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(tiltLabel, gbc);
-        final JPanel spacer5 = new JPanel();
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 12;
-        gbc.fill = GridBagConstraints.VERTICAL;
-        panel2.add(spacer5, gbc);
-        Eyes = new JLabel();
-        Eyes.setText("Eyes");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 11;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(Eyes, gbc);
-        eyesStatus = new JComboBox();
-        eyesStatus.setMinimumSize(new Dimension(81, 25));
-        final DefaultComboBoxModel defaultComboBoxModel13 = new DefaultComboBoxModel();
-        defaultComboBoxModel13.addElement("Open");
-        defaultComboBoxModel13.addElement("Closed");
-        eyesStatus.setModel(defaultComboBoxModel13);
-        eyesStatus.setPreferredSize(new Dimension(76, 25));
-        eyesStatus.setToolTipText("Eyes Status");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 11;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(eyesStatus, gbc);
-        bodyTilt = new JComboBox();
-        bodyTilt.setMinimumSize(new Dimension(84, 25));
-        final DefaultComboBoxModel defaultComboBoxModel14 = new DefaultComboBoxModel();
-        defaultComboBoxModel14.addElement("Far Up");
-        defaultComboBoxModel14.addElement("Up");
-        defaultComboBoxModel14.addElement("Straight");
-        defaultComboBoxModel14.addElement("Down");
-        bodyTilt.setModel(defaultComboBoxModel14);
-        bodyTilt.setPreferredSize(new Dimension(76, 25));
-        bodyTilt.setToolTipText("Body Pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 9;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(bodyTilt, gbc);
-        bodyDirection = new JComboBox();
-        final DefaultComboBoxModel defaultComboBoxModel15 = new DefaultComboBoxModel();
-        defaultComboBoxModel15.addElement("Left");
-        defaultComboBoxModel15.addElement("Right");
-        defaultComboBoxModel15.addElement("Forward");
-        defaultComboBoxModel15.addElement("Backward");
-        bodyDirection.setModel(defaultComboBoxModel15);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 3;
-        gbc.gridy = 8;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(bodyDirection, gbc);
-        final JLabel label18 = new JLabel();
-        label18.setText("Pose");
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        gbc.anchor = GridBagConstraints.WEST;
-        panel2.add(label18, gbc);
-        poseStringField = new JFormattedTextField();
-        poseStringField.setMinimumSize(new Dimension(49, 25));
-        poseStringField.setPreferredSize(new Dimension(49, 25));
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 4;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel2.add(poseStringField, gbc);
-        final JPanel spacer6 = new JPanel();
-        gbc = new GridBagConstraints();
-        gbc.gridx = 2;
-        gbc.gridy = 5;
-        gbc.fill = GridBagConstraints.VERTICAL;
-        panel2.add(spacer6, gbc);
-        final JScrollPane scrollPane1 = new JScrollPane();
-        scrollPane1.setMinimumSize(new Dimension(250, 320));
-        scrollPane1.setPreferredSize(new Dimension(300, 320));
-        panel1.add(scrollPane1, BorderLayout.NORTH);
-        imageHolder.setMinimumSize(new Dimension(250, 320));
-        imageHolder.setPreferredSize(new Dimension(250, 320));
-        scrollPane1.setViewportView(imageHolder);
-        headBreed.setNextFocusableComponent(headPose);
-        leftUpperArmPose.setNextFocusableComponent(leftForearmPose);
-        rightUpperArmPose.setNextFocusableComponent(rightForearmPose);
-        leftForearmPose.setNextFocusableComponent(rightUpperArmPose);
-        leftThighPose.setNextFocusableComponent(leftShinPose);
-        leftShinPose.setNextFocusableComponent(leftFootPose);
-        leftFootPose.setNextFocusableComponent(rightThighPose);
-        rightThighPose.setNextFocusableComponent(rightShinPose);
-        rightShinPose.setNextFocusableComponent(rightFootPose);
-        rightFootPose.setNextFocusableComponent(tailBreed);
-        bodyBreed.setNextFocusableComponent(bodyTilt);
-        armsBreed.setNextFocusableComponent(armsBreed);
-        tailLabel.setLabelFor(tailBreed);
-        tailBreed.setNextFocusableComponent(tailBasePose);
-        tailTipPose.setNextFocusableComponent(headBreed);
-        tailBaseLabel.setLabelFor(tailBasePose);
-        tailTipLabel.setLabelFor(tailTipPose);
-        focusModeLabel.setLabelFor(focusMode);
-        openRelatedLabel.setLabelFor(openRelated);
-        label17.setLabelFor(mood);
-        tiltLabel.setLabelFor(headDirection2);
-        bodyTilt.setNextFocusableComponent(armsBreed);
-    }
-
-    /**
-     * @noinspection ALL
-     */
-    public JComponent $$$getRootComponent$$$() {
-        return panel1;
     }
 
     private void updateDefaultPose() {
@@ -2675,6 +2131,12 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
             try {
                 highlighter.addHighlight(i, i + 1, painter);
             } catch (Exception exc) {
+                if (exc instanceof ProcessCanceledException) {
+                    throw (ProcessCanceledException)exc;
+                }
+                if (exc instanceof CancellationException) {
+                    throw (CancellationException)exc;
+                }
                 LOGGER.severe("Invalid highlight position " + i);
             }
         }
@@ -2723,6 +2185,449 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
         if (!files.isEmpty()) {
             model.requestRender(ALL_PARTS, true);
         }
+    }
+
+    /**
+     * Method generated by IntelliJ IDEA GUI Designer
+     * >>> IMPORTANT!! <<<
+     * DO NOT edit this method OR call it in your code!
+     *
+     * @noinspection ALL
+     */
+    private void $$$setupUI$$$() {
+        createUIComponents();
+        panel1 = new JPanel();
+        panel1.setLayout(new BorderLayout(0, 0));
+        panel1.setMinimumSize(new Dimension(320, 3000));
+        panel1.setPreferredSize(new Dimension(380, 3000));
+        final JSplitPane splitPane1 = new JSplitPane();
+        splitPane1.setOrientation(0);
+        panel1.add(splitPane1, BorderLayout.CENTER);
+        final JScrollPane scrollPane1 = new JScrollPane();
+        scrollPane1.setEnabled(true);
+        scrollPane1.setMinimumSize(new Dimension(250, 320));
+        scrollPane1.setPreferredSize(new Dimension(320, 320));
+        splitPane1.setLeftComponent(scrollPane1);
+        imageHolder.setMinimumSize(new Dimension(250, 320));
+        imageHolder.setPreferredSize(new Dimension(250, 320));
+        scrollPane1.setViewportView(imageHolder);
+        partsPanel.setEnabled(true);
+        partsPanel.setMinimumSize(new Dimension(320, 100));
+        splitPane1.setRightComponent(partsPanel);
+        partsPanelControls = new JPanel();
+        partsPanelControls.setLayout(new GridLayoutManager(30, 3, new Insets(0, 0, 0, 0), -1, -1));
+        partsPanelControls.setMinimumSize(new Dimension(320, 25));
+        partsPanelControls.setPreferredSize(new Dimension(320, 800));
+        partsPanel.setViewportView(partsPanelControls);
+        headBreed = new JComboBox();
+        headBreed.setMinimumSize(new Dimension(100, 25));
+        final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
+        headBreed.setModel(defaultComboBoxModel1);
+        headBreed.setPreferredSize(new Dimension(100, 25));
+        headBreed.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "head-breed"));
+        partsPanelControls.add(headBreed, new GridConstraints(7, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label1 = new JLabel();
+        this.$$$loadLabelText$$$(label1, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "right-arm"));
+        partsPanelControls.add(label1, new GridConstraints(17, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        leftUpperArmPose = new JComboBox();
+        leftUpperArmPose.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel2 = new DefaultComboBoxModel();
+        leftUpperArmPose.setModel(defaultComboBoxModel2);
+        leftUpperArmPose.setPreferredSize(new Dimension(50, 25));
+        leftUpperArmPose.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "left-upper-arm"));
+        partsPanelControls.add(leftUpperArmPose, new GridConstraints(18, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        rightUpperArmPose = new JComboBox();
+        rightUpperArmPose.setMinimumSize(new Dimension(84, 25));
+        rightUpperArmPose.setPreferredSize(new Dimension(76, 25));
+        rightUpperArmPose.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "right-upper-arm"));
+        partsPanelControls.add(rightUpperArmPose, new GridConstraints(18, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label2 = new JLabel();
+        this.$$$loadLabelText$$$(label2, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "left-arm"));
+        partsPanelControls.add(label2, new GridConstraints(17, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        leftForearmPose = new JComboBox();
+        leftForearmPose.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel3 = new DefaultComboBoxModel();
+        leftForearmPose.setModel(defaultComboBoxModel3);
+        leftForearmPose.setPreferredSize(new Dimension(76, 25));
+        leftForearmPose.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "left-forearm-and-hand-pose"));
+        partsPanelControls.add(leftForearmPose, new GridConstraints(19, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        rightForearmPose = new JComboBox();
+        rightForearmPose.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel4 = new DefaultComboBoxModel();
+        rightForearmPose.setModel(defaultComboBoxModel4);
+        rightForearmPose.setPreferredSize(new Dimension(76, 25));
+        rightForearmPose.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "right-forearm-and-hand-pose"));
+        partsPanelControls.add(rightForearmPose, new GridConstraints(19, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label3 = new JLabel();
+        this.$$$loadLabelText$$$(label3, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "legs"));
+        partsPanelControls.add(label3, new GridConstraints(21, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        legsBreed = new JComboBox();
+        legsBreed.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel5 = new DefaultComboBoxModel();
+        legsBreed.setModel(defaultComboBoxModel5);
+        legsBreed.setPreferredSize(new Dimension(76, 25));
+        legsBreed.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "legs-breed"));
+        partsPanelControls.add(legsBreed, new GridConstraints(21, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        leftThighPose = new JComboBox();
+        leftThighPose.setMinimumSize(new Dimension(81, 25));
+        leftThighPose.setPreferredSize(new Dimension(76, 25));
+        leftThighPose.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "left-thigh-pose"));
+        partsPanelControls.add(leftThighPose, new GridConstraints(23, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        leftShinPose = new JComboBox();
+        leftShinPose.setMinimumSize(new Dimension(84, 25));
+        leftShinPose.setPreferredSize(new Dimension(76, 25));
+        leftShinPose.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "left-shin-pose"));
+        partsPanelControls.add(leftShinPose, new GridConstraints(24, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        leftFootPose = new JComboBox();
+        leftFootPose.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel6 = new DefaultComboBoxModel();
+        leftFootPose.setModel(defaultComboBoxModel6);
+        leftFootPose.setPreferredSize(new Dimension(76, 25));
+        leftFootPose.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "left-foot-pose"));
+        partsPanelControls.add(leftFootPose, new GridConstraints(25, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        rightThighPose = new JComboBox();
+        rightThighPose.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel7 = new DefaultComboBoxModel();
+        rightThighPose.setModel(defaultComboBoxModel7);
+        rightThighPose.setPreferredSize(new Dimension(76, 25));
+        rightThighPose.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "right-thigh-pose"));
+        partsPanelControls.add(rightThighPose, new GridConstraints(23, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        rightShinPose = new JComboBox();
+        rightShinPose.setMinimumSize(new Dimension(84, 25));
+        rightShinPose.setPreferredSize(new Dimension(76, 25));
+        rightShinPose.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "right-shin-pose"));
+        partsPanelControls.add(rightShinPose, new GridConstraints(24, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        rightFootPose = new JComboBox();
+        rightFootPose.setMinimumSize(new Dimension(84, 25));
+        rightFootPose.setPreferredSize(new Dimension(76, 25));
+        rightFootPose.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "right-foot-pose"));
+        partsPanelControls.add(rightFootPose, new GridConstraints(25, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label4 = new JLabel();
+        this.$$$loadLabelText$$$(label4, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "left-leg"));
+        partsPanelControls.add(label4, new GridConstraints(22, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label5 = new JLabel();
+        this.$$$loadLabelText$$$(label5, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "head"));
+        partsPanelControls.add(label5, new GridConstraints(6, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label6 = new JLabel();
+        this.$$$loadLabelText$$$(label6, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "body"));
+        partsPanelControls.add(label6, new GridConstraints(6, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        headPose = new JComboBox();
+        headPose.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel8 = new DefaultComboBoxModel();
+        defaultComboBoxModel8.addElement("Right");
+        defaultComboBoxModel8.addElement("Left");
+        defaultComboBoxModel8.addElement("Forward");
+        defaultComboBoxModel8.addElement("Backward");
+        headPose.setModel(defaultComboBoxModel8);
+        headPose.setPreferredSize(new Dimension(76, 25));
+        headPose.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "head-pose"));
+        partsPanelControls.add(headPose, new GridConstraints(8, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        bodyBreed = new JComboBox();
+        bodyBreed.setMinimumSize(new Dimension(80, 25));
+        final DefaultComboBoxModel defaultComboBoxModel9 = new DefaultComboBoxModel();
+        bodyBreed.setModel(defaultComboBoxModel9);
+        bodyBreed.setPreferredSize(new Dimension(100, 25));
+        bodyBreed.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "body-breed"));
+        partsPanelControls.add(bodyBreed, new GridConstraints(7, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        earBreed = new JComboBox();
+        earBreed.setMinimumSize(new Dimension(81, 25));
+        final DefaultComboBoxModel defaultComboBoxModel10 = new DefaultComboBoxModel();
+        earBreed.setModel(defaultComboBoxModel10);
+        earBreed.setPreferredSize(new Dimension(76, 25));
+        earBreed.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "ear-breed"));
+        partsPanelControls.add(earBreed, new GridConstraints(13, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        hairBreed = new JComboBox();
+        hairBreed.setMinimumSize(new Dimension(84, 25));
+        hairBreed.setPreferredSize(new Dimension(76, 25));
+        hairBreed.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "hair-breed"));
+        partsPanelControls.add(hairBreed, new GridConstraints(14, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        armsBreed = new JComboBox();
+        armsBreed.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel11 = new DefaultComboBoxModel();
+        armsBreed.setModel(defaultComboBoxModel11);
+        armsBreed.setPreferredSize(new Dimension(76, 25));
+        armsBreed.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "arms-breed"));
+        partsPanelControls.add(armsBreed, new GridConstraints(16, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label7 = new JLabel();
+        this.$$$loadLabelText$$$(label7, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "arms"));
+        partsPanelControls.add(label7, new GridConstraints(16, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        tailLabel = new JLabel();
+        this.$$$loadLabelText$$$(tailLabel, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "tail"));
+        partsPanelControls.add(tailLabel, new GridConstraints(27, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        tailBreed = new JComboBox();
+        tailBreed.setMinimumSize(new Dimension(84, 25));
+        tailBreed.setPreferredSize(new Dimension(76, 25));
+        tailBreed.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "tail-breed"));
+        partsPanelControls.add(tailBreed, new GridConstraints(27, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        tailBasePose = new JComboBox();
+        tailBasePose.setMinimumSize(new Dimension(84, 25));
+        tailBasePose.setPreferredSize(new Dimension(76, 25));
+        tailBasePose.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "tail-base-pose"));
+        partsPanelControls.add(tailBasePose, new GridConstraints(28, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        tailTipPose = new JComboBox();
+        tailTipPose.setMinimumSize(new Dimension(84, 25));
+        tailTipPose.setPreferredSize(new Dimension(76, 25));
+        tailTipPose.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "tail-tip-pose"));
+        partsPanelControls.add(tailTipPose, new GridConstraints(29, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label8 = new JLabel();
+        this.$$$loadLabelText$$$(label8, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "right-leg"));
+        partsPanelControls.add(label8, new GridConstraints(22, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label9 = new JLabel();
+        this.$$$loadLabelText$$$(label9, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "breed"));
+        partsPanelControls.add(label9, new GridConstraints(7, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label10 = new JLabel();
+        this.$$$loadLabelText$$$(label10, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "direction"));
+        partsPanelControls.add(label10, new GridConstraints(8, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        earLabel = new JLabel();
+        this.$$$loadLabelText$$$(earLabel, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "ears"));
+        partsPanelControls.add(earLabel, new GridConstraints(13, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        hairLabel = new JLabel();
+        this.$$$loadLabelText$$$(hairLabel, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "hair"));
+        partsPanelControls.add(hairLabel, new GridConstraints(14, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label11 = new JLabel();
+        this.$$$loadLabelText$$$(label11, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "up-arm"));
+        partsPanelControls.add(label11, new GridConstraints(18, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label12 = new JLabel();
+        this.$$$loadLabelText$$$(label12, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "forearm"));
+        partsPanelControls.add(label12, new GridConstraints(19, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label13 = new JLabel();
+        this.$$$loadLabelText$$$(label13, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "thigh"));
+        partsPanelControls.add(label13, new GridConstraints(23, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label14 = new JLabel();
+        this.$$$loadLabelText$$$(label14, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "shin"));
+        partsPanelControls.add(label14, new GridConstraints(24, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label15 = new JLabel();
+        this.$$$loadLabelText$$$(label15, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "foot"));
+        partsPanelControls.add(label15, new GridConstraints(25, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        tailBaseLabel = new JLabel();
+        this.$$$loadLabelText$$$(tailBaseLabel, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "base"));
+        partsPanelControls.add(tailBaseLabel, new GridConstraints(28, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        tailTipLabel = new JLabel();
+        tailTipLabel.setMaximumSize(new Dimension(100, 30));
+        tailTipLabel.setMinimumSize(new Dimension(40, 16));
+        tailTipLabel.setPreferredSize(new Dimension(40, 20));
+        this.$$$loadLabelText$$$(tailTipLabel, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "tip"));
+        partsPanelControls.add(tailTipLabel, new GridConstraints(29, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label16 = new JLabel();
+        this.$$$loadLabelText$$$(label16, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "zoom"));
+        partsPanelControls.add(label16, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        zoom = new JComboBox();
+        zoom.setMinimumSize(new Dimension(84, 45));
+        final DefaultComboBoxModel defaultComboBoxModel12 = new DefaultComboBoxModel();
+        defaultComboBoxModel12.addElement("1x");
+        defaultComboBoxModel12.addElement("2x");
+        defaultComboBoxModel12.addElement("3x");
+        defaultComboBoxModel12.addElement("4x");
+        defaultComboBoxModel12.addElement("5x");
+        zoom.setModel(defaultComboBoxModel12);
+        zoom.setPreferredSize(new Dimension(78, 25));
+        zoom.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "zoom"));
+        partsPanelControls.add(zoom, new GridConstraints(0, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        focusModeLabel = new JLabel();
+        this.$$$loadLabelText$$$(focusModeLabel, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "f-mode"));
+        focusModeLabel.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "focus-mode"));
+        partsPanelControls.add(focusModeLabel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        focusMode = new JComboBox();
+        focusMode.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel13 = new DefaultComboBoxModel();
+        focusMode.setModel(defaultComboBoxModel13);
+        focusMode.setPreferredSize(new Dimension(114, 25));
+        partsPanelControls.add(focusMode, new GridConstraints(1, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        openRelatedLabel = new JLabel();
+        this.$$$loadLabelText$$$(openRelatedLabel, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "open"));
+        partsPanelControls.add(openRelatedLabel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        openRelated = new JComboBox();
+        openRelated.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel14 = new DefaultComboBoxModel();
+        openRelated.setModel(defaultComboBoxModel14);
+        openRelated.setPreferredSize(new Dimension(78, 25));
+        openRelated.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "open-related-file"));
+        partsPanelControls.add(openRelated, new GridConstraints(2, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        mood = new JComboBox();
+        mood.setMinimumSize(new Dimension(81, 25));
+        mood.setPreferredSize(new Dimension(76, 25));
+        partsPanelControls.add(mood, new GridConstraints(10, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        headDirection2 = new JComboBox();
+        headDirection2.setMinimumSize(new Dimension(81, 25));
+        final DefaultComboBoxModel defaultComboBoxModel15 = new DefaultComboBoxModel();
+        defaultComboBoxModel15.addElement("Far Up");
+        defaultComboBoxModel15.addElement("Up");
+        defaultComboBoxModel15.addElement("Straight");
+        defaultComboBoxModel15.addElement("Down");
+        headDirection2.setModel(defaultComboBoxModel15);
+        headDirection2.setPreferredSize(new Dimension(76, 25));
+        headDirection2.setRequestFocusEnabled(false);
+        headDirection2.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "head-tilt"));
+        partsPanelControls.add(headDirection2, new GridConstraints(9, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label17 = new JLabel();
+        this.$$$loadLabelText$$$(label17, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "mood"));
+        partsPanelControls.add(label17, new GridConstraints(10, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        tiltLabel = new JLabel();
+        this.$$$loadLabelText$$$(tiltLabel, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "tilt"));
+        partsPanelControls.add(tiltLabel, new GridConstraints(9, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        Eyes = new JLabel();
+        this.$$$loadLabelText$$$(Eyes, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "eyes"));
+        partsPanelControls.add(Eyes, new GridConstraints(11, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        eyesStatus = new JComboBox();
+        eyesStatus.setMinimumSize(new Dimension(81, 25));
+        final DefaultComboBoxModel defaultComboBoxModel16 = new DefaultComboBoxModel();
+        defaultComboBoxModel16.addElement("Open");
+        defaultComboBoxModel16.addElement("Closed");
+        eyesStatus.setModel(defaultComboBoxModel16);
+        eyesStatus.setPreferredSize(new Dimension(76, 25));
+        eyesStatus.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "eyes-status"));
+        partsPanelControls.add(eyesStatus, new GridConstraints(11, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        bodyTilt = new JComboBox();
+        bodyTilt.setMinimumSize(new Dimension(84, 25));
+        final DefaultComboBoxModel defaultComboBoxModel17 = new DefaultComboBoxModel();
+        defaultComboBoxModel17.addElement("Far Up");
+        defaultComboBoxModel17.addElement("Up");
+        defaultComboBoxModel17.addElement("Straight");
+        defaultComboBoxModel17.addElement("Down");
+        bodyTilt.setModel(defaultComboBoxModel17);
+        bodyTilt.setPreferredSize(new Dimension(76, 25));
+        bodyTilt.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "body-pose"));
+        partsPanelControls.add(bodyTilt, new GridConstraints(9, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        bodyDirection = new JComboBox();
+        final DefaultComboBoxModel defaultComboBoxModel18 = new DefaultComboBoxModel();
+        defaultComboBoxModel18.addElement("Right");
+        defaultComboBoxModel18.addElement("Left");
+        defaultComboBoxModel18.addElement("Forward");
+        defaultComboBoxModel18.addElement("Backward");
+        bodyDirection.setModel(defaultComboBoxModel18);
+        partsPanelControls.add(bodyDirection, new GridConstraints(8, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label18 = new JLabel();
+        this.$$$loadLabelText$$$(label18, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "pose"));
+        partsPanelControls.add(label18, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        poseStringField = new JFormattedTextField();
+        poseStringField.setMinimumSize(new Dimension(49, 25));
+        poseStringField.setPreferredSize(new Dimension(49, 25));
+        poseStringField.setText("");
+        partsPanelControls.add(poseStringField, new GridConstraints(3, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        final JLabel label19 = new JLabel();
+        this.$$$loadLabelText$$$(label19, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "visibility"));
+        partsPanelControls.add(label19, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        hidden = new JButton();
+        this.$$$loadButtonText$$$(hidden, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "hidden"));
+        partsPanelControls.add(hidden, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        ghost = new JButton();
+        this.$$$loadButtonText$$$(ghost, this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/att-bundle", "ghost"));
+        partsPanelControls.add(ghost, new GridConstraints(4, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final JLabel label20 = new JLabel();
+        label20.setText("    ");
+        partsPanelControls.add(label20, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 20), new Dimension(-1, 20), new Dimension(-1, 20), 0, false));
+        final JLabel label21 = new JLabel();
+        label21.setText(" ");
+        partsPanelControls.add(label21, new GridConstraints(12, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 20), new Dimension(-1, 20), new Dimension(-1, 20), 0, false));
+        final JLabel label22 = new JLabel();
+        label22.setText(" ");
+        partsPanelControls.add(label22, new GridConstraints(15, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 20), new Dimension(-1, 20), new Dimension(-1, 20), 0, false));
+        final JLabel label23 = new JLabel();
+        label23.setText("  ");
+        partsPanelControls.add(label23, new GridConstraints(26, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 20), new Dimension(-1, 20), new Dimension(-1, 20), 0, false));
+        final JLabel label24 = new JLabel();
+        label24.setText(" ");
+        partsPanelControls.add(label24, new GridConstraints(20, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, new Dimension(-1, 20), new Dimension(-1, 20), new Dimension(-1, 20), 0, false));
+        headBreed.setNextFocusableComponent(headPose);
+        leftUpperArmPose.setNextFocusableComponent(leftForearmPose);
+        rightUpperArmPose.setNextFocusableComponent(rightForearmPose);
+        leftForearmPose.setNextFocusableComponent(rightUpperArmPose);
+        leftThighPose.setNextFocusableComponent(leftShinPose);
+        leftShinPose.setNextFocusableComponent(leftFootPose);
+        leftFootPose.setNextFocusableComponent(rightThighPose);
+        rightThighPose.setNextFocusableComponent(rightShinPose);
+        rightShinPose.setNextFocusableComponent(rightFootPose);
+        rightFootPose.setNextFocusableComponent(tailBreed);
+        bodyBreed.setNextFocusableComponent(bodyTilt);
+        armsBreed.setNextFocusableComponent(armsBreed);
+        tailLabel.setLabelFor(tailBreed);
+        tailBreed.setNextFocusableComponent(tailBasePose);
+        tailTipPose.setNextFocusableComponent(headBreed);
+        tailBaseLabel.setLabelFor(tailBasePose);
+        tailTipLabel.setLabelFor(tailTipPose);
+        focusModeLabel.setLabelFor(focusMode);
+        openRelatedLabel.setLabelFor(openRelated);
+        label17.setLabelFor(mood);
+        tiltLabel.setLabelFor(headDirection2);
+        bodyTilt.setNextFocusableComponent(armsBreed);
+    }
+
+    private static Method $$$cachedGetBundleMethod$$$ = null;
+
+    private String $$$getMessageFromBundle$$$(String path, String key) {
+        ResourceBundle bundle;
+        try {
+            Class<?> thisClass = this.getClass();
+            if ($$$cachedGetBundleMethod$$$ == null) {
+                Class<?> dynamicBundleClass = thisClass.getClassLoader().loadClass("com.intellij.DynamicBundle");
+                $$$cachedGetBundleMethod$$$ = dynamicBundleClass.getMethod("getBundle", String.class, Class.class);
+            }
+            bundle = (ResourceBundle) $$$cachedGetBundleMethod$$$.invoke(null, path, thisClass);
+        } catch (Exception e) {
+            bundle = ResourceBundle.getBundle(path);
+        }
+        return bundle.getString(key);
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    private void $$$loadLabelText$$$(JLabel component, String text) {
+        StringBuffer result = new StringBuffer();
+        boolean haveMnemonic = false;
+        char mnemonic = '\0';
+        int mnemonicIndex = -1;
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '&') {
+                i++;
+                if (i == text.length()) break;
+                if (!haveMnemonic && text.charAt(i) != '&') {
+                    haveMnemonic = true;
+                    mnemonic = text.charAt(i);
+                    mnemonicIndex = result.length();
+                }
+            }
+            result.append(text.charAt(i));
+        }
+        component.setText(result.toString());
+        if (haveMnemonic) {
+            component.setDisplayedMnemonic(mnemonic);
+            component.setDisplayedMnemonicIndex(mnemonicIndex);
+        }
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    private void $$$loadButtonText$$$(AbstractButton component, String text) {
+        StringBuffer result = new StringBuffer();
+        boolean haveMnemonic = false;
+        char mnemonic = '\0';
+        int mnemonicIndex = -1;
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '&') {
+                i++;
+                if (i == text.length()) break;
+                if (!haveMnemonic && text.charAt(i) != '&') {
+                    haveMnemonic = true;
+                    mnemonic = text.charAt(i);
+                    mnemonicIndex = result.length();
+                }
+            }
+            result.append(text.charAt(i));
+        }
+        component.setText(result.toString());
+        if (haveMnemonic) {
+            component.setMnemonic(mnemonic);
+            component.setDisplayedMnemonicIndex(mnemonicIndex);
+        }
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    public JComponent $$$getRootComponent$$$() {
+        return panel1;
     }
 
     public interface PoseChangeListener {
@@ -2875,7 +2780,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
 
         private void initCheckboxForPart(final char part) {
             String prefix = getPrefix(part);
-            final JCheckBoxMenuItem item = new JCheckBoxMenuItem(prefix + part + " - " + PoseEditorSupport.getPartName(part));
+            final JCheckBoxMenuItem item = new JCheckBoxMenuItem(prefix + part + " - " + PoseEditorSupport.getPartShortName(part));
             final PartVisibility currentVisibility = visibilityMap.get(part);
             item.setSelected(currentVisibility == visibility);
             item.addActionListener(onPartClick(part, item));
@@ -3064,9 +2969,7 @@ public class PoseEditorImpl implements Disposable, BreedPoseHolder, PartBreedsPr
 
     }
 
-
     public interface BreedSelectionChangeListener {
         void onBreedSelected(BreedKey key, char... parts);
     }
-
 }

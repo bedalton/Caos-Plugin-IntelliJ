@@ -1,18 +1,29 @@
+@file:Suppress("ActionPresentationInstantiatedInCtor")
+
 package com.badahori.creatures.plugins.intellij.agenteering.att.actions
 
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.AttEditorImpl
-import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer
 import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseRenderer.PartVisibility.GHOST
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttMessages
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.PartNames
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
+import java.util.function.Supplier
 
 open class SetGhostVisibilityAction (
-    private val partName: String,
     private val partChar: Char,
 ): AnAction(
-    "Set $partName to Ghost Visibility"
+    Supplier {
+        val partName = PartNames.getPartName(partChar)
+        AttMessages.message("set-part-ghost-visibility", partName)
+    },
+    Supplier {
+        val partName = PartNames.getPartName(partChar)
+        AttMessages.message("set-part-ghost-visibility-description", partName.lowercase())
+    },
+    null,
 ), AttEditorAction {
 
     override fun getActionUpdateThread(): ActionUpdateThread {
@@ -26,79 +37,50 @@ open class SetGhostVisibilityAction (
     override fun update(e: AnActionEvent) {
         super.update(e)
         val isAttFile = isVisible(e)
-        e.presentation.isEnabledAndVisible = isAttFile
+        e.presentation.isEnabled = isAttFile
     }
 
     fun isVisible(e: AnActionEvent): Boolean {
         val editor = e.getData(PlatformDataKeys.FILE_EDITOR)
             ?: return false
-        return editor.name == AttEditorImpl.NAME
+        return editor.name == AttEditorImpl.getEditorName()
     }
 
 
     override fun actionPerformed(e: AnActionEvent) {
         val editor = e.getData(PlatformDataKeys.FILE_EDITOR)
             ?: return
-        if (editor.name != AttEditorImpl.NAME) {
-            return;
+        if (editor.name != AttEditorImpl.getEditorName()) {
+            return
         }
         (editor as? AttEditorImpl)?.togglePartVisibility(partChar, GHOST)
     }
 }
 
+class SetHeadToGhostVisibility: SetGhostVisibilityAction('a')
 
-class SetHeadToGhostVisibility: SetGhostVisibilityAction(
-    "Head", 'a'
-)
+class SetBodyToGhostVisibility: SetGhostVisibilityAction('b')
 
-class SetBodyToGhostVisibility: SetGhostVisibilityAction(
-    "Body", 'b'
-)
+class SetLeftThighToGhostVisibility: SetGhostVisibilityAction('c')
 
-class SetLeftThighToGhostVisibility: SetGhostVisibilityAction(
-    "Left Thigh", 'c'
-)
+class SetLeftShinToGhostVisibility: SetGhostVisibilityAction('d')
 
-class SetLeftShinToGhostVisibility: SetGhostVisibilityAction(
-    "Left Shin", 'd'
-)
+class SetLeftFootToGhostVisibility: SetGhostVisibilityAction('e')
 
-class SetLeftFootToGhostVisibility: SetGhostVisibilityAction(
-    "Left Foot", 'e'
-)
+class SetRightThighToGhostVisibility: SetGhostVisibilityAction('f')
 
-class SetRightThighToGhostVisibility: SetGhostVisibilityAction(
-    "Right Thigh", 'f'
-)
+class SetRightShinToGhostVisibility: SetGhostVisibilityAction('g')
 
-class SetRightShinToGhostVisibility: SetGhostVisibilityAction(
-    "Right Shin", 'g'
-)
+class SetRightFootToGhostVisibility: SetGhostVisibilityAction('h')
 
-class SetRightFootToGhostVisibility: SetGhostVisibilityAction(
-    "Right Foot", 'h'
-)
+class SetLeftHumerusToGhostVisibility: SetGhostVisibilityAction('i')
 
-class SetLeftHumerusToGhostVisibility: SetGhostVisibilityAction(
-    "Left Humerus", 'i'
-)
+class SetLeftRadiusToGhostVisibility: SetGhostVisibilityAction('j')
 
-class SetLeftRadiusToGhostVisibility: SetGhostVisibilityAction(
-    "Left Radius", 'j'
-)
+class SetRightHumerusToGhostVisibility: SetGhostVisibilityAction('k')
 
-class SetRightHumerusToGhostVisibility: SetGhostVisibilityAction(
-    "Right Humerus", 'k'
-)
+class SetRightRadiusToGhostVisibility: SetGhostVisibilityAction('l')
 
-class SetRightRadiusToGhostVisibility: SetGhostVisibilityAction(
-    "Right Radius", 'l'
-)
+class SetTailBaseToGhostVisibility: SetGhostVisibilityAction('m')
 
-class SetTailBaseToGhostVisibility: SetGhostVisibilityAction(
-    "Tail Base", 'm'
-)
-
-class SetTailTipToGhostVisibility: SetGhostVisibilityAction(
-    "Tail Tip", 'n'
-)
+class SetTailTipToGhostVisibility: SetGhostVisibilityAction('n')

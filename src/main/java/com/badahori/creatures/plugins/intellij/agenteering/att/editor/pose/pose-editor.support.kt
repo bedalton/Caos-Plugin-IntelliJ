@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose
 
 import com.bedalton.common.util.pathSeparator
 import com.bedalton.common.util.pathSeparatorChar
-import com.badahori.creatures.plugins.intellij.agenteering.att.editor.pose.PoseEditorSupport.getPartName
+import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttMessages
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C2
@@ -26,18 +26,8 @@ object PoseEditorSupport {
     internal const val DEFAULT_POSE_STRING = "212222222111112"
     internal const val DEFAULT_POSE_STRING_VERSION = 2
 
-    @Suppress("SpellCheckingInspection")
     @JvmStatic
     val allParts = "abcdefghijklmnopq".toCharArray()
-
-    @Suppress("unused")
-    @JvmStatic
-    val directions = arrayOf(
-        "Down",
-        "Straight",
-        "Up",
-        "Far Up"
-    )
 
     private val moodsC1 = arrayOf(
         "Neutral",
@@ -46,25 +36,53 @@ object PoseEditorSupport {
         "Angry"
     )
 
+    private val moodsC1Messages = arrayOf(
+        "mood.neutral",
+        "mood.happy",
+        "mood.sad",
+        "mood.angry",
+    )
+
     private val moodsCV = arrayOf(
         "Neutral",
         "Happy",
         "Sad",
         "Angry",
         "Surprised",
-        "Sick",
-        "Sick (Mouth Open)",
+        "Sleepy",
+        "Very Sleepy",
         "Elated",
-        "Angry 2",
-        "Concerned",
+        "Mischievous",
+        "Scared",
         "Sick",
         "Tongue Out",
         "Neutral 2",
-        "Happy 3",
+        "Happy 2",
         "Cry 1",
         "Cry 2",
         "Neutral 3",
         "Neutral 4"
+    )
+
+    private val moodsCVMessages = arrayOf(
+        "mood.neutral",
+        "mood.happy",
+        "mood.sad",
+        "mood.angry",
+        "mood.surprised",
+        "mood.sleepy",
+        "mood.very_sleepy",
+        "mood.elated",
+        "mood.mischievous",
+        "mood.scared",
+        "mood.sick",
+        "mood.tongue_out",
+        "mood.neutral_2",
+        "mood.happy_2",
+        "mood.cry_1",
+        "mood.cry_2",
+        "mood.neutral_3",
+        "mood.neutral_4",
     )
 
     private val moods = arrayOf(
@@ -73,7 +91,16 @@ object PoseEditorSupport {
         "Sad",
         "Angry",
         "Surprised",
-        "Sick"
+        "Sleepy"
+    )
+
+    private val moodsMessages = arrayOf(
+        "mood.neutral",
+        "mood.happy",
+        "mood.sad",
+        "mood.angry",
+        "mood.surprised",
+        "mood.sleepy",
     )
 
     @JvmStatic
@@ -85,26 +112,60 @@ object PoseEditorSupport {
         }
     }
 
+
     @JvmStatic
-    fun getPartName(part: Char): String? {
+    fun getMoodMessages(variant: CaosVariant): Array<String> {
+        return when (variant) {
+            C1 -> moodsC1Messages
+            CaosVariant.CV -> moodsCVMessages
+            else -> moodsMessages
+        }
+    }
+
+    @JvmStatic
+    fun getPartShortName(part: Char): String? {
         return when (part) {
-            'a' -> "Head"
-            'b' -> "Body"
-            'c' -> "L. Thigh"
-            'd' -> "L. Shin"
-            'e' -> "L. Foot"
-            'f' -> "R. Thigh"
-            'g' -> "R. Shin"
-            'h' -> "R. Foot"
-            'i' -> "L. Upper Arm"
-            'j' -> "L. Lower Arm"
-            'k' -> "R. Upper Arm"
-            'l' -> "R. Lower Arm"
-            'm' -> "Tail Base"
-            'n' -> "Tail Tip"
-            'o' -> "Left Ear"
-            'p' -> "Right Ear"
-            'q' -> "Hair"
+            'a' -> AttMessages.getMessage("head")
+            'b' -> AttMessages.getMessage("body")
+            'c' -> AttMessages.getMessage("left-thigh.short")
+            'd' -> AttMessages.getMessage("left-shin.short")
+            'e' -> AttMessages.getMessage("left-foot.short")
+            'f' -> AttMessages.getMessage("right-thigh.short")
+            'g' -> AttMessages.getMessage("right-shin.short")
+            'h' -> AttMessages.getMessage("right-foot.short")
+            'i' -> AttMessages.getMessage("left-humerus.short")
+            'j' -> AttMessages.getMessage("left-radius.short")
+            'k' -> AttMessages.getMessage("right-humerus.short")
+            'l' -> AttMessages.getMessage("right-radius.short")
+            'm' -> AttMessages.getMessage("tail-base")
+            'n' -> AttMessages.getMessage("tail-tip")
+            'o' -> AttMessages.getMessage("left-ear.short")
+            'p' -> AttMessages.getMessage("right-ear.short")
+            'q' -> AttMessages.getMessage("hair")
+            else -> null
+        }
+    }
+
+    @JvmStatic
+    fun getPartShortNameMessage(part: Char): String? {
+        return when (part) {
+            'a' -> "head"
+            'b' -> "body"
+            'c' -> "left-thigh.short"
+            'd' -> "left-shin.short"
+            'e' -> "left-foot.short"
+            'f' -> "right-thigh.short"
+            'g' -> "right-shin.short"
+            'h' -> "right-foot.short"
+            'i' -> "left-humerus.short"
+            'j' -> "left-radius.short"
+            'k' -> "right-humerus.short"
+            'l' -> "right-radius.short"
+            'm' -> "tail-base"
+            'n' -> "tail-tip"
+            'o' -> "left-ear.short"
+            'p' -> "right-ear.short"
+            'q' -> "hair"
             else -> null
         }
     }
@@ -244,7 +305,7 @@ private class PartFileCellRenderer(val strict: Boolean = false) : DefaultListCel
             }
 
             null -> {
-                text = "..related part"
+                text = AttMessages.message("dot-dot-dot-related-part")
                 foreground = TRANSLUCENT
                 return this
             }
@@ -258,7 +319,7 @@ private class PartFileCellRenderer(val strict: Boolean = false) : DefaultListCel
         foreground = BLACK
         this.text = text
         this.isEnabled = !disable
-        val part = getPartName(text[0].lowercaseChar())
+        val part = PoseEditorSupport.getPartShortName(text[0].lowercaseChar())
         if (part != null) {
             setText("$text - $part")
         } else {
@@ -408,6 +469,7 @@ data class Pose(
             getFacing(variant, head % 16)
         }
     }
+
     fun getBodyFacing(variant: CaosVariant): Int {
         return if (variant.isOld) {
             getFacing(variant, body)
@@ -427,6 +489,7 @@ data class Pose(
                     else -> throw IndexOutOfBoundsException("Head pose $head is out of bounds for variant ${variant.code}")
                 }
             }
+
             pose < 12 -> 1
             else -> 0
         }

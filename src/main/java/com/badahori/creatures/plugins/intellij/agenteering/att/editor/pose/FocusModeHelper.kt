@@ -12,7 +12,7 @@ object FocusModeHelper {
      * @return visibility mask for the part and selected focus mode
      */
     @JvmStatic
-    fun getVisibilityMask(focusModeInt:Int, part: Char): Map<Char, PoseRenderer.PartVisibility>? {
+    fun getVisibilityMask(focusModeInt:Int, part: Char): Map<Char, PoseRenderer.PartVisibility> {
         return getVisibilityMask(FocusMode.fromValue(focusModeInt), part)
     }
 
@@ -23,7 +23,7 @@ object FocusModeHelper {
      * @return visibility mask for the part and selected focus mode
      */
     @JvmStatic
-    fun getVisibilityMask(focusMode:FocusMode, part: Char): Map<Char, PoseRenderer.PartVisibility>? {
+    fun getVisibilityMask(focusMode:FocusMode, part: Char): Map<Char, PoseRenderer.PartVisibility> {
         var parts: MutableMap<Char, PoseRenderer.PartVisibility> = mutableMapOf()
         var associatedPartVisibility: PoseRenderer.PartVisibility? = null
         when (focusMode) {
@@ -55,7 +55,7 @@ object FocusModeHelper {
         if (associatedPartVisibility != null) {
             applyVisibility(parts, PoseCalculator.getAssociatedParts(part), associatedPartVisibility)
         }
-        parts.put(part, PoseRenderer.PartVisibility.VISIBLE)
+        parts[part] = PoseRenderer.PartVisibility.VISIBLE
         return parts
     }
 
@@ -99,6 +99,18 @@ enum class FocusMode(val index:Int, val commonName:String) {
                 SOLO_GHOST_BODY.index -> SOLO_GHOST_BODY
                 else -> EVERYTHING
             }
+        }
+
+        @JvmStatic
+        fun getLocalizedOptions(): Array<String> {
+            return arrayOf(
+                "focus-mode.everything",
+                "focus-mode.ghost",
+                "focus-mode.ghost-solo",
+                "focus-mode.solo",
+                "focus-mode.solo.with-body",
+                "focus-mode.solo.with-body.ghost",
+            )
         }
 
         @JvmStatic

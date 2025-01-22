@@ -122,18 +122,21 @@ enum class AttInlayHints(description: String, defaultEnabled: Boolean, override 
          * Gets the name of this files part
          */
         private fun getPartName(element: PsiElement): String? {
+
             if (!element.isValid) {
                 return null
             }
+
             val file = element.containingFile
                 ?: return null
 
             if (!file.isValid) {
                 return null
             }
+
             val part = BreedPartKey.fromFileName(file.name)?.part
                 ?: return null
-            return PoseEditorSupport.getPartName(part)
+            return PoseEditorSupport.getPartShortName(part)
         }
 
     };
