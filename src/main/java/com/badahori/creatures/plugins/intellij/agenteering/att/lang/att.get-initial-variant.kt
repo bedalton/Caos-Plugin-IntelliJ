@@ -6,8 +6,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.inferVariantHard
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
+import com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteParser
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.bedalton.creatures.common.structs.BreedKey
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
@@ -149,20 +151,27 @@ private fun getVariantByAttLengths(
                 CaosVariant.C2
             }
         }
-        return CaosVariant.UNKNOWN
+        return project?.settings?.defaultVariant ?: CaosVariant.UNKNOWN
     }
-    if (part == 'a') {
-//        val longestLine = lines.maxByOrNull { it.length }
-//            ?: return CaosVariant.C3
-        // USING last point led to false CV positives. Decided to just make it CV if asked
-//        val points = longestLine.split("\\s+".toRegex()).filter { it.isNotBlank() }
-//        if (points.lastOrNull()?.toIntSafe().orElse(0) > 0) {
-//            return CaosVariant.CV
-//        }
+
+    if (part in 'o' .. 'q') {
+        return CaosVariant.CV
+    }
+
+    if (project == null) {
         return CaosVariant.C3
     }
-    val partLowerCase = part?.lowercase()
-    if (partLowerCase == 'o' || partLowerCase == 'p' || partLowerCase == 'q')
+
+    val breedKey = BreedKey.fromFileName(file.nameWithoutExtension)?.code
+        ?: return CaosVariant.C3
+
+    val hasEarOrHair = CaseInsensitiveFileIndex.findWithFileName(project, "o$breedKey.c16").isNotEmpty()
+            || CaseInsensitiveFileIndex.findWithFileName(project, "p$breedKey.c16").isNotEmpty()
+            || CaseInsensitiveFileIndex.findWithFileName(project, "q$breedKey.c16").isNotEmpty()
+
+    if (hasEarOrHair) {
         return CaosVariant.CV
+    }
+
     return CaosVariant.C3
 }
