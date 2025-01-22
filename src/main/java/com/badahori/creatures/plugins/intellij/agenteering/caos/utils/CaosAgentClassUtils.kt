@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.AgentClassConstants.INDETERMINATE_VALUE
+import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 
 typealias AgentClass = com.bedalton.creatures.common.structs.AgentClass
 
@@ -33,18 +34,22 @@ object CaosAgentClassUtils {
     }
 
     fun toClas(family:Int, genus:Int, species:Int) : Int {
-        val fHex = Integer.toHexString(family).padStart(2,  '0')
-        val gHex = Integer.toHexString(genus).padStart(2, '0')
-        val sHex = Integer.toHexString(species).padStart(2, '0')
-        return Integer.parseInt("$fHex$gHex${sHex}00", 16)
+        val familyInt = family shl 24
+        val genusInt = genus shl 16
+        val speciesInt = species shl 8
+        return familyInt or genusInt or speciesInt
     }
 
     fun parseClas(clas:Int) : AgentClass? {
-        val hex = Integer.toHexString(clas).padStart(8,'0')
-        val family = Integer.parseInt(hex.substring(0, 2), 16)
-        val genus = Integer.parseInt(hex.substring(2, 4), 16)
-        val species = Integer.parseInt(hex.substring(4, 6), 16)
-        return AgentClass(family, genus, species)
+        try {
+            val family = (clas shr 24) and 0xFF
+            val genus = (clas shr 16) and 0xFF
+            val species = (clas shr 8) and 0xFF
+            return AgentClass(family, genus, species)
+        } catch (e: Throwable) {
+            e.rethrowAnyCancellationException()
+            return null
+        }
     }
 
 }

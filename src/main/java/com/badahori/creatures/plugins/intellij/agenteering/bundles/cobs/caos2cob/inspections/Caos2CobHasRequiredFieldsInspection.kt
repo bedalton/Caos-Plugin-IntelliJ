@@ -58,16 +58,18 @@ private fun validateBlock(element: CaosScriptCaos2Block, holder: ProblemsHolder)
     }
     val variant = element.cobVariant
     val tagStrings = element.tags.keys
-    val cobFile = if (element.commands.any { CobCommand.fromString(it.first, variant) == CobCommand.COB_FILE })
+    val cobFile = if (element.commands.any { CobCommand.fromString(it.first, variant) == CobCommand.COB_FILE }) {
         listOf(CobTag.COB_NAME)
-    else
+    } else {
         emptyList()
+    }
 
     val foundTags = tagStrings.mapNotNull { key -> CobTag.fromString(key) } + cobFile
     val missingTags = mutableListOf<CobTag>()
     for (tag in CobTag.getTags(variant).filter { it.required }) {
-        if (tag !in foundTags)
+        if (tag !in foundTags) {
             missingTags.add(tag)
+        }
     }
 
 

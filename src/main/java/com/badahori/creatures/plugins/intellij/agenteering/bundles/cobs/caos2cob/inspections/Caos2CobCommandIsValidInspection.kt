@@ -46,59 +46,71 @@ class Caos2CobCommandIsValidInspection : LocalInspectionTool(), DumbAware {
         }
     }
 
-    companion object {
+}
 
-        private val AGENT_NAME_COMMAND_REGEX = "(C1|C2)-?Name".toRegex(RegexOption.IGNORE_CASE)
+private val AGENT_NAME_COMMAND_REGEX by lazy {
+    "(C1|C2|COB)-?Name".toRegex(RegexOption.IGNORE_CASE)
+}
 
-        /**
-         * Validates a COB comment directive, to ensure that it actually exists
-         */
-        private fun validateCobCommandName(element:CaosScriptCaos2CommandName, holder: ProblemsHolder) {
-            if (!element.containingCaosFile?.isCaos2Cob.orFalse())
-                return
-            val tagNameRaw = element.text
-            if (tagNameRaw.matches(AGENT_NAME_COMMAND_REGEX))
-                return
-            val tagName = element.text.replace(WHITESPACE, " ").nullIfEmpty()
-                ?: return
-            val command = CobCommand.fromString(tagName)
-            val variant = element.variant
-            if (command != null) {
-                if (variant == null || command.variant == null || command.variant == variant)
-                    return
-                val error = AgentMessages.message("errors.caos2properties.out-of-variant-property", tagNameRaw, command.variant)
-                val parent = element.getParentOfType(CaosScriptCaos2BlockComment::class.java)
-                val fix = if (parent != null) {
-                    DeleteElementFix(
-                        AgentMessages.message("errors.caos2properties.out-of-variant-property.delete-element"),
-                        parent
-                    ).toArrayOf()
-                } else emptyArray()
-                holder.registerProblem(element, error, *fix)
-                return
-            }
-
-            val similar = getFixesForSimilar(variant, element, tagName)
-                .toTypedArray()
-            val error = AgentMessages.message("errors..caos2properties.property-invalid.property-not-recognized", tagNameRaw, CAOS2Cob )
-            holder.registerProblem(element, error, *similar)
-        }
-
-        private fun getFixesForSimilar(variant:CaosVariant?, element:PsiElement, tagName:String) : List<CaosScriptReplaceElementFix> {
-            return CobCommand.getCommands(variant)
-                .map { aTag ->
-                    aTag.keyStrings.minByOrNull { it.levenshteinDistance(tagName) }!!.let { key ->
-                        Pair(key, key.levenshteinDistance(tagName))
-                    }
-                }.filter {
-                    it.second < 7
-                }.map {
-                    CaosScriptReplaceElementFix(
-                        element,
-                        it.first,
-                        AgentMessages.message("caos2commands.fixes.replace-command", it.first)
-                    )
-                }
-        }
+/**
+ * Validates a COB comment directive, to ensure that it actually exists
+ */
+private fun validateCobCommandName(element: CaosScriptCaos2CommandName, holder: ProblemsHolder) {
+    if (!element.containingCaosFile?.isCaos2Cob.orFalse()) {
+        return
     }
+
+    val tagNameRaw = element.text
+
+    if (tagNameRaw.matches(AGENT_NAME_COMMAND_REGEX)) {
+        return
+    }
+
+    val tagName = element.text.replace(WHITESPACE, " ").nullIfEmpty()
+        ?: return
+
+    val command = CobCommand.fromString(tagName)
+    val variant = element.variant
+
+    if (command != null) {
+        if (variant == null || command.variant == null || command.variant == variant) {
+            return
+        }
+        val error = AgentMessages.message("errors.caos2properties.out-of-variant-property", tagNameRaw, command.variant)
+        val parent = element.getParentOfType(CaosScriptCaos2BlockComment::class.java)
+        val fix = if (parent != null) {
+            DeleteElementFix(
+                AgentMessages.message("errors.caos2properties.out-of-variant-property.delete-element"),
+                parent
+            ).toArrayOf()
+        } else emptyArray()
+        holder.registerProblem(element, error, *fix)
+        return
+    }
+
+    val similar = getFixesForSimilar(variant, element, tagName)
+        .toTypedArray()
+    val error = AgentMessages.message(
+        "errors.caos2properties.property-invalid.property-not-recognized",
+        tagNameRaw,
+        CAOS2Cob
+    )
+    holder.registerProblem(element, error, *similar)
+}
+
+private fun getFixesForSimilar(variant: CaosVariant?, element: PsiElement, tagName:String) : List<CaosScriptReplaceElementFix> {
+    return CobCommand.getCommands(variant)
+        .map { aTag ->
+            aTag.keyStrings.minByOrNull { it.levenshteinDistance(tagName) }!!.let { key ->
+                Pair(key, key.levenshteinDistance(tagName))
+            }
+        }.filter {
+            it.second < 7
+        }.map {
+            CaosScriptReplaceElementFix(
+                element,
+                it.first,
+                AgentMessages.message("caos2commands.fixes.replace-command", it.first)
+            )
+        }
 }

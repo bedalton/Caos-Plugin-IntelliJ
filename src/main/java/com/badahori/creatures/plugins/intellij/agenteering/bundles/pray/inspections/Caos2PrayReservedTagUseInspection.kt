@@ -110,11 +110,8 @@ class Caos2PrayReservedTagUseInspection : LocalInspectionTool(), DumbAware {
 
     }
 
-    companion object {
-        private val SCRIPT_TAG = "Script\\s+\\d+".toRegex(RegexOption.IGNORE_CASE)
-        private val REMOVAL_TAG = "Remove\\s+Script".toRegex(RegexOption.IGNORE_CASE)
-        private val DEPENDENCY_TAG = "Dependency\\s+Script".toRegex(RegexOption.IGNORE_CASE)
-    }
-
-
 }
+
+private val SCRIPT_TAG by lazy { "Script\\s+\\d+".toRegex(RegexOption.IGNORE_CASE) }
+private val REMOVAL_TAG by lazy { "Remove\\s+Script".toRegex(RegexOption.IGNORE_CASE) }
+private val DEPENDENCY_TAG by lazy { "Dependency\\s+Script".toRegex(RegexOption.IGNORE_CASE) }

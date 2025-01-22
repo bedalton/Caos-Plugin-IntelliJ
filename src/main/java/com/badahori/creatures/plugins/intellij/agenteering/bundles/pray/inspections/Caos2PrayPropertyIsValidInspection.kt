@@ -47,6 +47,7 @@ private val REMOVAL_SCRIPT_REGEX =
 private fun validateTagName(element: CaosScriptCaos2TagName, holder: ProblemsHolder) {
     if (!element.containingCaosFile?.isCaos2Pray.orFalse())
         return
+
     val tagNameRaw = element.text?.nullIfEmpty()
         ?: return
 
@@ -59,7 +60,7 @@ private fun validateTagName(element: CaosScriptCaos2TagName, holder: ProblemsHol
         return
     }
 
-    if (tagName in listOf("Genetics File", "Father Genetic File", "Mother Genetic File")) {
+    if (tagName.lowercase() in listOf("genetics file", "father genetic file", "mother genetic file")) {
         annotateGeneticsTag(element, tagName, holder)
         return
     }
@@ -83,7 +84,7 @@ private fun validateTagName(element: CaosScriptCaos2TagName, holder: ProblemsHol
         val error = AgentMessages.message("pray.inspections.tags.similar-tags.is-similar-message",
             "command",
             tagNameRaw)
-        holder.registerProblem(element, error, fix)
+        holder.registerProblem(element, error, fix as LocalQuickFix)
     }
 
 }
