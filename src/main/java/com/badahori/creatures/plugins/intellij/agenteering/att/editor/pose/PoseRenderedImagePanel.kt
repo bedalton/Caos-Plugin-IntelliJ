@@ -5,10 +5,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosBalloonN
 import com.badahori.creatures.plugins.intellij.agenteering.utils.PANEL_TRANSPARENT_BLACK
 import com.badahori.creatures.plugins.intellij.agenteering.utils.copyToClipboard
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
+import com.badahori.creatures.plugins.intellij.agenteering.utils.trim
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
-import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
@@ -138,46 +138,7 @@ class PoseRenderedImagePanel(private val project: Project, defaultDirectory: Str
 
     @Suppress("UndesirableClassUsage", "UseJBColor")
     private fun cropped(): BufferedImage? {
-        val image = image
-            ?: return null
-        var minX: Int? = null
-        var maxX: Int? = null
-        var minY: Int? = null
-        var maxY: Int? = null
-        for (y in 0 until height) {
-            for (x in 0 until width) {
-                val pixel = image.getRGB(x, y)
-                val alpha = ((pixel shr 24) and 0xFF)
-                if (alpha > 170) {
-                    if (minX == null || x < minX) {
-                        minX = x
-                    }
-                    if (maxX == null || x > maxX) {
-                        maxX = x
-                    }
-
-                    if (minY == null || y < minY) {
-                        minY = y
-                    }
-                    if (maxY == null || y < maxY) {
-                        maxY = y
-                    }
-                }
-            }
-        }
-        if (minX == null || maxX == null || minY == null || maxY == null) {
-            return image
-        }
-        val imageSlice = image.getSubimage(minX, minY, maxX, maxY)
-        val newWidth = imageSlice.width
-        val newHeight = imageSlice.width
-
-        val copyOfImage = BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB)
-        val g: Graphics = copyOfImage.createGraphics()
-        g.color = Color(0,0,0,0)
-        g.fillRect(0, 0, newWidth, newHeight)
-        g.drawImage(imageSlice, 0, 0, null)
-        return copyOfImage //or use it however you want
+        return image?.trim()
     }
 
     fun clear() {
@@ -195,9 +156,8 @@ class PoseRenderedImagePanel(private val project: Project, defaultDirectory: Str
             minSize = size
         }
         val size = Dimension(
-            max(minSize!!.width, image.width), max(
-                minSize!!.width, image.height
-            )
+            max(minSize!!.width, image.width),
+            max(minSize!!.width, image.height)
         )
         preferredSize = size
         minimumSize = minSize
@@ -205,6 +165,17 @@ class PoseRenderedImagePanel(private val project: Project, defaultDirectory: Str
             revalidate()
             repaint()
         }
+    }
+
+    override fun getPreferredSize(): Dimension {
+        val preferredSize = super.getPreferredSize()
+        val image = image
+            ?: return preferredSize
+        val size = Dimension(
+            max(minSize!!.width, image.width),
+            max(minSize!!.width, image.height)
+        )
+        return size
     }
 
     public override fun paintComponent(g: Graphics) {
