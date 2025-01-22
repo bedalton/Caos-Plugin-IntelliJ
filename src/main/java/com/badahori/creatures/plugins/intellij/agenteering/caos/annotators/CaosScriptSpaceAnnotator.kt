@@ -23,6 +23,19 @@ import com.intellij.psi.tree.IElementType
 import com.intellij.psi.util.elementType
 import com.intellij.refactoring.suggested.startOffset
 
+
+private val IS_COMMA_OR_SPACE by lazy {
+    "[\\s,]+".toRegex()
+}
+
+private val COMMA_NEW_LINE_REGEX by lazy {
+    "([,]|\n)+".toRegex()
+}
+
+private val IS_COMMA_REGEX by lazy {
+    "\\s*,+\\s".toRegex()
+}
+
 class CaosScriptSpaceAnnotator : Annotator, DumbAware {
 
     override fun annotate(element: PsiElement, holder: AnnotationHolder) {
@@ -45,18 +58,25 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
             type != CaosScript_COMMA &&
             type != CaosScript_NEWLINE &&
             type != CaosScript_STRING_ESCAPE_SEQUENCE &&
-            type != CaosScript_CHARS
+            type != CaosScript_CHARS &&
+            type != CaosScript_CHARACTER
         ) {
+
             val previous = element.previous
                 ?: return
+
             val previousType = previous.elementType
                 ?: return
 
             // If is comment prefix, delete it
-            if (previousType == CaosScript_CAOS_2_COMMENT_START || previousType == CaosScript_COMMENT_START)
+            if (previousType == CaosScript_CAOS_2_COMMENT_START || previousType == CaosScript_COMMENT_START) {
                 return
-            if (isBracket(previousType, type) || isQuoted(previousType, type) || isQuoted(type, previousType))
+            }
+
+            if (isBracket(previousType, type) || isQuoted(previousType, type) || isQuoted(type, previousType)) {
                 return
+            }
+
             if (previousType != WHITE_SPACE && previousType != CaosScript_COMMA && previousType != CaosScript_NEWLINE) {
                 val endOffset = element.startOffset + 1
                 var elementToAnnotate: PsiElement = element
@@ -78,7 +98,7 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
             ?: return
 
         if (variant.isNotOld) {
-            if (element.textContains(',')) {
+            if (element.textContains(',') && IS_COMMA_REGEX.matches(element.text)) {
                 annotateC2eCommaError(element, holder)
             }
             return
@@ -172,13 +192,9 @@ class CaosScriptSpaceAnnotator : Annotator, DumbAware {
 //            .create()
 //    }
 
-    companion object {
-        private val IS_COMMA_OR_SPACE = "[\\s,]+".toRegex()
-        private val COMMA_NEW_LINE_REGEX = "([,]|\n)+".toRegex()
-
-    }
-
 }
+
+
 
 private fun canFollowComma(element: PsiElement?): Boolean {
     if (element == null)
@@ -215,8 +231,9 @@ private fun canFollowComma(element: PsiElement?): Boolean {
 
 
 private fun isBracket(t1: IElementType, t2: IElementType): Boolean {
-    if (t1 == CaosScript_BYTE_STRING_R || t2 == CaosScript_BYTE_STRING_R || t1 == CaosScript_ANIM_R || t2 == CaosScript_ANIM_R)
+    if (t1 == CaosScript_BYTE_STRING_R || t2 == CaosScript_BYTE_STRING_R || t1 == CaosScript_ANIM_R || t2 == CaosScript_ANIM_R) {
         return true
+    }
     if (t1 == CaosScript_OPEN_BRACKET) {
         return t2 == CaosScript_INT ||
                 t2 == CaosScript_BYTE_STRING_POSE_ELEMENT ||

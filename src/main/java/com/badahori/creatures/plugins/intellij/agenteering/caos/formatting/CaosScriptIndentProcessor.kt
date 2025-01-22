@@ -39,8 +39,10 @@ class CaosScriptIndentProcessorImpl(private val caosSettings: CaosScriptCodeStyl
                     ?: return Indent.getAbsoluteNoneIndent()
                 if (previous.elementType == TokenType.WHITE_SPACE && previous.text == "\n") {
                     Indent.getAbsoluteNoneIndent()
-                } else {
+                } else if (caosSettings.INDENT_COMMENTS) {
                     blockIndent
+                } else {
+                    null
                 }
             }
 

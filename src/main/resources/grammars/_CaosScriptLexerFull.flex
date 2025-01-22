@@ -85,12 +85,18 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.CaosScript
 		try {
 		    char nextChar = yycharat(++index);
 			while (nextChar != ']') {
+				if (nextChar == 'R' || nextChar == 'r') {
+					nextChar = yycharat(++index);
+                    while(nextChar == ' ' || nextChar == '\t') {
+                        nextChar = yycharat(++index);
+                    }
+                    return nextChar == ']';
+				}
+
 				if (!BYTE_STRING_CHARS.contains(nextChar)) {
 	  				return false;
 				}
-				if (nextChar == 'R' || nextChar == 'r') {
-				    return yycharat(index + 1) == ']';
-				}
+
 				nextChar = yycharat(++index);
 			}
 			return true;

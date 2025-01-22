@@ -1,5 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.formatting
 
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.intellij.application.options.CodeStyle
 import com.intellij.formatting.*
 import com.intellij.lang.ASTNode
@@ -21,7 +22,9 @@ class CaosScriptFormattingModelBuilder : FormattingModelBuilder {
         } else {
             null
         }
+        val variant = element.containingFile.variant
         val rootBlock = CaosScriptBlock(
+            variant,
             rootNode,
             Wrap.createWrap(WrapType.NONE, false),
             null,
