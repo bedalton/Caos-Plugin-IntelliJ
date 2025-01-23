@@ -2,7 +2,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.hints
 
 import com.bedalton.common.util.isNotNullOrBlank
 import com.bedalton.common.util.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameHelper
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptClassifier
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptEventScript
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.indices.CatalogueEntryElementIndex
@@ -26,7 +26,7 @@ class CaosClassifierFolder: FoldingBuilderEx() {
 
         // Ensure that indices is loaded
         if (!shouldRun(root)) {
-            return FoldingDescriptor.EMPTY
+            return EMPTY
         }
 
         val group = FoldingGroup.newGroup("CaosScript_CLASSIFIER_FOLD")
@@ -115,7 +115,7 @@ class CaosClassifierFolder: FoldingBuilderEx() {
         if (matches.isEmpty()) {
             // Get matches from the agent name index built from both CAOS comments,
             // and catalogue tags (including those with bad case or bad spacing)
-            matches = ClassifierToAgentNameIndex.getAgentNames(element.project, family, genus, species)
+            matches = ClassifierToAgentNameHelper.getAgentNames(element.project, family, genus, species)
                 .distinct()
                 .nullIfEmpty()
                 ?: return null
@@ -148,4 +148,8 @@ fun shouldRun(element: PsiElement?): Boolean {
 @Suppress("MemberVisibilityCanBePrivate")
 fun shouldRun(project: Project?, element: PsiElement?): Boolean {
     return project?.isDisposed == false && element?.isValid == true && !DumbService.isDumb(project)
+}
+
+private val EMPTY by lazy {
+    emptyArray<FoldingDescriptor>()
 }

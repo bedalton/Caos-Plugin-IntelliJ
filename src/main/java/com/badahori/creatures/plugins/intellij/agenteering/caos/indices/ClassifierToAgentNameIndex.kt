@@ -52,147 +52,35 @@ class ClassifierToAgentNameIndex : FileBasedIndexExtension<String, String>() {
     override fun dependsOnFileContent(): Boolean {
         return true
     }
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    companion object {
-
-        private const val VERSION = 1
-
-        private val NAME: ID<String, String> = ID.create("bedalton.creatures.ClassifierToAgentNameIndex")
-
-        val filter: FileBasedIndex.InputFilter by lazy {
-            FileBasedIndex.InputFilter { file ->
-                when (file.fileType) {
-                    CaosScriptFileType.INSTANCE -> true
-                    CatalogueFileType -> true
-                    else -> false
-                }
-            }
-        }
-
-        val externalizer: DataExternalizer<String> by lazy {
-            object : DataExternalizer<String> {
-                override fun save(out: DataOutput, value: String?) {
-                    out.writeUTF(value ?: "")
-                }
-
-                override fun read(`in`: DataInput): String {
-                    return `in`.readUTF()
-                }
-
-            }
-        }
-
-        /**
-         * Get agent names by Classifier values
-         */
-        fun getAgentNames(
-            project: Project,
-            family: Int,
-            genus: Int,
-            species: Int,
-            scope: GlobalSearchScope? = null
-        ): List<String> {
-            return getAgentNamesEx(project, MyDataIndexer.makeKey(family, genus, species), scope)
-        }
-
-        /**
-         * Get all classifiers in project
-         */
-        fun getAllClassifiers(project: Project, scope: GlobalSearchScope? = null): List<Pair<String, String>> {
-            return ReadAction.compute<List<Pair<String,String>>, Exception> {
-                try {
-                    var projectScope = GlobalSearchScope.projectScope(project)
-                    if (scope != null) {
-                        projectScope = projectScope.intersectWith(scope)
-                    }
-                    FileIndexUtil.getKeysAndValues(NAME, projectScope)
-                } catch (e: Exception) {
-                    e.rethrowAnyCancellationException()
-                    e.rethrowCancellationException()
-                    LOGGER.severe("Failed to get all classifiers; ${e.className}: ${e.message}")
-                    emptyList()
-                }
-            }
-        }
-
-        fun getAgentNames(project: Project, classifier: String, scope: GlobalSearchScope? = null): List<String> {
-            val classifierFormatted = classifier.trim().replace("\\s+".toRegex(), "" + DELIMITER)
-            if (classifier.count { it == DELIMITER } != 2) {
-                LOGGER.severe("Malformed classifier string: <$classifier>")
-                return emptyList()
-            }
-            return getAgentNamesEx(project, classifierFormatted, scope)
-        }
-
-//        internal fun getAgentNamesInEverythingScope(project: Project, classifier: String): List<String> {
-//            return ReadAction.compute<List<String>, Exception> {
-//                try {
-//                    val scope = GlobalSearchScope.everythingScope(project)
-//                    FileBasedIndex.getInstance()
-//                        .getValues(
-//                            NAME,
-//                            classifier,
-//                            scope
-//                        )
-//                } catch (_: Exception) {
-//                    emptyList()
-//                }
-//            } as List<String>
-//        }
-
-        /**
-         * Get agent names by Classifier values
-         */
-        private fun getAgentNamesEx(project: Project, classifier: String, scope: GlobalSearchScope? = null): List<String> {
-            return ReadAction.compute<List<String>, Exception> {
-                try {
-                    if (project.isDisposed) {
-                        return@compute emptyList()
-                    }
-
-                    var projectScope = GlobalSearchScope.projectScope(project)
-
-                    if (scope != null) {
-                        projectScope = projectScope.intersectWith(scope)
-                    }
-
-                    FileBasedIndex.getInstance()
-                        .getValues(
-                            NAME,
-                            classifier,
-                            projectScope
-                        )
-
-                } catch (e: Exception) {
-                    e.rethrowAnyCancellationException()
-                    e.rethrowCancellationException()
-                    emptyList()
-                }
-            } as List<String>
-        }
-
-//        /**
-//         * Get agent names by Classifier values
-//         */
-//        internal fun getAllKeysEx(project: Project): List<String> {
-//            return ReadAction.compute<List<String>, Exception> {
-//                try {
-//                    FileBasedIndex.getInstance()
-//                        .getAllKeys(
-//                            NAME,
-//                            project
-//                        )
-//                        .toList()
-//                } catch (_: Exception) {
-//                    emptyList()
-//                }
-//            } as List<String>
-//        }
-    }
-
 }
 
+
+private const val VERSION = 1
+
+private val NAME: ID<String, String> = ID.create("bedalton.creatures.ClassifierToAgentNameIndex")
+
+private val filter: FileBasedIndex.InputFilter by lazy {
+    FileBasedIndex.InputFilter { file ->
+        when (file.fileType) {
+            CaosScriptFileType.INSTANCE -> true
+            CatalogueFileType -> true
+            else -> false
+        }
+    }
+}
+
+private val externalizer: DataExternalizer<String> by lazy {
+    object : DataExternalizer<String> {
+        override fun save(out: DataOutput, value: String?) {
+            out.writeUTF(value ?: "")
+        }
+
+        override fun read(`in`: DataInput): String {
+            return `in`.readUTF()
+        }
+
+    }
+}
 
 @Suppress("RegExpUnnecessaryNonCapturingGroup")
 private class MyDataIndexer : DataIndexer<String, String, FileContent> {
@@ -222,7 +110,7 @@ private class MyDataIndexer : DataIndexer<String, String, FileContent> {
         val classifierBeforeNameRegex =
             "^\\s*\\*\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(?:[-=:]?\\s*)([a-zA-Z0-9 _]+).*".toRegex()
         val nameBeforeClassifierRegex =
-            "^\\s*\\*\\s*([0-9][a-zA-Z_][a-zA-Z0-9 _]*|[a-zA-Z_][a-zA-Z0-9 _]*)(?:[-=:]?\\s*)(\\d+)\\s+(\\d+)\\s+(\\d+).*".toRegex()
+            "^\\s*\\*\\s*([0-9][a-zA-Z_\\-][a-zA-Z0-9 _\\-]*|[a-zA-Z_][a-zA-Z0-9 _\\-]*)(?:[-=:]?\\s*)(\\d+)\\s+(\\d+)\\s+(\\d+).*".toRegex()
         const val DELIMITER = ' '
 
         fun makeKey(family: Int, genus: Int, species: Int): String {
@@ -246,18 +134,53 @@ private class MyDataIndexer : DataIndexer<String, String, FileContent> {
             classifierBeforeNameRegex.matchEntire(comment)
                 ?.groupValues
                 ?.let {
-                    if (it[4].trim().isNotBlank()) {
-                        return Pair(makeKey(it[1], it[2], it[3]), it[4].trim())
+                    val name = it[4].trim()
+                    if (isValidClassifierName(name)) {
+                        return makeKeyNamePair(it[1], it[2], it[3], it[4])
                     }
                 }
             nameBeforeClassifierRegex.matchEntire(comment)
                 ?.groupValues
                 ?.let {
-                    if (it[1].trim().isNotBlank()) {
-                        return Pair(makeKey(it[2], it[3], it[4]), it[1].trim())
-                    }
+                    return makeKeyNamePair(it[2], it[3], it[4], it[1])
                 }
             return null
+        }
+
+        private fun processName(name: String): String {
+            val normalized = name
+                .trim()
+                .replace("(agent\\s*)?(class|classifier|clas)".toRegex(RegexOption.IGNORE_CASE), "")
+                .trim()
+
+            return normalized
+        }
+
+        private fun makeKeyNamePair(family: String, genus: String, species: String, name: String): Pair<String, String>? {
+            if (isValidClassifierName(name)) {
+                return Pair(makeKey(family, genus, species), processName(name))
+            }
+            return null
+        }
+
+        private fun isValidClassifierName(name: String): Boolean {
+            var nameNormalized = name
+                .trim()
+                .lowercase()
+
+            if (name.startsWith("agent")) {
+                nameNormalized = name.replace("agent", "")
+            }
+
+            if (nameNormalized.isBlank()) {
+                return false
+            }
+
+
+            val invalidNameRegex = "(agent\\s*)?(clas|classifier|class)"
+                .toRegex(RegexOption.IGNORE_CASE)
+
+            return !invalidNameRegex.matches(nameNormalized)
         }
 
         private fun getAgentsInCatalogue(text: String): Map<String, String> {
@@ -288,4 +211,89 @@ private class MyDataIndexer : DataIndexer<String, String, FileContent> {
         }
 
     }
+}
+
+internal object ClassifierToAgentNameHelper {
+
+    /**
+     * Get agent names by Classifier values
+     */
+    fun getAgentNames(
+        project: Project,
+        family: Int,
+        genus: Int,
+        species: Int,
+        scope: GlobalSearchScope? = null
+    ): List<String> {
+        return getAgentNamesEx(project, MyDataIndexer.makeKey(family, genus, species), scope)
+    }
+
+    /**
+     * Get all classifiers in project
+     */
+    fun getAllClassifiers(project: Project, scope: GlobalSearchScope? = null): List<Pair<String, String>> {
+        return ReadAction.compute<List<Pair<String,String>>, Exception> {
+            try {
+                var projectScope = GlobalSearchScope.projectScope(project)
+                if (scope != null) {
+                    projectScope = projectScope.intersectWith(scope)
+                }
+                FileIndexUtil.getKeysAndValues(NAME, projectScope)
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
+                e.rethrowCancellationException()
+                LOGGER.severe("Failed to get all classifiers; ${e.className}: ${e.message}")
+                emptyList()
+            }
+        }
+    }
+
+    fun getAgentNames(project: Project, classifier: String, scope: GlobalSearchScope? = null): List<String> {
+        val classifierFormatted = classifier.trim().replace("\\s+".toRegex(), "" + DELIMITER)
+        if (classifier.count { it == DELIMITER } != 2) {
+            LOGGER.severe("Malformed classifier string: <$classifier>")
+            return emptyList()
+        }
+        return getAgentNamesEx(project, classifierFormatted, scope)
+    }
+}
+
+fun getAgentNames(project: Project, classifier: String, scope: GlobalSearchScope? = null): List<String> {
+    val classifierFormatted = classifier.trim().replace("\\s+".toRegex(), "" + DELIMITER)
+    if (classifier.count { it == DELIMITER } != 2) {
+        LOGGER.severe("Malformed classifier string: <$classifier>")
+        return emptyList()
+    }
+    return getAgentNamesEx(project, classifierFormatted, scope)
+}
+
+/**
+ * Get agent names by Classifier values
+ */
+private fun getAgentNamesEx(project: Project, classifier: String, scope: GlobalSearchScope? = null): List<String> {
+    return ReadAction.compute<List<String>, Exception> {
+        try {
+            if (project.isDisposed) {
+                return@compute emptyList()
+            }
+
+            var projectScope = GlobalSearchScope.projectScope(project)
+
+            if (scope != null) {
+                projectScope = projectScope.intersectWith(scope)
+            }
+
+            FileBasedIndex.getInstance()
+                .getValues(
+                    NAME,
+                    classifier,
+                    projectScope
+                )
+
+        } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
+            e.rethrowCancellationException()
+            emptyList()
+        }
+    } as List<String>
 }

@@ -8,7 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.deducer.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCodeBlock
 import com.badahori.creatures.plugins.intellij.agenteering.caos.def.psi.api.CaosDefCommandWord
 import com.badahori.creatures.plugins.intellij.agenteering.caos.documentation.CaosScriptPresentationUtil
-import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameHelper
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.caos2
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
@@ -2545,9 +2545,9 @@ object CaosScriptPsiImplUtil {
                 val species = classifier.species?.text?.toIntOrNull()
                     ?: return fallback
                 val scope = element.directory?.let { GlobalSearchScopes.directoriesScope(element.project, true, it) }
-                val name = ClassifierToAgentNameIndex.getAgentNames(element.project, family, genus, species, scope)
+                val name = ClassifierToAgentNameHelper.getAgentNames(element.project, family, genus, species, scope)
                     .nullIfEmpty()
-                    ?: ClassifierToAgentNameIndex.getAgentNames(element.project, family, genus, species, scope)
+                    ?: ClassifierToAgentNameHelper.getAgentNames(element.project, family, genus, species, scope)
                         .nullIfEmpty()
                     ?: return fallback
                 return name.firstOrNull()

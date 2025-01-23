@@ -259,15 +259,19 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
 
     // Gets the folding descriptor using the command call and the group
     private fun getFoldingDescriptor(commandCall: CaosScriptCommandCall, group: FoldingGroup): FoldingDescriptor? {
-        if (shouldFoldAll.matches(commandCall.commandString ?: ""))
+        if (shouldFoldAll.matches(commandCall.commandString ?: "")) {
             return FoldingDescriptor(commandCall.node, commandCall.textRange, group)
+        }
         val arguments = commandCall.arguments
         val parameters = commandCall.commandDefinition?.parameters
             ?: return null
-        val firstArgument = if (parameters.firstOrNull()?.type == CaosExpressionValueType.AGENT)
+
+        val firstArgument = if (parameters.firstOrNull()?.type == CaosExpressionValueType.AGENT) {
             arguments.getOrNull(1)
-        else
+        }  else {
             arguments.firstOrNull()
+        }
+
         val start = firstArgument
             ?.startOffset
             ?: return null
@@ -302,41 +306,44 @@ class CaosScriptStimFoldingBuilder : FoldingBuilderEx() {
         return getStimFold(commandCall) != null
     }
 
+}
+
+private val STIM_REGEX by lazy { "[Ss][Tt][Ii][Mm]([ ][^ ]{4})*".toRegex() }
+private val shouldFoldAll by lazy {  "([Dd][Rr][Ii][Vv]|[Cc][Hh][Ee][Mm]|[Ee][Mm][Ii][Tt])".toRegex()}
+private val shouldFold by lazy {
+"([Ss][Tt][Ii][Mm]|[Dd][Rr][Ii][Vv]|[Ss][Ww][Aa][Yy]|[Cc][Hh][Ee][Mm]|[Ee][Mm][Ii][Tt])([ ][^ ]{4})*".toRegex()}
+private const val STIMULUS = "[Ss][Tt][Ii][Mm]([Uu][Ll][Uu][Ss])?"
+private const val DRIVE = "[Dd][Rr][Ii][Vv]([Ee])?"
+private const val CHEMICAL = "[Cc][Hh][Ee][Mm]([Ii][Cc][Aa][Ll][Ss]?)?"
+private const val CA = "[Cc][Aa][^0-9]*"
+private const val NUMBER_REGEX = "[+-]?(\\.\\d+)?\\d+"
+private val EMIT_REGEX by lazy {  "emit\\s+$NUMBER_REGEX.+".toRegex()}
+private val CHEM_REGEX by lazy {  "(chem|driv)\\s+$NUMBER_REGEX\\s+[^ ]+$".toRegex()}
+private val STIM_C1E_REGEX by lazy {
+    "stim (shou|tact|sign|from|(writ\\s+[^ ]{1,4}))(\\s+[^ ]+){4}((\\s+$NUMBER_REGEX)(\\s+[^ ]+))+$".toRegex()
+}
+private val STIM_C2E_REGEX by lazy {
+    "stim (shou|tact|sign|from|(writ\\s+[^ ]{1,4}))\\s+$NUMBER_REGEX\\s+[^ ]+$".toRegex()
+}
+private val SWAY_REGEX by lazy {
+    "sway (shou|tact|sign|from|(writ\\s+[^ ]{1,4}))(\\s+$NUMBER_REGEX\\s+[^ ]+)+$".toRegex()
+}
+private val firstFoldParameterRegex by lazy {
+    "($STIMULUS|$DRIVE|$CHEMICAL|$CA)[0-9]*".toRegex()
+}
+
+private enum class ValuesFormat {
+    NORMAL,
+    STIM,
+    REVERSED;
+
     companion object {
-        private val STIM = "[Ss][Tt][Ii][Mm]([ ][^ ]{4})*".toRegex()
-        private val shouldFoldAll = "([Dd][Rr][Ii][Vv]|[Cc][Hh][Ee][Mm]|[Ee][Mm][Ii][Tt])".toRegex()
-        private val shouldFold =
-            "([Ss][Tt][Ii][Mm]|[Dd][Rr][Ii][Vv]|[Ss][Ww][Aa][Yy]|[Cc][Hh][Ee][Mm]|[Ee][Mm][Ii][Tt])([ ][^ ]{4})*".toRegex()
-        private const val STIMULUS = "[Ss][Tt][Ii][Mm]([Uu][Ll][Uu][Ss])?"
-        private const val DRIVE = "[Dd][Rr][Ii][Vv]([Ee])?"
-        private const val CHEMICAL = "[Cc][Hh][Ee][Mm]([Ii][Cc][Aa][Ll][Ss]?)?"
-        private const val CA = "[Cc][Aa][^0-9]*"
-        private const val NUMBER_REGEX = "[+-]?(\\.\\d+)?\\d+"
-        private val EMIT_REGEX = "emit\\s+$NUMBER_REGEX.+".toRegex()
-        private val CHEM_REGEX = "(chem|driv)\\s+$NUMBER_REGEX\\s+[^ ]+$".toRegex()
-        private val STIM_C1E_REGEX =
-            "stim (shou|tact|sign|from|(writ\\s+[^ ]{1,4}))(\\s+[^ ]+){4}((\\s+$NUMBER_REGEX)(\\s+[^ ]+))+$".toRegex()
-        private val STIM_C2E_REGEX =
-            "stim (shou|tact|sign|from|(writ\\s+[^ ]{1,4}))\\s+$NUMBER_REGEX\\s+[^ ]+$".toRegex()
-        private val SWAY_REGEX =
-            "sway (shou|tact|sign|from|(writ\\s+[^ ]{1,4}))(\\s+$NUMBER_REGEX\\s+[^ ]+)+$".toRegex()
-        private val firstFoldParameterRegex = "($STIMULUS|$DRIVE|$CHEMICAL|$CA)[0-9]*".toRegex()
-
-        private enum class ValuesFormat {
-            NORMAL,
-            STIM,
-            REVERSED;
-
-            companion object {
-                fun getFormat(variant: CaosVariant, commandString: String): ValuesFormat {
-                    return when {
-                        variant.isNotOld && CaosScriptStimFoldingBuilder.STIM.matches(commandString) -> STIM
-                        commandString.equalsIgnoreCase("emit") -> REVERSED
-                        else -> NORMAL
-                    }
-                }
+        fun getFormat(variant: CaosVariant, commandString: String): ValuesFormat {
+            return when {
+                variant.isNotOld && STIM_REGEX.matches(commandString) -> STIM
+                commandString.equalsIgnoreCase("emit") -> REVERSED
+                else -> NORMAL
             }
         }
     }
-
 }

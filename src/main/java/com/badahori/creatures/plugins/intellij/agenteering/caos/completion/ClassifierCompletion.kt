@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.completion
 
 import com.badahori.creatures.plugins.intellij.agenteering.bundles.general.directory
-import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameIndex
+import com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameHelper
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.scopes.CaosVariantGlobalSearchScope
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.toTokenOrNull
@@ -186,7 +186,7 @@ object ClassifierCompletion {
         typingName: Boolean,
         classifierSoFar: String
     ): List<Pair<String, String>>? {
-        return ClassifierToAgentNameIndex.getAllClassifiers(project, scope)
+        return ClassifierToAgentNameHelper.getAllClassifiers(project, scope)
             .filter {
                 typingName || it.first.startsWith(classifierSoFar)
             }
