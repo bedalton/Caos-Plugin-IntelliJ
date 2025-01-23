@@ -17,8 +17,9 @@ internal fun SfcReader.readMapData(): PointerSfcMapData {
     val numberOfRooms = uInt32()
     val rooms = readRooms(numberOfRooms)
     val groundLevels = readGroundLevels()
-    if (variant == C1)
+    if (variant == C1) {
         skip(800)
+    }
     return PointerSfcMapData(
             gallery = background,
             rooms = rooms,

@@ -18,8 +18,9 @@ enum class CobTagFormat(val formatDescriptor: String, val validate: (value:Strin
 }
 
 private fun getFileName(path: String): String? {
-    if (!path.contains('['))
+    if (!path.contains('[')) {
         return path
+    }
     Caos2CobUtil.ARRAY_ACCESS_REGEX.matchEntire(path)?.groupValues?.let { groupValues ->
         return "${groupValues[1]}.${groupValues[2]}"
     }

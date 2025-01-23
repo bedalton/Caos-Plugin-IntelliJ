@@ -21,6 +21,7 @@ import java.io.IOException
  */
 internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val sfcFilePath: String? = null) {
     lateinit var variant: CaosVariant
+
     // Ptr objects are required as objects are accessed by child creation calls
     // while still being constructed by decompiler.
     // As I chose to use immutable data structures, this was problematic.
@@ -34,7 +35,7 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
     internal var readingScenery: Boolean = false
     internal var readingCompoundObject = false
 
-    private var dataHolder:SfcFileDataHolder? = null
+    private var dataHolder: SfcFileDataHolder? = null
 
     /**
      * Responsible for reading the Bytes into an SFC data structure
@@ -92,15 +93,15 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
 
         // Output actual SFC file.
         return SfcFile(
-                variantString = variant.code,
-                mapData = mapData.point(),
-                objects = objects.mapNotNull { it?.pointed!!.point() },
-                scenery = scenery.pointed,
-                scripts = scripts,
-                macros = macros.map { it.point() },
-                scrollPosition = scrollPosition,
-                favoritePlaces = favoritePlaces,
-                speechHistory = speechHistory()
+            variantString = variant.code,
+            mapData = mapData.point(),
+            objects = objects.mapNotNull { it?.pointed!!.point() },
+            scenery = scenery.pointed,
+            scripts = scripts,
+            macros = macros.map { it.point() },
+            scrollPosition = scrollPosition,
+            favoritePlaces = favoritePlaces,
+            speechHistory = speechHistory()
         ).apply {
             // Set the data holder for simplify future calls
             dataHolder = SfcFileDataHolder(this)
@@ -152,6 +153,7 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
             this.getter()
         }
     }
+
     /**
      * Helper function to read in a list of items
      * using an uInt16 for the number of object
@@ -165,6 +167,7 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
     // ==== Convenience methods ==== //
 
     fun uInt8() = byteBuffer.uInt8()
+
     @Suppress("MemberVisibilityCanBePrivate")
     fun peakUInt8(): Int? = byteBuffer.peakUInt8()
     fun uInt16() = byteBuffer.uInt16()
@@ -181,37 +184,46 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
      * Reads in a string given a variable string length
      */
     fun sfcString(): String {
-            return byteBuffer.string(sfcStringLength()).trim(' ', 0x00.toChar())
-        }
+        return byteBuffer.string(sfcStringLength()).trim(' ', 0x00.toChar())
+    }
 
     /**
      * SFC string lengths can be variable, defined by a byte, short or int
      * They are read cascading to the next numeric type as needed
      */
     private fun sfcStringLength(): Int {
-            return uInt8().let { small ->
-                if (small == 0xFF)
-                    uInt16().let { medium ->
-                        if (medium == 0xFFFF)
-                            uInt32()
-                        else
-                            medium
-                    }
-                else
-                    small
-            }
+        return uInt8().let { small ->
+            if (small == 0xFF)
+                uInt16().let { medium ->
+                    if (medium == 0xFFFF)
+                        uInt32()
+                    else
+                        medium
+                }
+            else
+                small
         }
+    }
 
     companion object {
 
         /**
          * Reads an SFC virtual file into a data object.
          */
-        suspend fun readFile(virtualFile: VirtualFile, cache: Boolean = true, safe: Boolean = false): SfcFileDataHolder {
+        suspend fun readFile(
+            virtualFile: VirtualFile,
+            cache: Boolean = true,
+            safe: Boolean = false,
+        ): SfcFileDataHolder {
             // If desired, read from cache. This is preferred. As parsing takes a while
             if (cache) {
                 val cached = virtualFile.getUserData(SFC_DECOMPILED_DATA_KEY)
-                        ?: try { SfcDecompiledFilePropertyPusher.readFromStorage(virtualFile) } catch(e:Exception) { null }
+                    ?: try {
+                        SfcDecompiledFilePropertyPusher.readFromStorage(virtualFile)
+                    } catch (e: Exception) {
+                        e.rethrowAnyCancellationException()
+                        null
+                    }
                 cached?.let {
                     return it
                 }
@@ -224,7 +236,7 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
             // Parse or create data holder
             val holder = try {
                 readRaw(virtualFile)
-            } catch (ae:AssertionError) {
+            } catch (ae: AssertionError) {
                 if (safe) {
                     LOGGER.severe("Failed to parse SFC with error: ${ae.message}")
                     ae.printStackTrace()
@@ -272,19 +284,19 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
         // The 3rd and 4th bytes are discarded and could be anything
         private val headerBytes: List<Byte?> by lazy {
             listOf(
-                    0xFF,
-                    0xFF,
-                    null,
-                    null,
-                    0x00,
-                    0x07,
-                    0x4D,
-                    0x61,
-                    0x70,
-                    0x44,
-                    0x61,
-                    0x74,
-                    0x61
+                0xFF,
+                0xFF,
+                null,
+                null,
+                0x00,
+                0x07,
+                0x4D,
+                0x61,
+                0x70,
+                0x44,
+                0x61,
+                0x74,
+                0x61
             ).map { it?.toByte() }
         }
     }
@@ -296,11 +308,11 @@ internal class SfcReader(internal val byteBuffer: ByteStreamReader, private val 
  * Convenience method to read in bounds objects
  */
 internal fun SfcReader.bounds() = Bounds(
-            left = uInt32(),
-            top = uInt32(),
-            right = uInt32(),
-            bottom = uInt32()
-    )
+    left = uInt32(),
+    top = uInt32(),
+    right = uInt32(),
+    bottom = uInt32()
+)
 
 /**
  * Convenience method to read in file name tokens
@@ -321,7 +333,10 @@ internal open class SfcReadException(message: String) : IOException(message)
 /**
  * SFC exception for out of variant data
  */
-internal class OutOfVariantException(val variant: CaosVariant, message: String = "Invalid variant for SFC. Found '${variant.code}' expected: [C1,C2]") : SfcReadException(message)
+internal class OutOfVariantException(
+    val variant: CaosVariant,
+    message: String = "Invalid variant for SFC. Found '${variant.code}' expected: [C1,C2]",
+) : SfcReadException(message)
 
 /**
  * Convenience method for turning a list of PTR objects to their corresponding actual objects

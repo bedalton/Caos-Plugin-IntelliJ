@@ -70,10 +70,11 @@ private fun SfcReader.createNewFromExisting(requiredType: SfcType, pidIn:Int) : 
 
 private fun SfcReader.read(pidType:SfcType, pid:Int) : Ptr<*> {
     types[storage.size] = pidType
-    if (validSfcType(pidType, SfcType.COMPOUNDOBJECT))
+    if (validSfcType(pidType, SfcType.COMPOUNDOBJECT)) {
         readingCompoundObject = true
-    else if (pidType == SfcType.SCENERY)
+    } else if (pidType == SfcType.SCENERY) {
         readingScenery = true
+    }
 
     val pointer = pidType.pointer(pid)
     storage.add(pointer)

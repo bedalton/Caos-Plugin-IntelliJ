@@ -1,12 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.fixes
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lexer.CaosScriptTypes.CaosScript_NEWLINE
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptWhiteSpaceLike
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getEarliestPrecedingWhitespace
 import com.intellij.codeInspection.IntentionAndQuickFixAction
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.command.WriteCommandAction
@@ -16,9 +11,6 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.SmartPointerManager
-import com.intellij.psi.TokenType
-import com.intellij.psi.TokenType.WHITE_SPACE
-import com.intellij.psi.util.elementType
 
 class DeleteElementFix(private val message: String, elementIn: PsiElement) : IntentionAndQuickFixAction() {
 
