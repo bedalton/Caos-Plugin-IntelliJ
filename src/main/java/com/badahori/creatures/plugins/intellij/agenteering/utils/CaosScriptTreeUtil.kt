@@ -17,13 +17,13 @@ import com.intellij.psi.util.elementType
 import java.util.logging.Logger
 
 
-internal val LOGGER:Logger by lazy {
+internal val LOGGER: Logger by lazy {
     Logger.getLogger("#CaosScriptTreeUtil")
 }
 
 
 fun PsiElement?.getChildrenOfType(iElementType: IElementType): List<PsiElement> {
-    val out:MutableList<PsiElement> = mutableListOf()
+    val out: MutableList<PsiElement> = mutableListOf()
     if (this == null) {
         return out
     }
@@ -36,7 +36,7 @@ fun PsiElement?.getChildrenOfType(iElementType: IElementType): List<PsiElement> 
 }
 
 fun PsiElement?.getPreviousSiblingOfType(siblingElementType: IElementType): PsiElement? {
-    var element:PsiElement? = this ?: return null
+    var element: PsiElement? = this ?: return null
     while (element?.prevSibling != null) {
         element = element.prevSibling
         if (element.hasElementType(siblingElementType)) {
@@ -47,7 +47,7 @@ fun PsiElement?.getPreviousSiblingOfType(siblingElementType: IElementType): PsiE
 }
 
 fun PsiElement?.getPreviousSiblingOfType(vararg siblingElementType: IElementType): PsiElement? {
-    var element:PsiElement? = this ?: return null
+    var element: PsiElement? = this ?: return null
     while (element?.prevSibling != null) {
         element = element.prevSibling
         if (element.elementType in siblingElementType) {
@@ -58,7 +58,7 @@ fun PsiElement?.getPreviousSiblingOfType(vararg siblingElementType: IElementType
 }
 
 fun PsiElement?.getNextSiblingOfType(siblingElementType: IElementType): PsiElement? {
-    var element:PsiElement? = this ?: return null
+    var element: PsiElement? = this ?: return null
     while (element?.nextSibling != null) {
         element = element.nextSibling
         if (element.hasElementType(siblingElementType)) {
@@ -69,7 +69,7 @@ fun PsiElement?.getNextSiblingOfType(siblingElementType: IElementType): PsiEleme
 }
 
 fun PsiElement?.getNextSiblingOfType(vararg siblingElementType: IElementType): PsiElement? {
-    var element:PsiElement? = this ?: return null
+    var element: PsiElement? = this ?: return null
     while (element?.nextSibling != null) {
         element = element.nextSibling
         if (element.elementType in siblingElementType) {
@@ -79,8 +79,8 @@ fun PsiElement?.getNextSiblingOfType(vararg siblingElementType: IElementType): P
     return null
 }
 
-fun <PsiT:PsiElement> PsiElement?.getNextSiblingOfType(siblingClass: Class<PsiT>): PsiElement? {
-    var element:PsiElement? = this ?: return null
+fun <PsiT : PsiElement> PsiElement?.getNextSiblingOfType(siblingClass: Class<PsiT>): PsiElement? {
+    var element: PsiElement? = this ?: return null
     while (element?.nextSibling != null) {
         element = element.nextSibling
         if (siblingClass.isInstance(element)) {
@@ -149,32 +149,40 @@ fun ASTNode.getPreviousNonEmptyNodeIgnoringComments(): ASTNode? {
 
 fun ASTNode?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode = this?.previous ?: return null
-    while (isWhitespace(out, ignoreLineTerminator) || (out.elementType == TokenType.ERROR_ELEMENT && out.textLength == 0)) {
+    while (isWhitespace(
+            out,
+            ignoreLineTerminator
+        ) || (out.elementType == TokenType.ERROR_ELEMENT && out.textLength == 0)
+    ) {
         out = out.previous
             ?: return null
     }
     return out
 }
 
-val ASTNode.previous: ASTNode? get(){
-    return this.treePrev ?: getPrevInTreeParent(this)
-}
+val ASTNode.previous: ASTNode?
+    get() {
+        return this.treePrev ?: getPrevInTreeParent(this)
+    }
 
-val ASTNode.next: ASTNode? get() {
-    return this.treeNext ?: getNextInTreeParent(this)
-}
+val ASTNode.next: ASTNode?
+    get() {
+        return this.treeNext ?: getNextInTreeParent(this)
+    }
 
 
-val PsiElement.previous: PsiElement? get(){
-    return this.node.treePrev?.psi ?: getPrevInTreeParent(this.node)?.psi
-}
+val PsiElement.previous: PsiElement?
+    get() {
+        return this.node.treePrev?.psi ?: getPrevInTreeParent(this.node)?.psi
+    }
 
-val PsiElement.next: PsiElement? get() {
-    return this.node.treeNext?.psi ?: getNextInTreeParent(this.node)?.psi
-}
+val PsiElement.next: PsiElement?
+    get() {
+        return this.node.treeNext?.psi ?: getNextInTreeParent(this.node)?.psi
+    }
 
-private fun getPrevInTreeParent(out:ASTNode?): ASTNode? {
-    var temp:ASTNode = out?.treeParent
+private fun getPrevInTreeParent(out: ASTNode?): ASTNode? {
+    var temp: ASTNode = out?.treeParent
         ?: return null
     while (temp.treePrev == null) {
         temp = temp.treeParent
@@ -182,7 +190,6 @@ private fun getPrevInTreeParent(out:ASTNode?): ASTNode? {
     }
     return temp.treePrev
 }
-
 
 
 fun ASTNode?.getNextPossiblyEmptySibling(): ASTNode? {
@@ -205,8 +212,8 @@ fun ASTNode?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     return out
 }
 
-private fun getNextInTreeParent(out:ASTNode?): ASTNode? {
-    var temp:ASTNode = out?.treeParent
+private fun getNextInTreeParent(out: ASTNode?): ASTNode? {
+    var temp: ASTNode = out?.treeParent
         ?: return null
     while (temp.treeNext == null) {
         temp = temp.treeParent
@@ -231,22 +238,26 @@ fun PsiElement?.getPreviousNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode?
 
 fun PsiElement?.getNextNonEmptyNode(ignoreLineTerminator: Boolean): ASTNode? {
     var out: ASTNode = this?.node?.next ?: return null
-    while (isWhitespace(out, ignoreLineTerminator) || (out.elementType == TokenType.ERROR_ELEMENT && out.textLength == 0)) {
+    while (isWhitespace(
+            out,
+            ignoreLineTerminator
+        ) || (out.elementType == TokenType.ERROR_ELEMENT && out.textLength == 0)
+    ) {
         out = out.next ?: return null
     }
     return out
 }
 
-fun PsiElement.distanceFromStartOfLine() : Int? {
-    val document = this.document?: return null
+fun PsiElement.distanceFromStartOfLine(): Int? {
+    val document = this.document ?: return null
     return distanceFromStartOfLine(document)
 }
 
-fun PsiElement.distanceFromStartOfLine(editor:Editor) : Int {
+fun PsiElement.distanceFromStartOfLine(editor: Editor): Int {
     return this.distanceFromStartOfLine(editor.document)
 }
 
-fun PsiElement.distanceFromStartOfLine(document:Document) : Int {
+fun PsiElement.distanceFromStartOfLine(document: Document): Int {
     val elementStartOffset = this.textRange.startOffset
     val elementLineNumber = document.getLineNumber(elementStartOffset)
     val elementLineStartOffset = document.getLineStartOffset(elementLineNumber)
@@ -254,13 +265,20 @@ fun PsiElement.distanceFromStartOfLine(document:Document) : Int {
     return elementStartOffset - elementLineStartOffset
 }
 
-val PsiElement.lineNumber:Int? get() {
-    val elementStartOffset = this.textRange.startOffset
-    return document?.getLineNumber(elementStartOffset)
-}
+val PsiElement.lineNumber: Int?
+    get() {
+        val elementStartOffset = this.textRange.startOffset
+        return document?.getLineNumber(elementStartOffset)
+    }
 
-private val isWhitespaceAtAll:List<IElementType> = listOf(
-        TokenType.WHITE_SPACE,
+val ASTNode.lineNumber: Int?
+    get() {
+        val elementStartOffset = this.textRange.startOffset
+        return document?.getLineNumber(elementStartOffset)
+    }
+
+private val isWhitespaceAtAll: List<IElementType> = listOf(
+    TokenType.WHITE_SPACE,
 )
 
 fun ASTNode.isDirectlyPrecededByNewline(): Boolean {
@@ -293,7 +311,7 @@ fun ASTNode.getPrevSiblingOnTheSameLineSkipCommentsAndWhitespace(): ASTNode? {
     return null
 }
 
-fun <PsiT: PsiElement> PsiElement?.thisOrParentAs(psiClass:Class<PsiT>) : PsiT? {
+fun <PsiT : PsiElement> PsiElement?.thisOrParentAs(psiClass: Class<PsiT>): PsiT? {
     return if (psiClass.isInstance(this)) {
         psiClass.cast(this)
     } else {
@@ -301,7 +319,10 @@ fun <PsiT: PsiElement> PsiElement?.thisOrParentAs(psiClass:Class<PsiT>) : PsiT? 
     }
 }
 
-fun <PsiT : PsiElement> PsiElement?.hasSharedContextOfTypeStrict(psiElement2: PsiElement?, sharedClass: Class<PsiT>): Boolean {
+fun <PsiT : PsiElement> PsiElement?.hasSharedContextOfTypeStrict(
+    psiElement2: PsiElement?,
+    sharedClass: Class<PsiT>,
+): Boolean {
     return this?.getSharedContextOfType(psiElement2, sharedClass) != null
 }
 
@@ -326,14 +347,17 @@ fun <PsiT : PsiElement> PsiElement?.siblingOfTypeOccursAtLeastOnceBefore(sibling
     return false
 }
 
-fun <StubT : StubElement<*>> filterStubChildren(parent: StubElement<PsiElement>?, stubClass: Class<StubT>): List<StubT> {
+fun <StubT : StubElement<*>> filterStubChildren(
+    parent: StubElement<PsiElement>?,
+    stubClass: Class<StubT>,
+): List<StubT> {
     return if (parent == null) {
         emptyList()
     } else filterStubChildren(parent.childrenStubs, stubClass)
 }
 
 fun <StubT : StubElement<*>> filterStubChildren(children: List<StubElement<*>>?, stubClass: Class<StubT>): List<StubT> {
-    return children?.mapNotNull{ child ->
+    return children?.mapNotNull { child ->
         if (stubClass.isInstance(child))
             stubClass.cast(child)
         else
@@ -350,13 +374,14 @@ internal fun isWhitespace(out: ASTNode?, ignoreLineTerminator: Boolean): Boolean
     return when (out.elementType) {
         TokenType.WHITE_SPACE ->
             return ignoreLineTerminator || !out.textContains('\n')
+
         CaosScriptTypes.CaosScript_COMMA -> ignoreLineTerminator
         else -> false
     }
 }
 
 
-fun <PsiT:PsiElement> List<PsiFile>.collectElementsOfType(type:Class<PsiT>) : List<PsiT> {
+fun <PsiT : PsiElement> List<PsiFile>.collectElementsOfType(type: Class<PsiT>): List<PsiT> {
     return flatMap { file ->
         PsiTreeUtil.collectElementsOfType(file, type)
     }

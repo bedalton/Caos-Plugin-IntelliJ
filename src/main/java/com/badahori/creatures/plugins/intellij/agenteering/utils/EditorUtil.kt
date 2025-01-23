@@ -5,6 +5,7 @@ package com.badahori.creatures.plugins.intellij.agenteering.utils
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptLanguage
 import com.intellij.codeInsight.completion.InsertionContext
 import com.intellij.ide.DataManager
+import com.intellij.lang.ASTNode
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runWriteAction
@@ -183,6 +184,8 @@ object EditorUtil {
 val PsiElement.document : Document? get() {
     return EditorUtil.document(this)
 }
+
+val ASTNode.document get() = psi.document
 
 val PsiElement.editor : Editor? get() {
     return EditorUtil.editor(this)
