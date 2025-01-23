@@ -232,11 +232,12 @@
         <iconProvider
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleIconProvider"
         />
+
         <projectTemplatesFactory
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.template.CaosScriptTemplateFactory"/>
 
-        <moduleConfigurationEditorProvider
-                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleConfigurationEditorProvider"/>
+<!--        <moduleConfigurationEditorProvider-->
+<!--                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleConfigurationEditorProvider"/>-->
 
         <treeStructureProvider
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.BreedTreeProvider"
@@ -284,7 +285,7 @@
                         implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.formatting.CaosScriptFormattingModelBuilder"/>
 
         <lang.commenter
-                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCommenter"
+                implementationClass="com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptSelfManagingCommenter"
                 language="CaosScript"
         />
 
@@ -823,12 +824,14 @@
                 com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptExpandCommasIntentionAction
             </className>
             <category>CAOS</category>
+            <language>CaosScript</language>
         </intentionAction>
         <intentionAction>
             <className>
                 com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectSingleCaosScriptIntentionAction
             </className>
             <category>CAOS</category>
+            <language>CaosScript</language>
         </intentionAction>
 
         <intentionAction>
@@ -836,6 +839,7 @@
                 com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineWithCommasIntentionAction
             </className>
             <category>CAOS</category>
+            <language>CaosScript</language>
         </intentionAction>
 
         <intentionAction>
@@ -843,6 +847,7 @@
                 com.badahori.creatures.plugins.intellij.agenteering.caos.fixes.CaosScriptCollapseNewLineWithSpacesIntentionAction
             </className>
             <category>CAOS</category>
+            <language>CaosScript</language>
         </intentionAction>
 
         <intentionAction>
@@ -850,12 +855,14 @@
                 com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateBitFlagIntegerIntentionAction
             </className>
             <category>CAOS</category>
+            <language>CaosScript</language>
         </intentionAction>
 
         <intentionAction>
             <className>com.badahori.creatures.plugins.intellij.agenteering.caos.completion.GenerateClasIntegerAction
             </className>
             <category>CAOS</category>
+            <language>CaosScript</language>
         </intentionAction>
 
         <!-- ======================== -->

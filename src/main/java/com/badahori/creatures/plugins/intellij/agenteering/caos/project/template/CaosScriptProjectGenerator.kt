@@ -6,9 +6,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.C
 import com.intellij.facet.ui.ValidationResult
 import com.intellij.ide.util.projectWizard.ModuleBuilder
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.rootManager
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.ModifiableModelsProvider
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.ui.ValidationInfo
@@ -53,6 +53,7 @@ open class CaosScriptProjectGenerator : DirectoryProjectGeneratorBase<CaosProjec
         return icon
     }
 
+
     override fun createPeer(): ProjectGeneratorPeer<CaosProjectGeneratorInfo> {
         return CaosProjectGeneratorPeer()
     }
@@ -67,14 +68,14 @@ open class CaosScriptProjectGenerator : DirectoryProjectGeneratorBase<CaosProjec
     ) {
         ApplicationManager.getApplication().runWriteAction {
             val modifiableModel: ModifiableRootModel =
-                ModifiableModelsProvider.SERVICE.getInstance().getModuleModifiableModel(module)
+                ModifiableModelsProvider.getInstance().getModuleModifiableModel(module)
             module.rootManager.modifiableModel.apply {
                 contentEntries.firstOrNull()?.apply {
                     addSourceFolder(baseDir, false)
                 }
                 commit()
             }
-            ModifiableModelsProvider.SERVICE.getInstance().commitModuleModifiableModel(modifiableModel)
+            ModifiableModelsProvider.getInstance().commitModuleModifiableModel(modifiableModel)
         }
     }
 }
