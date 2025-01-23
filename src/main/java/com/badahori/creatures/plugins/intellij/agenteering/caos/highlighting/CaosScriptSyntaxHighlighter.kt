@@ -42,6 +42,7 @@ class  CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
             CaosScriptTypes.CaosScript_EQ_OP_OLD_ -> EQ_OP_KEYWORD
             CaosScriptTypes.CaosScript_EQ_OP_NEW_ -> SYMBOL
             CaosScriptTypes.CaosScript_PICT_DIMENSION -> NUMBER
+            CaosScriptTypes.CaosScript_CAOS2PRAY_HEADER_ITEM -> CAOS2PRAY_HEADER_ITEM
             else -> null
         }
         return if (attrKey != null) arrayOf(attrKey) else EMPTY_KEYS
@@ -99,6 +100,8 @@ class  CaosScriptSyntaxHighlighter : SyntaxHighlighterBase() {
         val INVALID_STRING_ESCAPE: TextAttributesKey = createTextAttributesKey("CaosScript_INVALID_STRING_ESCAPE", DefaultLanguageHighlighterColors.INVALID_STRING_ESCAPE)
         @JvmStatic
         val OFFICIAL_PRAY_TAG: TextAttributesKey = createTextAttributesKey("CaosScript_OFFICIAL_CAOS2PRAY_TAG", DefaultLanguageHighlighterColors.REASSIGNED_LOCAL_VARIABLE)
+        @JvmStatic
+        val CAOS2PRAY_HEADER_ITEM: TextAttributesKey = createTextAttributesKey("CaosScript_CAOS2PRAY_HEADER_ITEM", DefaultLanguageHighlighterColors.KEYWORD)
     }
 }
 
