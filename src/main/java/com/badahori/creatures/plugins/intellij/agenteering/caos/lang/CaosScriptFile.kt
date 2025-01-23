@@ -59,38 +59,56 @@ class CaosScriptFile(
     private val didFormatInitial = AtomicBoolean(false)
     override val variant: CaosVariant?
         get() {
-            return explicitVariant.nullIfUnknown()
-                ?: (getUserData(ExplicitVariantUserDataKey).nullIfUnknown()
-                    ?: ExplicitVariantFilePropertyPusher.readFromStorage(myFile).nullIfUnknown())?.apply {
-                    explicitVariant = this
-                }
-                ?: implicitVariant.nullIfUnknown()
-                ?: (getUserData(ImplicitVariantUserDataKey).nullIfUnknown() ?: ImplicitVariantFilePropertyPusher
-                    .readFromStorage(myFile)
-                    .nullIfUnknown())?.apply {
-                    implicitVariant = this
-                }
-                ?: myFile.cachedVariantExplicitOrImplicit.nullIfUnknown()
-                ?: (this.originalFile as? CaosScriptFile)
-                    ?.myFile
-                    ?.cachedVariantExplicitOrImplicit
-                    .nullIfUnknown()
-                ?: (module ?: originalFile.module)?.variant.nullIfUnknown()
-                ?: myFile.inferVariantHard(project, true)?.apply {
-                    putUserData(ImplicitVariantUserDataKey, this)
-                }
-                ?: (module ?: this.originalFile.module)?.inferVariantHard()?.apply {
-                    putUserData(ImplicitVariantUserDataKey, this)
-                }
-                ?: project.let {
-                    it.settings.defaultVariant.nullIfUnknown()
-                        ?: it.inferVariantHard()?.apply {
-                            putUserData(ImplicitVariantUserDataKey, this)
-                        }
-                            ?.nullIfUnknown()
-                }
-                ?: this.directory?.cachedVariantExplicitOrImplicit
+            return getVariant(true)
         }
+
+    internal fun getVariant(useFileInference: Boolean): CaosVariant? {
+        val variant = explicitVariant.nullIfUnknown()
+            ?: (getUserData(ExplicitVariantUserDataKey).nullIfUnknown()
+                ?: ExplicitVariantFilePropertyPusher.readFromStorage(myFile).nullIfUnknown())?.apply {
+                explicitVariant = this
+            }
+            ?: implicitVariant.nullIfUnknown()
+            ?: (getUserData(ImplicitVariantUserDataKey).nullIfUnknown() ?: ImplicitVariantFilePropertyPusher
+                .readFromStorage(myFile)
+                .nullIfUnknown())?.apply {
+                implicitVariant = this
+            }
+            ?: myFile.cachedVariantExplicitOrImplicit.nullIfUnknown()
+            ?: (this.originalFile as? CaosScriptFile)
+                ?.myFile
+                ?.cachedVariantExplicitOrImplicit
+                .nullIfUnknown()
+            ?: (module ?: originalFile.module)?.variant.nullIfUnknown()
+            ?: myFile.inferVariantHard(project, searchParent = useFileInference)?.apply {
+                putUserData(ImplicitVariantUserDataKey, this)
+            }
+            ?: (module ?: this.originalFile.module)?.inferVariantHard()?.apply {
+                putUserData(ImplicitVariantUserDataKey, this)
+            }
+            ?: project.let {
+                it.settings.defaultVariant.nullIfUnknown()
+                    ?: it.inferVariantHard()?.apply {
+                        putUserData(ImplicitVariantUserDataKey, this)
+                    }
+                        ?.nullIfUnknown()
+            }
+            ?: this.directory?.cachedVariantExplicitOrImplicit
+                .nullIfUnknown()
+        if (variant != null) {
+            return variant
+        }
+        var parent = parent
+        while (parent != null) {
+            parent.cachedVariantExplicitOrImplicit?.let {
+                implicitVariant = it
+                return it
+            }
+            parent = parent.parent
+                ?: return null
+        }
+        return null
+    }
 
     override fun setVariant(variant: CaosVariant?, explicit: Boolean) {
         setVariantBase(virtualFile, newVariant = variant, explicit)

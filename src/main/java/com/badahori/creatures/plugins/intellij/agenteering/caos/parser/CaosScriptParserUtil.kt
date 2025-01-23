@@ -266,7 +266,8 @@ object CaosScriptParserUtil : GeneratedParserUtilBase() {
     fun fileVariant(builder_: PsiBuilder): CaosVariant? {
         val psiFile = psiFile(builder_)
             ?: return builder_.project.settings.defaultVariant
-        (psiFile as? CaosScriptFile)?.variant?.let { variant ->
+
+        (psiFile as? CaosScriptFile)?.getVariant(useFileInference = false)?.let { variant ->
             return variant
         }
         return (psiFile.virtualFile?.cachedVariantExplicitOrImplicit

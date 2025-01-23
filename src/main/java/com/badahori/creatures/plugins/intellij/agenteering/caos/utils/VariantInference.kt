@@ -6,6 +6,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.bedalton.common.util.formatted
 import com.intellij.ide.scratch.ScratchUtil
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.progress.ProgressIndicatorProvider
@@ -30,9 +31,9 @@ fun Module.inferVariantHard(): CaosVariant? {
     cachedVariantExplicitOrImplicit?.let {
         return it
     }
-    val getFilesWithExtension = { extension: String ->
-        getFilesWithExtension(project, this, this.myModuleFile, extension)
-    }
+
+    val getFilesWithExtension = getEmptyFilesListLambda // getFilesWithExtensionLambda(project, this, this.myModuleFile)
+
     val scope = getModuleScope(false)
     return variantInScope(this, scope, getFilesWithExtension)
 }
@@ -47,9 +48,9 @@ fun Project.inferVariantHard(): CaosVariant? {
     this.projectFile?.cachedVariantExplicitOrImplicit?.let {
         return it
     }
-    val getFilesWithExtension = { extension: String ->
-        getFilesWithExtension(this, null, this.projectFile, extension)
-    }
+
+    val getFilesWithExtension = getEmptyFilesListLambda // getFilesWithExtensionLambda(this, null, this.projectFile)
+
     val scope = GlobalSearchScope.everythingScope(this)
     val variant = variantInScope(this, scope, getFilesWithExtension)
     if (variant != null) {
@@ -65,38 +66,34 @@ fun VirtualFile.inferVariantHard(project: Project, searchParent: Boolean = true)
     }
 
     val isDirectory = isDirectory
+
     val directory = if (isDirectory) {
         this
     } else {
         parent
     }
+
     val simple = if (!isDirectory) {
         inferVariantSimple()
     } else {
         null
     }
+
     if (!isDirectory && ScratchUtil.isScratch(this)) {
         setCachedVariant(simple, false)
         return simple
     }
+
     val variant: CaosVariant? = simple
-        ?: if (!isDirectory) {
-            parent?.inferVariantHard(project)
+        ?: if (searchParent) {
+            parent?.inferVariantHard(project, searchParent = false)
         } else {
-            val getFilesWithExtension = { extension: String ->
-                getFilesWithExtension(project, null, this, extension)
-            }
+            val getFilesWithExtension = getEmptyFilesListLambda // getFilesWithExtensionLambda(project, null, this)
+
             // Get without searching subdirectories
             variantInScope(this, GlobalSearchScopes.directoryScope(project, this, false), getFilesWithExtension)
             // Get while searching subdirectories as fallback
                 ?: variantInScope(this, GlobalSearchScopes.directoryScope(project, this, true), getFilesWithExtension)
-        }
-        ?: // If we are allowed to search parent, do so
-        // This should only look one folder up
-        if (searchParent) {
-            parent?.inferVariantHard(project, false)
-        } else {
-            null
         }
 
     setCachedVariant(variant, false)
@@ -106,6 +103,20 @@ fun VirtualFile.inferVariantHard(project: Project, searchParent: Boolean = true)
         directory?.setCachedVariant(variant, false)
     }
     return variant
+}
+
+private val getEmptyFilesListLambda: ((extension: String) -> List<VirtualFile>) by lazy {
+    val emptyFiles = emptyList<VirtualFile>();
+    {
+        emptyFiles
+    }
+}
+
+@Suppress("unused")
+private fun getFilesWithExtensionLambda(project: Project, module: Module?, file: VirtualFile?): (extension: String) -> List<VirtualFile> {
+    return { extension: String ->
+        getFilesWithExtension(project, module, module?.myModuleFile, extension)
+    }
 }
 
 private fun VirtualFile.inferVariantSimple(): CaosVariant? {
@@ -275,7 +286,7 @@ private val DS_ITEMS by lazy {
 private fun variantInScope(
     key: UserDataHolder,
     scope: GlobalSearchScope,
-    filesByExtension: (extension: String) -> List<VirtualFile>
+    filesByExtension: (extension: String) -> List<VirtualFile>,
 ): CaosVariant? {
 
     key.getUserData(VARIANT_WITH_EXPIRY)?.let { variantWithExpiry ->
@@ -304,7 +315,7 @@ private fun variantInScope(
 @Suppress("unused")
 private fun variantInScopeFinal(
     scope: GlobalSearchScope,
-    filesByExtension: (extension: String) -> List<VirtualFile>
+    filesByExtension: (extension: String) -> List<VirtualFile>,
 ): CaosVariant? {
 
     val getFilesByExtension = { extension: String ->
