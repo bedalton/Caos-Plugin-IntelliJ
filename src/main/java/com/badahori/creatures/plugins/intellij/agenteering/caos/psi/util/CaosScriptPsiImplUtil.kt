@@ -2974,7 +2974,11 @@ object CaosScriptPsiImplUtil {
 
     @JvmStatic
     fun getTag(element: CaosScriptAtDirectiveComment): String? {
-        return element.text.substring(2).split('=', limit = 2).firstOrNull()?.trim().nullIfEmpty()
+        return element.text.substring(2).split('=', limit = 2)
+            .firstOrNull()
+            ?.trimStart(' ', '\t', '@', '*')
+            ?.trimEnd()
+            .nullIfEmpty()
     }
 
     @JvmStatic
