@@ -5,8 +5,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.utils.myModuleFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
-import com.badahori.creatures.plugins.intellij.agenteering.utils.warningNotification
 import com.intellij.ide.util.projectWizard.*
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -87,7 +85,7 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
     }
 
     override fun getModuleType(): ModuleType<*> {
-        return CaosScriptModuleType.INSTANCE
+        return CAOS_SCRIPT_MODULE_INSTANCE
     }
 
     override fun setupRootModel(modifiableRootModel: ModifiableRootModel) {
@@ -110,7 +108,7 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
 
     override fun moduleCreated(module: Module) {
         ApplicationManager.getApplication().runWriteAction {
-            val modifiableModel: ModifiableRootModel = ModifiableModelsProvider.SERVICE.getInstance().getModuleModifiableModel(module)
+            val modifiableModel: ModifiableRootModel = ModifiableModelsProvider.getInstance().getModuleModifiableModel(module)
             val variant = (variantComboBox.selectedItem as? CaosVariant) ?: module.project.settings.let { it.lastVariant ?: it.defaultVariant }
             variant?.let {
                 module.putUserData(CaosScriptFile.ExplicitVariantUserDataKey, variant)
@@ -120,7 +118,7 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
                 addModuleToModifiableModel(project, this, module, moduleFileDirectory)
                 commit()
             }
-            ModifiableModelsProvider.SERVICE.getInstance().commitModuleModifiableModel(modifiableModel)
+            ModifiableModelsProvider.getInstance().commitModuleModifiableModel(modifiableModel)
         }
     }
 }
@@ -174,6 +172,7 @@ private fun setupContentEntries(project: Project, module: Module, contentEntries
         }
         contentEntries.addSourceFolder(baseDir, false)
     } catch(e:Exception) {
+        e.rethrowAnyCancellationException()
         errorNotification(project, "Failed to create root directory.")
     }
 }

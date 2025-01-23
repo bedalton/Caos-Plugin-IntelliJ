@@ -1,8 +1,6 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.project.module
 
 import com.intellij.openapi.module.ModuleType
-import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle
-import com.badahori.creatures.plugins.intellij.agenteering.caos.project.template.CaosScriptTemplateFactory
 import icons.CaosScriptIcons
 import javax.swing.Icon
 
@@ -25,9 +23,10 @@ class CaosScriptModuleType : ModuleType<CaosScriptModuleBuilder>("CAOS_MODULE") 
     }
 
     companion object {
-        @JvmStatic
-        val INSTANCE = CaosScriptModuleType()
-
         const val GROUP_NAME = "Caos Script"
     }
+}
+
+internal val CAOS_SCRIPT_MODULE_INSTANCE by lazy {
+    CaosScriptModuleType()
 }

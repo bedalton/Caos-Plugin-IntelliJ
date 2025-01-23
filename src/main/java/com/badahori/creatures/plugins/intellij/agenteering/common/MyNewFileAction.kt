@@ -5,7 +5,7 @@ import com.bedalton.common.util.PathUtil
 import com.bedalton.common.util.className
 import com.bedalton.common.util.ensureEndsWith
 import com.bedalton.common.util.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType
+import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CAOS_SCRIPT_MODULE_INSTANCE
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.intellij.ide.actions.CreateFileFromTemplateAction
@@ -49,7 +49,7 @@ abstract class MyNewFileAction(
             return
         }
         val hasCaosModule = ModuleManager.getInstance(project).modules.any {
-            ModuleType.`is`(it, CaosScriptModuleType.INSTANCE)
+            ModuleType.`is`(it, CAOS_SCRIPT_MODULE_INSTANCE)
         } || FilenameIndex.getAllFilesByExt(project, "cos").isNotEmpty()
         e.presentation.isVisible = hasCaosModule
     }

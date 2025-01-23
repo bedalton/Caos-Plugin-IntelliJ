@@ -101,7 +101,7 @@ object CaosBundleSourcesRegistrationUtil {
             modifiableModel = modifiableModel,
             libraryPath = libraryPath.path
         )
-            ?: modifiableModel.createLibrary(LIBRARY_NAME, CaosLibraryType.LIBRARY)
+            ?: modifiableModel.createLibrary(LIBRARY_NAME, CAOS_PERSISTENT_LIBRARY)
         val libModel = library.modifiableModel
         libModel.addRoot(libraryPath, OrderRootType.SOURCES)
         libModel.commit()
