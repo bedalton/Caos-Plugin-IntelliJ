@@ -18,6 +18,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.vfs.VirtualFile
 
 class CompileCAOS2Action: AnAction(
@@ -38,15 +39,15 @@ class CompileCAOS2Action: AnAction(
         e.presentation.isVisible = isVisible(e)
     }
 
-    private fun isVisible(e: AnActionEvent): Boolean {
+    private fun isVisible(e: AnActionEvent): Boolean  = runReadAction visible@{
         val project = e.project
-                ?: return false
+                ?: return@visible false
         if (project.isDisposed) {
-            return false
+            return@visible false
         }
         val files = e.files
         val fileCount = files.size
-        return when {
+        when {
             fileCount <= 7 -> files.any { isCompilable(it) }
             else -> true
         }
