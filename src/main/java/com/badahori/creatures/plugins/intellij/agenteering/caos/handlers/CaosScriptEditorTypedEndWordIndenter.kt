@@ -30,7 +30,7 @@ class CaosScriptEditorTypedEndWordIndenter(handler: TypedActionHandler) : TypedA
 
         val project = context.getData(CommonDataKeys.PROJECT)
             ?: editor.project
-            ?: throw NullPointerException("Failed to get project from context or editor")
+            ?: return//throw NullPointerException("Failed to get project from context or editor")
 
         if (PsiUtilBase.getLanguageInEditor(editor, project) != CaosScriptLanguage) {
             return
