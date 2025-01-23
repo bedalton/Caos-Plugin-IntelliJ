@@ -21,7 +21,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.*
-import com.intellij.psi.search.FilenameIndex
+//import com.intellij.psi.search.FilenameIndex
 
 
 class CaosProjectStartupActivity : StartupActivity {
@@ -158,14 +158,14 @@ class CaosProjectStartupActivity : StartupActivity {
             })
     }
 
-    private fun hasAnyCaosFiles(project: Project): Boolean {
-        if (project.isDisposed) {
-            return false
-        }
-        return ATTACH_SOURCES_IF_FILE_TYPE_LIST.any { extension ->
-            FilenameIndex.getAllFilesByExt(project, extension).isNotEmpty()
-        }
-    }
+//    private fun hasAnyCaosFiles(project: Project): Boolean {
+//        if (project.isDisposed) {
+//            return false
+//        }
+//        return ATTACH_SOURCES_IF_FILE_TYPE_LIST.any { extension ->
+//            FilenameIndex.getAllFilesByExt(project, extension).isNotEmpty()
+//        }
+//    }
 
     private fun registerProjectRootChangeListener(project: Project) {
         if (project.isDisposed) {
@@ -193,22 +193,22 @@ class CaosProjectStartupActivity : StartupActivity {
             }
             return
         }
-        if (hasAnyCaosFiles(project)) {
-            CaosBundleSourcesRegistrationUtil.register(null, project)
-        }
+//        if (hasAnyCaosFiles(project)) {
+////            CaosBundleSourcesRegistrationUtil.register(null, project)
+//        }
         if (project.isDisposed) {
             this.project = null
             return
         }
-        val modules = ATTACH_SOURCES_IF_FILE_TYPE_LIST.flatMap { extension ->
-            FilenameIndex.getAllFilesByExt(project, extension)
-        }.mapNotNull {
-            it.getModule(project)
-        }.toSet()
-        for (module in modules) {
-            CaosBundleSourcesRegistrationUtil.register(module, project)
-        }
+//        val modules = ATTACH_SOURCES_IF_FILE_TYPE_LIST.flatMap { extension ->
+//            FilenameIndex.getAllFilesByExt(project, extension)
+//        }.mapNotNull {
+//            it.getModule(project)
+//        }.toSet()
+//        for (module in modules) {
+////            CaosBundleSourcesRegistrationUtil.register(module, project)
+//        }
     }
 }
 
-private val ATTACH_SOURCES_IF_FILE_TYPE_LIST = listOf("cos", "cob", "agent", "agents")
+//private val ATTACH_SOURCES_IF_FILE_TYPE_LIST = listOf("cos", "cob", "agent", "agents")
