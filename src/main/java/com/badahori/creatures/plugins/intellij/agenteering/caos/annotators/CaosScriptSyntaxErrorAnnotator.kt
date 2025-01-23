@@ -11,9 +11,10 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.isCaos2Cob
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType.LVALUE
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.C1
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.UNKNOWN
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.C1_STRING
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.STRING
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.parameter
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosApplicationSettingsService
@@ -259,50 +260,65 @@ private fun annotateDoubleQuoteString(
  * Annotates a C1 string as invalid when assigned or used in CV+
  */
 private fun annotateC1String(variant: CaosVariant, element: PsiElement, wrapper: AnnotationHolder) {
-    if (variant.isOld) {
-        if (element.parent?.parent is CaosScriptEqualityExpressionPrime) {
-            wrapper.newErrorAnnotation(
-                message(
-                    "caos.annotator.syntax-error-annotator.string-comparisons-not-allowed",
-                    variant
-                )
-            )
-                .range(element)
-                .create()
-        } else {
-            // String is used as argument in C1e
-            val argument = (element.parent as? CaosScriptArgument)
-            if (argument?.parent is CaosScriptCAssignment) {
-                wrapper
-                    .newErrorAnnotation(
-                        message(
-                            "caos.annotator.syntax-error-annotator.variable-string-assignments-not-allowed",
-                            variant
-                        )
-                    )
-                    .range(element)
-                    .create()
-                return
-            }
-            val parameter = argument?.parameter
-            if (parameter?.type != CaosExpressionValueType.C1_STRING && parameter?.type != CaosExpressionValueType.STRING) {
-                wrapper
-                    .newErrorAnnotation(
-                        message(
-                            "caos.annotator.syntax-error-annotator.strings-are-not-rvalues",
-                            variant
-                        )
-                    )
-                    .range(element)
-                    .create()
-            }
-        }
-    } else {
+    if (variant.isNotOld) {
         wrapper.newErrorAnnotation(message("caos.annotator.syntax-error-annotator.out-of-variant-c1-string"))
             .range(element)
             .withFix(CaosScriptFixQuoteType(element, '"'))
             .create()
+        return
     }
+
+    if (element.parent?.parent is CaosScriptEqualityExpressionPrime) {
+        wrapper.newErrorAnnotation(
+            message(
+                "caos.annotator.syntax-error-annotator.string-comparisons-not-allowed",
+                variant
+            )
+        )
+            .range(element)
+            .create()
+        return
+    }
+
+    // String is used as argument in C1e
+    val argument = (element.parent as? CaosScriptArgument)
+    if (argument?.parent is CaosScriptCAssignment) {
+        wrapper
+            .newErrorAnnotation(
+                message(
+                    "caos.annotator.syntax-error-annotator.variable-string-assignments-not-allowed",
+                    variant
+                )
+            )
+            .range(element)
+            .create()
+        return
+    }
+
+    val parameter = argument?.parameter
+        ?: return
+
+    val type = if (parameter.type == STRING) {
+        C1_STRING
+    } else {
+        parameter.type
+    }
+
+    // Non C1-strings in C1 are handled elsewhere
+    if (type == C1_STRING) {
+        return
+    }
+
+    wrapper
+        .newErrorAnnotation(
+            message(
+                "caos.annotator.syntax-error-annotator.strings-are-not-rvalues",
+                variant,
+                parameter.type.simpleName
+            )
+        )
+        .range(element)
+        .create()
 }
 
 
@@ -493,26 +509,49 @@ private fun annotateByteString(variant: CaosVariant, element: PsiElement, holder
             .create()
         return
     }
-    (element.parent as? CaosScriptRvalue)?.parameter?.let { parameter ->
-        // IF not animation or byte string
-        if (parameter.type != CaosExpressionValueType.BYTE_STRING && parameter.type != CaosExpressionValueType.ANIMATION) {
-            annotateC1String(variant, element, holder)
-        } else if (variant == C1) {
-            if (element is CaosScriptByteString) {
-                if (element.byteStringPoseElementList.size > 1) {
-                    holder
-                        .newErrorAnnotation(
-                            message(
-                                "caos.annotator.syntax-error-annotator.c1e-spaces-in-byte-string",
-                                variant
-                            )
-                        )
-                        .range(element)
-                        .create()
-                }
-            }
-        }
+    val parameter = (element.parent as? CaosScriptRvalue)?.parameter
+        ?: return
+    // IF not animation or byte string
+    if (parameter.type != CaosExpressionValueType.BYTE_STRING && parameter.type != CaosExpressionValueType.ANIMATION) {
+        annotateC1String(variant, element, holder)
+        return
     }
+
+    if (variant != C1 && variant != C2) {
+        return
+    }
+
+    if (element !is CaosScriptByteString) {
+        return
+    }
+
+    if (element.byteStringPoseElementList.size > 1) {
+        holder
+            .newErrorAnnotation(
+                message(
+                    "caos.annotator.syntax-error-annotator.c1e-spaces-in-byte-string",
+                    variant
+                )
+            )
+            .range(element)
+            .create()
+    }
+    val text = element.text
+    if (!text.contains(WHITESPACE)) {
+        return
+    }
+    val fixedText = element.text.replace(WHITESPACE, "")
+    holder
+        .newErrorAnnotationBuilder(
+            message(
+                "caos.annotator.syntax-error-annotator.c1e-spaces-in-byte-string",
+                variant
+            )
+        )
+        .newFix(CaosScriptReplaceElementFix(element, fixedText, message("caos.fixes.byte-string.replace_spaces")))
+        .registerFix()
+        .range(element)
+        .create()
 }
 
 private fun validateCharacterEscape(element: PsiElement, holder: AnnotationHolder) {
