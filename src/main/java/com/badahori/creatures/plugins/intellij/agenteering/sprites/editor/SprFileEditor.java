@@ -1,8 +1,8 @@
 package com.badahori.creatures.plugins.intellij.agenteering.sprites.editor;
 
-import com.bedalton.creatures.sprite.parsers.PhotoAlbum;
 import com.badahori.creatures.plugins.intellij.agenteering.sprites.sprite.SpriteFileHolder;
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader;
+import com.bedalton.creatures.sprite.parsers.PhotoAlbum;
 import com.bedalton.io.bytes.ByteStreamReader;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
@@ -20,8 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CancellationException;
@@ -157,9 +156,7 @@ public class SprFileEditor implements DumbAware {
             );
 
             // Set images in images view
-            ApplicationManager.getApplication().invokeLater(() -> {
-                setImages(images, lastSize, selection, fullFileName);
-            });
+            ApplicationManager.getApplication().invokeLater(() -> setImages(images, lastSize, selection, fullFileName));
         }
     }
 
@@ -396,9 +393,9 @@ public class SprFileEditor implements DumbAware {
         createUIComponents();
         main = new JPanel();
         main.setLayout(new BorderLayout(10, 0));
-        final JScrollPane scrollPane1 = new JScrollPane();
-        main.add(scrollPane1, BorderLayout.CENTER);
-        scrollPane1.setViewportView(imageList);
+        scrollPane = new JScrollPane();
+        main.add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setViewportView(imageList);
         final JPanel panel1 = new JPanel();
         panel1.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
         main.add(panel1, BorderLayout.NORTH);
@@ -410,6 +407,32 @@ public class SprFileEditor implements DumbAware {
         label2.setText("Scale");
         panel1.add(label2);
         panel1.add(scale);
+        reloadSpriteButton = new JButton();
+        reloadSpriteButton.setBorderPainted(false);
+        reloadSpriteButton.setContentAreaFilled(false);
+        reloadSpriteButton.setMaximumSize(new Dimension(30, 30));
+        reloadSpriteButton.setMinimumSize(new Dimension(30, 30));
+        reloadSpriteButton.setPreferredSize(new Dimension(30, 30));
+        reloadSpriteButton.setText("");
+        reloadSpriteButton.setToolTipText(this.$$$getMessageFromBundle$$$("com/badahori/creatures/plugins/intellij/caos-bundle", "sprite-editor.reload-sprite"));
+        panel1.add(reloadSpriteButton);
+    }
+
+    private static Method $$$cachedGetBundleMethod$$$ = null;
+
+    private String $$$getMessageFromBundle$$$(String path, String key) {
+        ResourceBundle bundle;
+        try {
+            Class<?> thisClass = this.getClass();
+            if ($$$cachedGetBundleMethod$$$ == null) {
+                Class<?> dynamicBundleClass = thisClass.getClassLoader().loadClass("com.intellij.DynamicBundle");
+                $$$cachedGetBundleMethod$$$ = dynamicBundleClass.getMethod("getBundle", String.class, Class.class);
+            }
+            bundle = (ResourceBundle) $$$cachedGetBundleMethod$$$.invoke(null, path, thisClass);
+        } catch (Exception e) {
+            bundle = ResourceBundle.getBundle(path);
+        }
+        return bundle.getString(key);
     }
 
     /**
