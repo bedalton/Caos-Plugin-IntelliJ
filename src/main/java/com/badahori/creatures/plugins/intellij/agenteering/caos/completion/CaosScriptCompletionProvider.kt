@@ -9,18 +9,17 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosCommandType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
-import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.case
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.commandStringUpper
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getEnclosingCommandType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind
-import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind.GEN
+import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.StringStubKind.JOURNAL
 import com.badahori.creatures.plugins.intellij.agenteering.caos.stubs.api.like
 import com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.isNotNullOrBlank
-import com.badahori.creatures.plugins.intellij.agenteering.utils.like
-import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
-import com.badahori.creatures.plugins.intellij.agenteering.utils.orFalse
-import com.bedalton.common.util.*
+import com.bedalton.common.util.PathUtil
+import com.bedalton.common.util.stripSurroundingQuotes
 import com.intellij.codeInsight.completion.CompletionParameters
 import com.intellij.codeInsight.completion.CompletionProvider
 import com.intellij.codeInsight.completion.CompletionResultSet
@@ -536,7 +535,8 @@ private fun addUserCreatedStringCompletions(
 
     val virtualFile = element.virtualFile
         ?: return
-    val lock = if (expandedSearch && virtualFile.parent != null) {
+
+    val lock = if ((expandedSearch || !isFileScopedString(quoteStringLiteral)) && virtualFile.parent != null) {
         GlobalSearchScopes.directoryScope(project, virtualFile.parent, false)
     } else {
         GlobalSearchScope.fileScope(
@@ -800,4 +800,23 @@ internal fun quoter(text: String, defaultQuote: Char = '"'): (text: String) -> S
             aString
         }
     }
+}
+
+
+/**
+ * String completion should be limitted to other similar strings in same file only
+ *
+ * @param quoteStringLiteral
+ * @return
+ */
+private fun isFileScopedString(quoteStringLiteral: CaosScriptStringLike): Boolean {
+
+    val parentParent = quoteStringLiteral.getParentOfType(CaosScriptCommandElement::class.java)
+        ?.parent
+        ?: return false
+
+    val commandName = (parentParent as? CaosScriptCommandElement?)?.commandStringUpper
+        ?: return false
+
+    return commandName == "NAME" || commandName == "MAME"
 }
