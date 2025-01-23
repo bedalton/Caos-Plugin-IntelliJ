@@ -14,7 +14,7 @@ interface CaosScriptCaos2Statement : CaosScriptCompositeElement
 
 
 enum class CobTag(vararg val keys: String, val required:Boolean = false, val variant: CaosVariant? = null, val format: CobTagFormat = CobTagFormat.STRING) {
-    AGENT_NAME("Agent Name", "Agent", "C1Name", "C1 Name", "C2Name", "C2 Name", required = true),
+    AGENT_NAME("COB Name", "C1 Name", "C2 Name", "C1Name", "C2Name","Agent-Name", required = true),
     COB_NAME("COB File", "Cob File Name", "COB Name", "COB", required = true),
     QUANTITY_AVAILABLE("Quantity Available", "Quantity", "Qty", "Qty Available", format = CobTagFormat.NUMBER),
     THUMBNAIL("Thumbnail", "Image", "Picture", "Preview", required = true, format = CobTagFormat.SINGLE_IMAGE),
