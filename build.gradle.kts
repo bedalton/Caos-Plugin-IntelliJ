@@ -41,6 +41,7 @@ val creaturesAgentUtilVersion: String by project
 val creaturesSpriteUtilVersion: String by project
 val creaturesCommonCliVersion: String by project
 val creaturesCommonVersion: String by project
+val creaturesBreedRenderSupportVersion: String by project
 
 // Common Libs
 val commonCoreVersion: String by project
@@ -68,19 +69,21 @@ dependencies {
     }
 
     // Creatures libs
-    implementationExcludingKotlin("com.bedalton.creatures:agent-util:$creaturesAgentUtilVersion")
-    implementationExcludingKotlin("com.bedalton.creatures:common-sprite:$creaturesSpriteUtilVersion")
+    implementationExcludingKotlin("com.bedalton.creatures:creatures-agent-util:$creaturesAgentUtilVersion")
+    implementationExcludingKotlin("com.bedalton.creatures:creatures-common-sprite:$creaturesSpriteUtilVersion")
     implementationExcludingKotlin("com.bedalton.creatures:creatures-common:$creaturesCommonVersion")
+    implementationExcludingKotlin("com.bedalton.creatures:creatures-breed-render-support:$creaturesBreedRenderSupportVersion")
 
     // Common Libs
-    implementationExcludingKotlin("com.bedalton:common-core:$commonCoreVersion")
-    implementationExcludingKotlin("com.bedalton:local-files:$localFilesVersion")
-    implementationExcludingKotlin("com.bedalton:common-byte:$byteUtilVersion")
-    implementationExcludingKotlin("com.bedalton:common-log:$commonLogVersion")
+    implementationExcludingKotlin("com.bedalton:bedalton-common-core:$commonCoreVersion")
+    implementationExcludingKotlin("com.bedalton:bedalton-common-files:$localFilesVersion")
+    implementationExcludingKotlin("com.bedalton:bedalton-common-byte:$byteUtilVersion")
+    implementationExcludingKotlin("com.bedalton:bedalton-common-log:$commonLogVersion")
 
 
 
 }
+
 tasks.test {
     useJUnit()
 }
@@ -159,10 +162,8 @@ tasks.getByName("buildPlugin") {
 tasks.getByName<org.jetbrains.intellij.tasks.RunPluginVerifierTask>("runPluginVerifier") {
     this.ideVersions.set(
         listOf(
-            "IU-223.4884.69",
-            "IU-201.8743.12",
-            "IU-201.8743.12",
-            "IC-212.5080.55"
+            "IU-232.4884.69",
+            "IU-242.24807.4"
         )
     )
 }
