@@ -474,13 +474,19 @@ fun VirtualFile.setCachedIfNotCached(variant: CaosVariant?, explicit: Boolean) {
 }
 
 
-val dumpRegex =
-    "\\*+\\s*(Scriptorium|Dump|Scriptorium\\s*Dump).*".toRegex(RegexOption.IGNORE_CASE)
+val dumpKeys = listOf(
+    "scriptorium",
+    "scriptorium dump",
+    "scriptoriumdump",
+    "dump"
+)
 
 val PsiFile.isDump: Boolean
     get() {
         return collectElementsOfType(this, CaosScriptAtDirectiveComment::class.java)
-            .any { dumpRegex.matches(it.text) }
+            .any {
+                it.tag?.lowercase() in dumpKeys
+            }
     }
 
 val CaosScriptFile.isCaos2Pray: Boolean
