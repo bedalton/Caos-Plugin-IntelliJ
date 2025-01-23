@@ -16,15 +16,16 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.FileEditorManagerListener
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.startup.StartupActivity
+import com.intellij.openapi.startup.ProjectActivity
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.*
+
 //import com.intellij.psi.search.FilenameIndex
 
 
-class CaosProjectStartupActivity : StartupActivity {
+class CaosProjectStartupActivity : ProjectActivity {
 
     private var project: Project? = null
 
@@ -87,7 +88,7 @@ class CaosProjectStartupActivity : StartupActivity {
         }
     }
 
-    override fun runActivity(project: Project) {
+    override suspend fun execute(project: Project) {
         this.project = project
 
         Log.setMode(INTELLIJ_LOG, ENABLE_INTELLIJ_LOGS)
