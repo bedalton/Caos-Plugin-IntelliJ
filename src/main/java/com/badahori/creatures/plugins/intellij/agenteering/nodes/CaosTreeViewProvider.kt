@@ -42,8 +42,6 @@ class CaosTreeViewProvider : TreeStructureProvider{
                 null
         }
     }
-
-    override fun getData(selected: MutableCollection<AbstractTreeNode<*>>, dataId: String): Any? = null
 }
 
 
