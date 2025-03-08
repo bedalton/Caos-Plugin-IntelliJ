@@ -79,7 +79,7 @@ private fun VirtualFile.toNode(project:Project, viewSettings: ViewSettings, orig
         }
         "photo album" -> {
             if (originalNode.presentation.locationString.isNullOrBlank()) {
-                PhotoAlbum.creaturesHexMonikerToToken(this.nameWithoutExtension)?.let {
+                creaturesHexMonikerToToken(this.nameWithoutExtension)?.let {
                     originalNode.presentation.locationString = it
                 }
             }
@@ -91,5 +91,16 @@ private fun VirtualFile.toNode(project:Project, viewSettings: ViewSettings, orig
     }
 }
 
-
+internal fun creaturesHexMonikerToToken(hexMoniker: String?): String? {
+    if (hexMoniker == null || hexMoniker.length != 8) {
+        return null
+    }
+    val out = StringBuilder()
+    for (i in 0..3) {
+        val charHex = hexMoniker.substring(i * 2, (i * 2) + 2)
+        val charCode = charHex.toInt(16)
+        out.append(charCode.toChar())
+    }
+    return out.reverse().toString()
+}
 internal const val SORT_WEIGHT = 20
