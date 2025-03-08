@@ -6,11 +6,9 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.C
 import com.intellij.facet.ui.ValidationResult
 import com.intellij.ide.util.projectWizard.ModuleBuilder
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.rootManager
-import com.intellij.openapi.module.Module
-import com.intellij.openapi.roots.ModifiableModelsProvider
-import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.DirectoryProjectGeneratorBase
@@ -64,18 +62,14 @@ open class CaosScriptProjectGenerator : DirectoryProjectGeneratorBase<CaosProjec
         project: Project,
         baseDir: VirtualFile,
         settings: CaosProjectGeneratorInfo,
-        module: Module
+        module: Module,
     ) {
         ApplicationManager.getApplication().runWriteAction {
-            val modifiableModel: ModifiableRootModel =
-                ModifiableModelsProvider.getInstance().getModuleModifiableModel(module)
-            module.rootManager.modifiableModel.apply {
-                contentEntries.firstOrNull()?.apply {
-                    addSourceFolder(baseDir, false)
-                }
-                commit()
+            val modifiableModel = module.rootManager.modifiableModel
+            modifiableModel.contentEntries.firstOrNull()?.apply {
+                addSourceFolder(baseDir, false)
             }
-            ModifiableModelsProvider.getInstance().commitModuleModifiableModel(modifiableModel)
+            modifiableModel.commit()
         }
     }
 }

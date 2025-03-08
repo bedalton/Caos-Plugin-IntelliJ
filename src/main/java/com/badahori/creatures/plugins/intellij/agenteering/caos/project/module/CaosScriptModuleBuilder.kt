@@ -4,7 +4,6 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptF
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.settings
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.badahori.creatures.plugins.intellij.agenteering.utils.myModuleFile
 import com.intellij.ide.util.projectWizard.*
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
@@ -27,14 +26,16 @@ import javax.swing.JList
 class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
 
     private val variantComboBox by lazy {
-        val variantComboBox = com.intellij.openapi.ui.ComboBox(arrayOf(
+        val variantComboBox = com.intellij.openapi.ui.ComboBox(
+            arrayOf(
                 CaosVariant.C1,
                 CaosVariant.C2,
                 CaosVariant.CV,
                 CaosVariant.C3,
                 CaosVariant.DS,
                 CaosVariant.SM
-        ))
+            )
+        )
         variantComboBox.toolTipText = "CAOS Variant"
         variantComboBox.setRenderer { _: JList<out CaosVariant>?, value: CaosVariant, _: Int, isSelected: Boolean, _: Boolean ->
             val label = JLabel(value.fullName)
@@ -51,7 +52,7 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
     }
 
     override fun getCustomOptionsStep(context: WizardContext?, parentDisposable: Disposable?): ModuleWizardStep {
-        return object: ModuleWizardStep() {
+        return object : ModuleWizardStep() {
             override fun getComponent(): JComponent {
                 val landingPage = ModuleLandingPage()
                 return landingPage.panel
@@ -74,7 +75,7 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
 
     override fun createWizardSteps(
         wizardContext: WizardContext,
-        modulesProvider: ModulesProvider
+        modulesProvider: ModulesProvider,
     ): Array<ModuleWizardStep> {
         return emptyArray()
     }
@@ -108,23 +109,27 @@ class CaosScriptModuleBuilder : ModuleBuilder(), ModuleBuilderListener {
 
     override fun moduleCreated(module: Module) {
         ApplicationManager.getApplication().runWriteAction {
-            val modifiableModel: ModifiableRootModel = ModifiableModelsProvider.getInstance().getModuleModifiableModel(module)
-            val variant = (variantComboBox.selectedItem as? CaosVariant) ?: module.project.settings.let { it.lastVariant ?: it.defaultVariant }
+            val variant = (variantComboBox.selectedItem as? CaosVariant) ?: module.project.settings.let {
+                it.lastVariant ?: it.defaultVariant
+            }
             variant?.let {
                 module.putUserData(CaosScriptFile.ExplicitVariantUserDataKey, variant)
                 module.variant = variant
             }
-            module.rootManager.modifiableModel.apply {
-                addModuleToModifiableModel(project, this, module, moduleFileDirectory)
-                commit()
-            }
-            ModifiableModelsProvider.getInstance().commitModuleModifiableModel(modifiableModel)
+            val modifiableModel = module.rootManager.modifiableModel
+            addModuleToModifiableModel(module.project, modifiableModel, module, moduleFileDirectory)
+            modifiableModel.commit()
         }
     }
 }
 
 
-private fun addModuleToModifiableModel(project: Project, modifiableModel: ModifiableRootModel, module: Module, moduleFileDirectory: String?) {
+private fun addModuleToModifiableModel(
+    project: Project,
+    modifiableModel: ModifiableRootModel,
+    module: Module,
+    moduleFileDirectory: String?,
+) {
     modifiableModel.inheritSdk()
     moduleFileDirectory?.let {
         try {
@@ -137,7 +142,8 @@ private fun addModuleToModifiableModel(project: Project, modifiableModel: Modifi
             errorNotification(project, "Failed to create root directory.")
         }
     }
-    (modifiableModel.contentEntries.firstOrNull { it.file != null} ?: modifiableModel.contentEntries.firstOrNull()) ?.apply setupRoot@{
+    (modifiableModel.contentEntries.firstOrNull { it.file != null }
+        ?: modifiableModel.contentEntries.firstOrNull())?.apply setupRoot@{
         setupContentEntries(project, module, this, url)
     }
 }
@@ -146,7 +152,7 @@ private fun setupContentEntries(project: Project, module: Module, contentEntries
     val baseDir = module.myModuleFile
         ?: contentEntries.sourceFolders.firstOrNull { it.file != null }?.file
         ?: VfsUtil.findFileByIoFile(File(url), true)
-    ?: run {
+        ?: run {
             invokeLater {
                 val temp = module.myModuleFile
                     ?: contentEntries
@@ -171,7 +177,7 @@ private fun setupContentEntries(project: Project, module: Module, contentEntries
             }
         }
         contentEntries.addSourceFolder(baseDir, false)
-    } catch(e:Exception) {
+    } catch (e: Exception) {
         e.rethrowAnyCancellationException()
         errorNotification(project, "Failed to create root directory.")
     }
