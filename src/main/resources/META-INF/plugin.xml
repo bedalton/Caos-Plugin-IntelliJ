@@ -1049,12 +1049,6 @@
 <!--                <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"-->
 <!--                              anchor="before"/>-->
             </action>
-            <action id="com.badahori.creatures.plugins.intellij.agenteering.sfc.DumpSfcAction"
-                    class="com.badahori.creatures.plugins.intellij.agenteering.sfc.DumpSfcAction"
-                    icon="CaosScriptIcons.MODULE_ICON">
-<!--                <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="ProjectViewPopupMenuRunGroup"-->
-<!--                              anchor="before"/>-->
-            </action>
         </group>
     </actions>
 </idea-plugin>
