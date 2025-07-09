@@ -124,7 +124,7 @@
   </change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="232.10335.12"/>
+    <idea-version since-build="241"/>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
          on how to target different products -->
@@ -236,8 +236,8 @@
         <projectTemplatesFactory
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.template.CaosScriptTemplateFactory"/>
 
-<!--        <moduleConfigurationEditorProvider-->
-<!--                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleConfigurationEditorProvider"/>-->
+        <moduleConfigurationEditorProvider
+                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosModuleConfigurationEditorProvider"/>
 
         <treeStructureProvider
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.nodes.BreedTreeProvider"

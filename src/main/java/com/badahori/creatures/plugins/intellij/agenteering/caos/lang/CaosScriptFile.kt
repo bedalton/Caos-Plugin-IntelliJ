@@ -2,7 +2,7 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.lang
 
-import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions
+import com.bedalton.creatures.agentutil.pray.compiler.PrayCompileOptions
 import com.badahori.creatures.plugins.intellij.agenteering.att.actions.getAnyPossibleSprite
 import com.badahori.creatures.plugins.intellij.agenteering.att.lang.AttFileType
 import com.badahori.creatures.plugins.intellij.agenteering.att.parser.AttFileData
@@ -35,6 +35,7 @@ import com.intellij.openapi.application.runUndoTransparentWriteAction
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.module.ModuleUtil
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
@@ -111,28 +112,15 @@ class CaosScriptFile(
     }
 
     override fun setVariant(variant: CaosVariant?, explicit: Boolean) {
-        setVariantBase(virtualFile, newVariant = variant, explicit)
-        setVariantBase(myFile, variant, explicit)
+        setVariantBase(virtualFile, newVariant = variant.nullIfNotConcrete(), explicit)
+        setVariantBase(myFile, variant.nullIfNotConcrete(), explicit)
         if (explicit) {
-            explicitVariant = variant
+            explicitVariant = variant.nullIfNotConcrete()
             implicitVariant = null
             setVariantBase(virtualFile, newVariant = null, false)
             setVariantBase(myFile, newVariant = null, false)
-            if (variant != this.variant) {
-                LOGGER.severe("Failed to set variant on PSI file. Expected: ${variant?.code}; Found: ${this.variant?.code}")
-            }
-            ExplicitVariantFilePropertyPusher.readFromStorage(myFile).let {
-                if (it != variant) {
-                    LOGGER.severe("Failed to set variant on virtual file. Expected: ${variant?.code}; Found: ${it?.code}")
-                }
-            }
         } else {
             implicitVariant = variant
-            ImplicitVariantFilePropertyPusher.readFromStorage(myFile).let {
-                if (it != variant) {
-                    LOGGER.severe("Failed to set variant on virtual file. Expected: ${variant?.code}; Found: ${it?.code}")
-                }
-            }
         }
 
         directory?.setCachedVariant(variant, false)
@@ -344,7 +332,7 @@ class CaosScriptFile(
 
 val PsiFile.mModule: Module?
     get() {
-        return virtualFile?.let { ProjectRootManager.getInstance(project).fileIndex.getModuleForFile(it) }
+        return virtualFile?.let { ModuleUtil.findModuleForFile(this) }
     }
 
 val PsiFile.module: Module?

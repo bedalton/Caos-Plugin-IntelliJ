@@ -29,7 +29,7 @@ class CaosSpellcheckingStrategy : SpellcheckingStrategy() {
     }
 
     override fun getRegularFixes(
-        element: PsiElement?,
+        element: PsiElement,
         textRange: TextRange,
         useRename: Boolean,
         typo: String?,

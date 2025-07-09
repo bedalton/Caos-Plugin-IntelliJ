@@ -33,7 +33,7 @@ class BreedSpriteIndex : ScalarIndexExtension<BreedPartKey>() {
 
     companion object {
         val NAME: ID<BreedPartKey, Void> by lazy {
-            ID.create("com.badahori.creatures.plugins.intellij.agenteering.sprites.indices.BreedSpriteIndex")
+            ID.create("creatures.indices.BreedSpriteIndex")
         }
 
         private const val THIS_VERSION = 4

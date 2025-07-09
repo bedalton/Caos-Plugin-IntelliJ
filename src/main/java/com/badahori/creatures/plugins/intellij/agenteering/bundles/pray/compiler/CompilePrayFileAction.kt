@@ -10,11 +10,11 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifica
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.bedalton.common.util.className
 import com.bedalton.common.util.nullIfEmpty
-import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions
-import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptionsWithLinkWithFileName
-import com.bedalton.creatures.agents.pray.compiler.PrayCompilerTask
-import com.bedalton.creatures.agents.pray.compiler.compilePrayAndWrite
-import com.bedalton.creatures.agents.pray.compiler.pray.PrayParseValidationFailException
+import com.bedalton.creatures.agentutil.pray.compiler.PrayCompileOptions
+import com.bedalton.creatures.agentutil.pray.compiler.PrayCompileOptionsWithLinkWithFileName
+import com.bedalton.creatures.agentutil.pray.compiler.PrayCompilerTask
+import com.bedalton.creatures.agentutil.pray.compiler.compilePrayAndWrite
+import com.bedalton.creatures.agentutil.pray.compiler.pray.PrayParseValidationFailException
 import com.bedalton.log.logProgress
 import com.bedalton.vfs.LocalFileSystem
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -28,7 +28,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import icons.CaosScriptIcons
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch

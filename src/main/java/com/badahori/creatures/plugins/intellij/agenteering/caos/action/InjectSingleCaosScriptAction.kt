@@ -288,7 +288,7 @@ private fun getVariant(project: Project, editor: Editor?, virtualFile: VirtualFi
         ?: element.variant
         ?: element.containingCaosFile?.variant
         ?: project.inferVariantHard()
-        ?: askUserForVariant(project)
+        ?: askUserForVariant(project, emptyArray())
 }
 
 private fun caosInject(

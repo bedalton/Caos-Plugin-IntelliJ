@@ -13,7 +13,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScri
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptComment
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptVisitor
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
-import com.bedalton.creatures.agents.pray.compiler.pray.PrayDataValidator
+import com.bedalton.creatures.agentutil.pray.compiler.pray.PrayDataValidator
 import com.bedalton.vfs.LocalFileSystem
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.LocalQuickFix

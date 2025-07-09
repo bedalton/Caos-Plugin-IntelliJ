@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.Implici
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.bedalton.common.util.className
+import com.intellij.lang.documentation.ide.impl.DocumentationManager
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.module.Module
@@ -48,8 +49,9 @@ fun HasVariant.setVariantBase(virtualFile: VirtualFile?, newVariant: CaosVariant
     if (ApplicationManager.getApplication().isDispatchThread) {
         runWriteAction {
             try {
-                if (virtualFile.parent != null)
+                if (virtualFile.parent != null) {
                     FileContentUtilCore.reparseFiles(virtualFile)
+                }
             } catch (e: Exception) {
                 e.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to reparse file. Error: ${e.className}(${e.message})")

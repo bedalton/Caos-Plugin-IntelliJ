@@ -98,7 +98,7 @@ private const val PLUGIN_ID = "com.badahori.creatures.plugins.intellij.agenteeri
 val PLUGIN: IdeaPluginDescriptor?
     get() {
         val pluginId = PluginId.getId(PLUGIN_ID)
-        return PluginManagerCore.getPlugins().firstOrNull { it.pluginId == pluginId }
+        return PluginManagerCore.plugins.firstOrNull { it.pluginId == pluginId }
     }
 
 

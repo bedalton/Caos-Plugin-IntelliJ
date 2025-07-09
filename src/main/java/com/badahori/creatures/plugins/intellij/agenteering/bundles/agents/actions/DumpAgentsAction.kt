@@ -7,12 +7,13 @@ import com.badahori.creatures.plugins.intellij.agenteering.bundles.agents.lang.A
 import com.badahori.creatures.plugins.intellij.agenteering.caos.action.files
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
+import com.badahori.creatures.plugins.intellij.agenteering.utils.like
 import com.badahori.creatures.plugins.intellij.agenteering.utils.VirtualFileUtil
 import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.VirtualFileStreamReader
 import com.bedalton.common.structs.Pointer
-import com.bedalton.creatures.agents.pray.parser.parsePrayAgentToFiles
-import com.bedalton.creatures.agents.util.RelativeFileSystem
+import com.bedalton.creatures.agentutil.pray.parser.parsePrayAgentToFiles
+import com.bedalton.creatures.agentutil.util.RelativeFileSystem
 import com.bedalton.io.bytes.MemoryByteStreamReader
 import com.bedalton.vfs.LocalFileSystem
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -47,11 +48,14 @@ class DumpAgentAction : AnAction(), DumbAware {
 
     override fun update(e: AnActionEvent) {
         val files = e.files
-        if (files.isEmpty() || files.none { it.fileType == AgentFileType }) {
+        if (files.isEmpty() || files.none { it.fileType == AgentFileType || it.extension like "agent" || it.extension like "agents" }) {
+            LOGGER.info("No agents files is empty for DumpAgentAction")
             e.presentation.isVisible = false
             return
         }
+        LOGGER.info("Agent files found for DumpAgentAction")
         e.presentation.isVisible = true
+        e.presentation.isEnabled = true
     }
 
     override fun actionPerformed(e: AnActionEvent) {
@@ -173,10 +177,11 @@ class DumpAgentAction : AnAction(), DumbAware {
         failed: Pointer<Int>,
         createdFiles: MutableList<Pair<VirtualFile, VirtualFile>>
     ) {
-        val targetPath = if (files.size > 1 && useChildDirectories)
+        val targetPath = if (files.size > 1 && useChildDirectories) {
             parentPath + '/' + file.nameWithoutExtension
-        else
+        } else {
             parentPath
+        }
         val parentFile = VirtualFileUtil.ensureParentDirectory(targetPath, createdFiles)
         // Try and dump agent
         // Dump may throw exception on agent parse failure

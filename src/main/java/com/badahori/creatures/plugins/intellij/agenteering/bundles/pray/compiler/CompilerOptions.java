@@ -1,7 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.bundles.pray.compiler;
 
-import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions;
-import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptionsImpl;
+import com.bedalton.creatures.agentutil.pray.compiler.PrayCompileOptions;
+import com.bedalton.creatures.agentutil.pray.compiler.PrayCompileOptionsImpl;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;

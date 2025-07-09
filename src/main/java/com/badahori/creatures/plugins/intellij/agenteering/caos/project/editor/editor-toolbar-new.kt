@@ -7,6 +7,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.action.InjectorA
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFile
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.module
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfNotConcrete
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInjectorApplicationSettingsService
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.allGameInterfaceNames
@@ -28,6 +29,7 @@ import com.intellij.openapi.application.runWriteAction
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.openapi.progress.ProgressIndicatorProvider
+import com.intellij.openapi.progress.runBackgroundableTask
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
@@ -184,7 +186,7 @@ private fun populate(
     val injectorActionGroup = pointer.element?.let { caosFile ->
         InjectorActionGroup(caosFile)
     } ?: return
-    val initialInjectorsList = injectorActionGroup.getChildren(null)
+    val initialInjectorsList = injectorActionGroup.getActions()
     val injectorModel = DefaultComboBoxModel(initialInjectorsList)
     injectors.model = injectorModel
     var lastInjector: AnAction?
@@ -321,26 +323,6 @@ private fun populate(
         DaemonCodeAnalyzer.getInstance(project).restart(file)
     }
 
-    val moduleVariant = pointer.element?.module?.variant
-    val showVariantSelect = try {
-        (moduleVariant == null ||
-                moduleVariant == CaosVariant.UNKNOWN ||
-                moduleVariant.isC3DS) &&
-                pointer.element?.virtualFile !is CaosVirtualFile
-    } catch (e: Exception) {
-        e.rethrowAnyCancellationException()
-        false
-    }
-
-    if (showVariantSelect) {
-        if (moduleVariant?.isC3DS == true) {
-            variantSelect.removeAllItems()
-            variantSelect.addItem("C3")
-            variantSelect.addItem("DS")
-        }
-    }
-
-
     // Listener for when CAOS2Compiler directive changes variants
     runReadAction run@{
         pointer.element?.let { caosFile ->
@@ -372,10 +354,38 @@ private fun populate(
 
     }
 
-    // If variant is unknown, allow for variant selection
-    if (!showVariantSelect) {
-        // If variant is set in module hide variant select
-        variantPanel.isVisible = false
+    runBackgroundableTask("Initializing variant select", project, false) {
+        val moduleVariant = runReadAction {
+            pointer.element?.module?.variant
+                ?.nullIfNotConcrete()
+        }
+        val fileVariant = runReadAction {
+            pointer.element
+                ?.variant
+        }
+        val showVariantSelect = if (fileVariant == null || moduleVariant == null) {
+            true
+        } else if (fileVariant != moduleVariant) {
+            true
+        } else {
+            try {
+                moduleVariant.isC3DS && pointer.element?.virtualFile !is CaosVirtualFile
+            } catch (e: Exception) {
+                e.rethrowAnyCancellationException()
+                false
+            }
+        }
+
+        if (showVariantSelect) {
+            if (fileVariant?.isC3DS == true && moduleVariant?.isC3DS == true) {
+                variantSelect.removeAllItems()
+                variantSelect.addItem("C3")
+                variantSelect.addItem("DS")
+            }
+        } else {
+            // If variant is set in module hide variant select
+            variantPanel.isVisible = false
+        }
     }
 
     CaosInjectorApplicationSettingsService.addSettingsChangedListener(fileEditor) { _, settings ->
@@ -426,7 +436,7 @@ private fun populate(
                         }
                         pointer.element?.lastInjector = created
                         invokeLater {
-                            injectorActionGroup.getChildren(null).let { action ->
+                            injectorActionGroup.getActions().let { action ->
                                 injectorModel.removeAllElements()
                                 injectorModel.addAll(action.toList())
                                 val thisAction = action
@@ -656,7 +666,6 @@ private class RunInjectorAction(
     }
 
     override fun update(e: AnActionEvent) = runReadAction {
-            super.update(e)
             var injector: AnAction? = mAction
             if (injector == null || injector is AddGameInterfaceAction) {
                 // Get the selected item

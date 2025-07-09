@@ -40,7 +40,7 @@ class CaosModuleSettingsComponent : PersistentStateComponent<CaosModuleSettings>
     }
 
     override var ignoredCatalogueTags: List<String>
-        get() = getState().ignoredCatalogueTags
+        get() = state.ignoredCatalogueTags
         set(ignoredTags) {
             val state = getState()
             this.loadState(
@@ -66,7 +66,9 @@ data class CaosModuleSettings(
     val ignoredFiles: List<String> = mutableListOf(),
     val lastGameInterfaceName: String? = null,
     @Attribute(converter = StringListConverter::class)
-    val ignoredCatalogueTags: List<String> = emptyList()
+    val ignoredCatalogueTags: List<String> = emptyList(),
+    val sourceDirectories: List<String> = emptyList(),
+    val ignoredSourceDirectories: List<String> = emptyList(),
 ) {
     companion object {
     }

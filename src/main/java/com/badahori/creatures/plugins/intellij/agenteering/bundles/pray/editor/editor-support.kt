@@ -8,7 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosBalloonN
 import com.badahori.creatures.plugins.intellij.agenteering.injector.CaosNotifications
 import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
 import com.bedalton.common.util.PathUtil
-import com.bedalton.creatures.agents.pray.compiler.PrayCompileOptions
+import com.bedalton.creatures.agentutil.pray.compiler.PrayCompileOptions
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.invokeLater
 import com.intellij.openapi.fileEditor.FileEditor

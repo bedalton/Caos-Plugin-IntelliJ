@@ -7,6 +7,6 @@ import com.intellij.psi.stubs.StubIndexKey;
 public class IndexKeyUtil {
 
     public static <Key, PsiT extends PsiElement, IndexT extends StubIndexExtension<Key,PsiT>> StubIndexKey<Key, PsiT> create(Class<IndexT> clazz) {
-        return StubIndexKey.createIndexKey(clazz.getCanonicalName());
+        return StubIndexKey.createIndexKey("creatures.indices." + clazz.getSimpleName());
     }
 }

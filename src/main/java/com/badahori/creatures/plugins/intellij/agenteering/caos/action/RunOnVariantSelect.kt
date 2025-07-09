@@ -10,7 +10,7 @@ internal object RunOnVariantSelect {
         project: Project,
         action: (variant: CaosVariant) -> T?
     ): T? {
-        val variant = askUserForVariant(project)
+        val variant = askUserForVariant(project, emptyArray())
             ?: return null
         return computeDelegated {
             action(variant)

@@ -28,7 +28,7 @@ class CaseInsensitiveFileIndex : ScalarIndexExtension<FileNameInfo>() {
 
     companion object {
         val NAME = ID.create<FileNameInfo, Void>(
-            "com.badahori.creatures.plugins.intellij.agenteering.indices.CaseInsensitiveFileIndex"
+            "creatures.indices.CaseInsensitiveFileIndex"
         )
         private val INPUT_FILTER = InputFilter { true }
 

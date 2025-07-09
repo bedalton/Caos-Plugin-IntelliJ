@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import java.util.function.Supplier
+import javax.swing.Icon
 
 open class IncrementPartPoseAction (
     private val partChar: Char,
@@ -22,7 +23,7 @@ open class IncrementPartPoseAction (
         val partName = PartNames.getPartName(partChar)
         AttMessages.message("increment-part-pose-description", partName.lowercase())
     },
-    null,
+    null as Icon?,
 ), AttEditorAction  {
 
     override fun getActionUpdateThread(): ActionUpdateThread {

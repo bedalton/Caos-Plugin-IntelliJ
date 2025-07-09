@@ -105,8 +105,8 @@ kotlin {
     tasks.withType<KotlinCompile>().all {
         kotlinOptions {
             this.jvmTarget = javaVersion
-            this.apiVersion = "1.7"
-            this.languageVersion = "1.7"
+            this.apiVersion = "1.9"
+            this.languageVersion = "1.9"
             this.freeCompilerArgs += listOf(
                 "-Xjvm-default=all-compatibility",
             )
@@ -137,7 +137,6 @@ intellij {
     updateSinceUntilBuild.set(false)
     sandboxDir.set("/Users/daniel/Projects/AppsAndDevelopment/Intellij Plugins/Plugin Sandbox")
     plugins.set(listOf("PsiViewer:$psiViewerVersion"))//, "com.mallowigi.idea:10.0"))
-
 }
 
 tasks.register<CaosDefGeneratorTask>("generateCaosDef") {
@@ -150,19 +149,24 @@ tasks.getByName<org.jetbrains.intellij.tasks.RunIdeTask>("runIde") {
     dependsOn("generateCaosDef")
 }
 
-tasks.getByName("jar") {
-    dependsOn("generateCaosDef")
+listOf(
+    "jar",
+    "instrumentedJar",
+    "buildPlugin",
+    "runIde",
+    "compileTestKotlin",
+    "compileKotlin"
+).forEach {
+    tasks.getByName(it) {
+        dependsOn("generateCaosDef")
+    }
 }
 
-
-tasks.getByName("buildPlugin") {
-    dependsOn("generateCaosDef")
-}
 
 tasks.getByName<org.jetbrains.intellij.tasks.RunPluginVerifierTask>("runPluginVerifier") {
+    this.freeArgs.addAll("-mute", "TemplateWordInPluginId")
     this.ideVersions.set(
         listOf(
-            "IU-232.4884.69",
             "IU-242.24807.4"
         )
     )

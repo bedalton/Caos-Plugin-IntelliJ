@@ -11,6 +11,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import java.util.function.Supplier
+import javax.swing.Icon
 
 open class HidePartAction (
     private val partChar: Char
@@ -23,7 +24,7 @@ open class HidePartAction (
         val partName = PartNames.getPartName(partChar)
         AttMessages.message("hide-part-description", partName.lowercase())
     },
-    null,
+    null as Icon?,
 ), AttEditorAction {
 
     override fun getActionUpdateThread(): ActionUpdateThread {

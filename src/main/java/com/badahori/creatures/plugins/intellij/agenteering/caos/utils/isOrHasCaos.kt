@@ -1,6 +1,7 @@
 package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
+import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.bedalton.common.structs.Pointer
 import com.intellij.openapi.actionSystem.DataKey
 import com.intellij.openapi.application.runReadAction
@@ -39,23 +40,30 @@ internal fun isOrHasCaosFile(file: VirtualFile): Boolean = runReadAction {
 
 private fun isOrHasCaosFile(file: VirtualFile, count: Pointer<Int>): Boolean {
     var isCaos = false
+    LOGGER.info("File<${file.path}> isOrHasCAOS?...")
     VfsUtilCore.visitChildrenRecursively(file, object : VirtualFileVisitor<Boolean>() {
 
         override fun visitFile(file: VirtualFile): Boolean {
-            if (count.value > MAX_FILES_CHECKED) {
+            LOGGER.info("Visit file: <${file.path}>...")
+
+            if (count.value++ > MAX_FILES_CHECKED) {
+                LOGGER.info("Too many files...")
                 isCaos = true
                 return false
             }
 
             if (isCaos) {
+                LOGGER.info("Already found CAOS file...")
                 return false
             }
 
             if (file.isDirectory) {
+                LOGGER.info("Is a directory...")
                 return true
             }
 
             if (file.fileType == CaosScriptFileType.INSTANCE || file.extension?.lowercase() in expectedExtensions) {
+                LOGGER.info("File <${file.name}> is CAOS...")
                 isCaos = true
             }
 
@@ -64,15 +72,20 @@ private fun isOrHasCaosFile(file: VirtualFile, count: Pointer<Int>): Boolean {
 
         override fun visitFileEx(file: VirtualFile): Result {
             if (file.isDirectory && file.name == ".idea") {
+                LOGGER.info("Skipping .idea...")
                 return SKIP_CHILDREN
             }
             return if (isCaos || count.value > MAX_FILES_CHECKED) {
+                LOGGER.info("isCaos or tooManyFiles...")
                 SKIP_CHILDREN
             } else {
-                return super.visitFileEx(file)
+                return super.visitFileEx(file).apply {
+                    LOGGER.info("Visit next child? $this...")
+                }
             }
         }
     })
+    LOGGER.info("File<${file.path}> isOrHasCAOS? $isCaos")
     return isCaos
 }
 //

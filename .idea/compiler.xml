@@ -13,6 +13,7 @@
       <entry name="!?*.aj" />
       <entry name="?*.dylib" />
       <entry name="!?*.dic" />
+      <entry name="*.caosdef" />
     </wildcardResourcePatterns>
     <bytecodeTargetLevel target="17" />
   </component>

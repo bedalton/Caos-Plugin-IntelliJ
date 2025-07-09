@@ -89,7 +89,7 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
         private const val THIS_VERSION = 8
         const val VERSION = THIS_VERSION + BreedPartKey.VERSION + BreedKeyIndexer.VERSION + BreedPartDescriptor.VERSION
         val INDEX_NAME: ID<BreedPartKey, Void> =
-            ID.create("com.badahori.creatures.plugins.intellij.agenteering.att.indices.AttFilesIndex")
+            ID.create("creatures.indices.AttFilesIndex")
 
         @JvmStatic
         fun findMatching(

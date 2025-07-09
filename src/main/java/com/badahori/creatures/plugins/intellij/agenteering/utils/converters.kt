@@ -21,8 +21,8 @@ private val json = Json {
 }
 
 internal class CaosVariantConverter : Converter<CaosVariant?>() {
-    override fun toString(value: CaosVariant): String {
-        return value.code
+    override fun toString(value: CaosVariant?): String? {
+        return value?.code
     }
 
     override fun fromString(value: String): CaosVariant? {
@@ -118,8 +118,8 @@ internal class StringListConverter : Converter<List<String>>() {
 }
 
 internal class GameInterfaceConverter : Converter<GameInterfaceName?>() {
-    override fun toString(values: GameInterfaceName): String {
-        return values.toJSON().toByteArray(Charsets.UTF_8).toBase64()
+    override fun toString(values: GameInterfaceName?): String? {
+        return values?.toJSON()?.toByteArray(Charsets.UTF_8)?.toBase64()
     }
 
     override fun fromString(value: String): GameInterfaceName? {
@@ -208,7 +208,10 @@ abstract class JsonToXMLStringConverter<T>: Converter<T>() {
         }
     }
 
-    override fun toString(value: T & Any): String? {
+    override fun toString(value: T): String? {
+        if (value == null) {
+            return null
+        }
         return try {
             json.encodeToString(serializer, value)
                 .also {
