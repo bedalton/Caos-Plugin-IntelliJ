@@ -28,7 +28,7 @@ internal fun generatorValuesListDefinition(valuesList: CaosValuesList) : String 
                 .append(" = ")
                 .append(value.name)
         value.description?.nullIfEmpty()?.let {description ->
-            builder.append(" - ").append(description)
+            builder.append(" - ").append(description.replace("(\r?\n)+".toRegex(), " "))
         }
     }
     return builder.append("\n}").toString()
