@@ -35,7 +35,7 @@ class AttFilesByVariantIndex : ScalarIndexExtension<CaosVariant>() {
     companion object {
         // Index name identifier
         val INDEX_NAME: ID<CaosVariant, Void> =
-            ID.create("com.badahori.creatures.plugins.intellij.agenteering.att.AttByVariantIndex")
+            ID.create("bedalton.creatures.indices.AttByVariantIndex")
 
         // Update this index's version number, NOT const "VERSION"
         private const val THIS_VERSION = 2
@@ -89,7 +89,7 @@ class AttFilesIndex : ScalarIndexExtension<BreedPartKey>() {
         private const val THIS_VERSION = 8
         const val VERSION = THIS_VERSION + BreedPartKey.VERSION + BreedKeyIndexer.VERSION + BreedPartDescriptor.VERSION
         val INDEX_NAME: ID<BreedPartKey, Void> =
-            ID.create("creatures.indices.AttFilesIndex")
+            ID.create("bedalton.creatures.indices.AttFilesIndex")
 
         @JvmStatic
         fun findMatching(

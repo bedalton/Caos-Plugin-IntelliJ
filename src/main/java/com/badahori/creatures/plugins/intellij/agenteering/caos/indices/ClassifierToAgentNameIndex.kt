@@ -57,7 +57,7 @@ class ClassifierToAgentNameIndex : FileBasedIndexExtension<String, String>() {
 
 private const val VERSION = 1
 
-private val NAME: ID<String, String> = ID.create("bedalton.creatures.ClassifierToAgentNameIndex")
+private val NAME: ID<String, String> = ID.create("bedalton.creatures.indices.ClassifierToAgentNameIndex")
 
 private val filter: FileBasedIndex.InputFilter by lazy {
     FileBasedIndex.InputFilter { file ->
