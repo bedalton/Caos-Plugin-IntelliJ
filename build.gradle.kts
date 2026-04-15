@@ -15,9 +15,9 @@ configurations {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.jvm")
-    id("org.jetbrains.intellij")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.kotlinJvm)
+    alias(libs.plugins.idea)
+    alias(libs.plugins.kotlinxSerialization)
 }
 
 val projectVersion: String by project
@@ -59,26 +59,26 @@ repositories {
 dependencies {
 
     //Kotlin / Kotlinx
-    implementationExcludingKotlin("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
+    implementationExcludingKotlin(libs.kotlinx.serialization)
 
     // Other Libs
-    implementationExcludingKotlin("com.soywiz.korlibs.korim:korim:$korImagesVersion")
-    implementationExcludingKotlin("org.apache.commons:commons-imaging:1.0-alpha2")
-    testImplementation("junit", "junit", "4.13") {
+    implementationExcludingKotlin(libs.korim)
+    implementationExcludingKotlin(libs.commons.imaging)
+    testImplementation(libs.junit) {
         excludeKotlin()
     }
 
     // Creatures libs
-    implementationExcludingKotlin("com.bedalton.creatures:creatures-agent-util:$creaturesAgentUtilVersion")
-    implementationExcludingKotlin("com.bedalton.creatures:creatures-common-sprite:$creaturesSpriteUtilVersion")
-    implementationExcludingKotlin("com.bedalton.creatures:creatures-common:$creaturesCommonVersion")
-    implementationExcludingKotlin("com.bedalton.creatures:creatures-breed-render-support:$creaturesBreedRenderSupportVersion")
+    implementationExcludingKotlin(libs.creatures.agent.util)
+    implementationExcludingKotlin(libs.creatures.common.sprite)
+    implementationExcludingKotlin(libs.creatures.common.core)
+    implementationExcludingKotlin(libs.creatures.breed.render.support)
 
     // Common Libs
-    implementationExcludingKotlin("com.bedalton:bedalton-common-core:$commonCoreVersion")
-    implementationExcludingKotlin("com.bedalton:bedalton-common-files:$localFilesVersion")
-    implementationExcludingKotlin("com.bedalton:bedalton-common-byte:$byteUtilVersion")
-    implementationExcludingKotlin("com.bedalton:bedalton-common-log:$commonLogVersion")
+    implementationExcludingKotlin(libs.common.core)
+    implementationExcludingKotlin(libs.common.files)
+    implementationExcludingKotlin(libs.common.byte)
+    implementationExcludingKotlin(libs.common.log)
 
 
 
@@ -101,17 +101,6 @@ java {
 }
 
 kotlin {
-
-    tasks.withType<KotlinCompile>().all {
-        kotlinOptions {
-            this.jvmTarget = javaVersion
-            this.apiVersion = "1.9"
-            this.languageVersion = "1.9"
-            this.freeCompilerArgs += listOf(
-                "-Xjvm-default=all-compatibility",
-            )
-        }
-    }
 
     sourceSets {
         all {
@@ -184,6 +173,13 @@ tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml
 
 fun DependencyHandler.implementationExcludingKotlin(dependencyNotation: String) {
     implementation(dependencyNotation) {
+        excludeKotlin()
+    }
+}
+
+
+fun DependencyHandler.implementationExcludingKotlin(dependency: Provider<MinimalExternalModuleDependency>) {
+    implementation(dependency) {
         excludeKotlin()
     }
 }

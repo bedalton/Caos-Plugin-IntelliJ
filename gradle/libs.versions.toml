@@ -1,0 +1,49 @@
+[versions]
+
+#IDEA
+idea-gradle-plugin="1.17.3"
+
+# Kotlin/Kotlinx
+kotlin="2.2.20"
+kotlinx-coroutines="1.7.1"
+kotlinx-serialization="1.5.1"
+
+# Creatures
+creatures-agent-util="0.2.1"
+creatures-common-sprite="0.1.0"
+creatures-common-core="0.1.0"
+creatures-breed-render-support="0.1.0"
+
+# Other
+common-files="0.1.0"
+common-byte="0.2.1"
+common-log="0.2.0"
+common-core="0.3.0"
+
+# Korge
+kor-images="4.0.0-jdk9"
+
+[libraries]
+kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+
+# Other Libs
+korim = { module = "com.soywiz.korlibs.korim:korim", version.ref = "kor-images" }
+commons-imaging = { module = "org.apache.commons:commons-imaging", version = "1.0-alpha2" }
+junit = { group = "junit", name = "junit", version = "4.13" }
+
+# Creatures libs
+creatures-agent-util = { module = "com.bedalton.creatures:creatures-agent-util", version.ref = "creatures-agent-util"}
+creatures-common-sprite = { module = "com.bedalton.creatures:creatures-common-sprite", version.ref = "creatures-common-sprite" }
+creatures-common-core = { module = "com.bedalton.creatures:creatures-common", version.ref = "creatures-common-core" }
+creatures-breed-render-support = { module = "com.bedalton.creatures:creatures-breed-render-support", version.ref = "creatures-breed-render-support" }
+
+# Common Libs
+common-core = { module = "com.bedalton:bedalton-common-core", version.ref = "common-core" }
+common-files = { module = "com.bedalton:bedalton-common-files", version.ref = "common-files"}
+common-byte = { module = "com.bedalton:bedalton-common-byte", version.ref = "common-byte" }
+common-log = { module = "com.bedalton:bedalton-common-log", version.ref = "common-log" }
+
+[plugins]
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin"}
+kotlinxSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin"}
+idea = { id = "org.jetbrains.intellij",version.ref = "idea-gradle-plugin" }
