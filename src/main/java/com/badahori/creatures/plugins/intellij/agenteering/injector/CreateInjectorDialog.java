@@ -4,7 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosBundle;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant;
 import com.badahori.creatures.plugins.intellij.agenteering.caos.settings.CaosInjectorApplicationSettingsService;
 import com.badahori.creatures.plugins.intellij.agenteering.utils.DocumentChangeListener;
-import com.bedalton.common.util.OS;
+import com.bedalton.common.targets.OS;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;

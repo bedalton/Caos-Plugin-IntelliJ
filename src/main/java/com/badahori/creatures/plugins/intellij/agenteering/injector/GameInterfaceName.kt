@@ -8,7 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.nullIfEmpty
 import com.badahori.creatures.plugins.intellij.agenteering.utils.randomString
 import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
-import com.bedalton.common.util.OS
+import com.bedalton.common.targets.OS
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.net.URL

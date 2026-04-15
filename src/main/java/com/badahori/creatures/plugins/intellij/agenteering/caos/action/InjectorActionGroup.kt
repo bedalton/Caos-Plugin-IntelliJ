@@ -16,7 +16,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.injector.NativeInject
 import com.badahori.creatures.plugins.intellij.agenteering.injector.TCPInjectorInterface
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.badahori.creatures.plugins.intellij.agenteering.utils.OsUtil
-import com.bedalton.common.util.OS
+import com.bedalton.common.targets.OS
 import com.bedalton.common.util.className
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionGroup
@@ -74,7 +74,7 @@ class InjectorActionGroup(file: CaosScriptFile) : ActionGroup(
         }
 
         private fun getDefaultInjectors(variant: CaosVariant?): List<GameInterfaceName> {
-            return if (OS.Companion.isWindows) {
+            return if (OS.isWindows) {
                 getDefaultInjectorsWindows(variant)
             } else {
                 getDefaultInjectorsNix(variant)
