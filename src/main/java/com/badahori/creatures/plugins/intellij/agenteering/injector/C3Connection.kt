@@ -180,15 +180,15 @@ internal class C3Connection(override val variant: CaosVariant, private val data:
             tempFile.writeText(caos, Charsets.UTF_8)
             return tempFile
         } catch (e: Exception) {
+            e.rethrowAnyCancellationException()
             try {
                 if (tempFile.exists()) {
                     tempFile.delete()
                 }
-                e.rethrowAnyCancellationException()
             } catch (e2: Exception) {
-                e.rethrowAnyCancellationException()
+                e2.rethrowAnyCancellationException()
                 LOGGER.severe("Failed to delete temp CAOS file")
-                e.printStackTrace()
+                e2.printStackTrace()
             }
             throw Exception("Failed to write CAOS to temp file for injecting; CAOS too long for direct injection")
         }
