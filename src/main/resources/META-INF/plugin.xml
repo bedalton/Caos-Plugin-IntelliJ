@@ -808,6 +808,10 @@
         <fileBasedIndex
                 implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.indices.ClassifierToAgentNameIndex"/>
 
+        <internalFileTemplate name="cos-macro" />
+        <internalFileTemplate name="cos-event-script" />
+        <internalFileTemplate name="creatures-blank" />
+        <internalFileTemplate name="with-script" />
 <!--        <typedHandler-->
 <!--                implementation="com.badahori.creatures.plugins.intellij.agenteering.caos.handlers.CaosScriptEndWordIndenter"-->
 <!--                order="first, before completionAutoPopup"-->
@@ -982,6 +986,7 @@
                 id="com.bedalton.creatures.intellij.agenteering.caos"
                 class="com.badahori.creatures.plugins.intellij.agenteering.common.CaosActionGroup"
                 compact="true"
+                popup="true"
         >
             <separator />
             <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="CutCopyPasteGroup" />
