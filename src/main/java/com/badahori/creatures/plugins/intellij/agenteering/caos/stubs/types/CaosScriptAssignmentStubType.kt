@@ -73,7 +73,7 @@ class CaosScriptAssignmentStubType(debugName: String) :
             lvalue = CaosExpressionValueType.VARIABLE,
             rvalue = element.rvalue?.getInferredType(bias, false),
             //enclosingScope = CaosScriptPsiImplUtil.getScope(element),
-            commandString = element.commandString
+            commandString = element.commandString ?: UNDEF
         )
     }
 
