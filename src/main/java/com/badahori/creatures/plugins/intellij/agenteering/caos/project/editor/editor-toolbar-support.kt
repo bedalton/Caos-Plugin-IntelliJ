@@ -17,19 +17,7 @@ import com.intellij.psi.search.GlobalSearchScope
  * Opens up the docs for the given variant
  */
 internal fun openDocs(project: Project, variant: CaosVariant): Boolean {
-    // Get path to documents
-    val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/${variant.code}-Lib.caosdef"
-    // Load document virtual file
-    val virtualFile = CaosVirtualFileSystem.instance.findFileByPath(docRelativePath)
-        ?: CaosFileUtil.getPluginResourceFile(docRelativePath)
-
-    // Fetch psi file from virtual file
-    val file = virtualFile?.getPsiFile(project)
-        ?: getProjectPsiFileByName(
-            project,
-            "${variant.code}-Lib.caosdef",
-            GlobalSearchScope.allScope(project)
-        )
+    val file = getDocs(project, variant)
         ?: return false
 
     // If failed to find variant docs, disable button and return
@@ -37,6 +25,27 @@ internal fun openDocs(project: Project, variant: CaosVariant): Boolean {
     // Navigate to Docs.
     file.navigate(true)
     return true
+}
+
+internal fun hasDocs(project: Project, variant: CaosVariant): Boolean {
+    return getDocs(project, variant) != null
+}
+
+private fun getDocs(project: Project, variant: CaosVariant): PsiFile? {
+    // Get path to documents
+    val docRelativePath = "$BUNDLE_DEFINITIONS_FOLDER/${variant.code}-Lib.caosdef"
+
+    // Load document virtual file
+    val virtualFile = CaosVirtualFileSystem.instance.findFileByPath(docRelativePath)
+        ?: CaosFileUtil.getPluginResourceFile(docRelativePath)
+
+    // Fetch psi file from virtual file
+    return virtualFile?.getPsiFile(project)
+        ?: getProjectPsiFileByName(
+            project,
+            "${variant.code}-Lib.caosdef",
+            GlobalSearchScope.allScope(project)
+        )
 }
 
 
@@ -54,7 +63,7 @@ internal fun CaosScriptFile.addCaos2ChangeListener(listener: ((isCaos2: String?)
 private class CaosFileCaos2ChangedListener(
     var project: Project?,
     private var pointer: SmartPsiElementPointer<CaosScriptFile>?,
-    private inline var isCaos2ChangeHandler: ((isCaos2: String?) -> Unit)?
+    private var isCaos2ChangeHandler: ((isCaos2: String?) -> Unit)?
 ) : DisposablePsiTreChangeListener {
 
     private var caos2: String? = "::NULL::"

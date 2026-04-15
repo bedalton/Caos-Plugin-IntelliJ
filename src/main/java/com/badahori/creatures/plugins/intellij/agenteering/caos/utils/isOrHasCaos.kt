@@ -3,6 +3,9 @@ package com.badahori.creatures.plugins.intellij.agenteering.caos.utils
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.CaosScriptFileType
 import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
 import com.bedalton.common.structs.Pointer
+import com.bedalton.log.LOG_DEBUG
+import com.bedalton.log.Log
+import com.bedalton.log.iIf
 import com.intellij.openapi.actionSystem.DataKey
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.vfs.VfsUtilCore
@@ -23,14 +26,14 @@ internal fun isOrHasCreaturesFiles(files: Array<VirtualFile>): Boolean {
     return false
 }
 
-internal fun isOrHasCreaturesFiles(files: Iterable<VirtualFile>): Boolean {
-    for (file in files) {
-        if (isOrHasCaosFile(file)) {
-            return true
-        }
-    }
-    return false
-}
+//internal fun isOrHasCreaturesFiles(files: Iterable<VirtualFile>): Boolean {
+//    for (file in files) {
+//        if (isOrHasCaosFile(file)) {
+//            return true
+//        }
+//    }
+//    return false
+//}
 
 internal fun isOrHasCaosFile(file: VirtualFile): Boolean = runReadAction {
     runBlocking {
@@ -39,31 +42,37 @@ internal fun isOrHasCaosFile(file: VirtualFile): Boolean = runReadAction {
 }
 
 private fun isOrHasCaosFile(file: VirtualFile, count: Pointer<Int>): Boolean {
-    var isCaos = false
-    LOGGER.info("File<${file.path}> isOrHasCAOS?...")
-    VfsUtilCore.visitChildrenRecursively(file, object : VirtualFileVisitor<Boolean>() {
+//    Log.iIf(LOG_DEBUG) { "File<${file.path}> isOrHasCAOS?..." }
 
+    if (!file.isDirectory) {
+        return hasCaosTypeOrExtension(file)/*.also {
+            Log.iIf(LOG_DEBUG) { "File<${file.path}> isOrHasCAOS? $it" }
+        }*/
+    }
+
+    var isCaos = false
+    VfsUtilCore.visitChildrenRecursively(file, object : VirtualFileVisitor<Boolean>() {
         override fun visitFile(file: VirtualFile): Boolean {
-            LOGGER.info("Visit file: <${file.path}>...")
+//            Log.iIf(LOG_DEBUG) { "Visit file: <${file.path}>..." }
 
             if (count.value++ > MAX_FILES_CHECKED) {
-                LOGGER.info("Too many files...")
+//                Log.iIf(LOG_DEBUG) { "Too many files..." }
                 isCaos = true
                 return false
             }
 
             if (isCaos) {
-                LOGGER.info("Already found CAOS file...")
+//                Log.iIf(LOG_DEBUG) { "Already found CAOS file..." }
                 return false
             }
 
             if (file.isDirectory) {
-                LOGGER.info("Is a directory...")
+//                Log.iIf(LOG_DEBUG) { "Is a directory..." }
                 return true
             }
 
-            if (file.fileType == CaosScriptFileType.INSTANCE || file.extension?.lowercase() in expectedExtensions) {
-                LOGGER.info("File <${file.name}> is CAOS...")
+            if (isOrHasCaosFile(file)) {
+//                Log.iIf(LOG_DEBUG) { "File <${file.name}> is CAOS..." }
                 isCaos = true
             }
 
@@ -72,21 +81,25 @@ private fun isOrHasCaosFile(file: VirtualFile, count: Pointer<Int>): Boolean {
 
         override fun visitFileEx(file: VirtualFile): Result {
             if (file.isDirectory && file.name == ".idea") {
-                LOGGER.info("Skipping .idea...")
+//                Log.iIf(LOG_DEBUG) { "Skipping .idea..." }
                 return SKIP_CHILDREN
             }
             return if (isCaos || count.value > MAX_FILES_CHECKED) {
-                LOGGER.info("isCaos or tooManyFiles...")
+//                Log.iIf(LOG_DEBUG) { "isCaos or tooManyFiles..." }
                 SKIP_CHILDREN
             } else {
-                return super.visitFileEx(file).apply {
-                    LOGGER.info("Visit next child? $this...")
-                }
+                super.visitFileEx(file)/*.apply {
+                    Log.iIf(LOG_DEBUG) { "Visit next child? $this..." }
+                }*/
             }
         }
     })
-    LOGGER.info("File<${file.path}> isOrHasCAOS? $isCaos")
+//    Log.iIf(LOG_DEBUG) { "File<${file.path}> isOrHasCAOS? $isCaos" }
     return isCaos
+}
+
+private fun hasCaosTypeOrExtension(file: VirtualFile): Boolean {
+    return file.fileType == CaosScriptFileType.INSTANCE || file.extension?.lowercase() in expectedExtensions
 }
 //
 //private fun isOrHasCaosFile(file: VirtualFile, level: Int, count: Pointer<Int>): Boolean {

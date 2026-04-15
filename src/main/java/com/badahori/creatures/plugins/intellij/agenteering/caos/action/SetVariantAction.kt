@@ -8,20 +8,16 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.cachedVaria
 import com.badahori.creatures.plugins.intellij.agenteering.caos.lang.setCachedVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosVariant
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfNotConcrete
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnknown
-import com.badahori.creatures.plugins.intellij.agenteering.caos.project.module.CaosScriptModuleType
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.IS_OR_HAS_CAOS_FILES_DATA_KEY
 import com.badahori.creatures.plugins.intellij.agenteering.caos.utils.isOrHasCaosFile
 import com.badahori.creatures.plugins.intellij.agenteering.common.updatePresentation
-import com.badahori.creatures.plugins.intellij.agenteering.utils.LOGGER
-import com.badahori.creatures.plugins.intellij.agenteering.utils.getPsiFile
-import com.badahori.creatures.plugins.intellij.agenteering.utils.like
-import com.badahori.creatures.plugins.intellij.agenteering.utils.rethrowAnyCancellationException
-import com.badahori.creatures.plugins.intellij.agenteering.utils.variant
+import com.badahori.creatures.plugins.intellij.agenteering.utils.*
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.CaosVirtualFile
 import com.badahori.creatures.plugins.intellij.agenteering.vfs.collectChildren
 import com.bedalton.common.util.formatted
+import com.bedalton.log.LOG_DEBUG
 import com.bedalton.log.Log
+import com.bedalton.log.iIf
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -79,7 +75,7 @@ class SetVariantAction : AnAction() {
 
     override fun update(e: AnActionEvent) {
         super.update(e)
-        Log.i("Updating set variant action")
+//        Log.iIf(LOG_DEBUG)("Updating set variant action")
         invokeLater {
             val valid = try {
                 isVisible(e)
@@ -88,7 +84,7 @@ class SetVariantAction : AnAction() {
                 Log.e { "Failed check to see if SetVariantAction should run; ${e.formatted()}" }
                 true
             }
-            Log.i("IsVisible: $valid")
+            Log.iIf(LOG_DEBUG) { "IsVisible: $valid" }
             updatePresentation(e) {
                 this.isEnabled = valid
             }

@@ -8,8 +8,7 @@ import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.runReadAction
 
 
-class CaosActionGroup : DefaultCompactActionGroup(), CompactActionGroup {
-
+class CaosActionGroup : DefaultActionGroup() {
 
     private val allActions = mutableListOf<AnAction>()
 

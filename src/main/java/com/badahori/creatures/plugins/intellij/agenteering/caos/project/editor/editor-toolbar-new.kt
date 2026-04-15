@@ -61,7 +61,7 @@ internal val EDITOR_VARIANT_KEY: Key<CaosVariant?> = Key.create("creatures.caos.
  * Though not its original purpose, the notification provider functions as a persistent toolbar
  */
 class CaosScriptEditorToolbar(
-    val project: Project
+    val project: Project,
 ) : EditorNotifications.Provider<EditorNotificationPanel>(), DumbAware, Disposable {
 
     override fun getKey(): Key<EditorNotificationPanel> = KEY
@@ -69,7 +69,7 @@ class CaosScriptEditorToolbar(
     override fun createNotificationPanel(
         virtualFile: VirtualFile,
         fileEditor: FileEditor,
-        project: Project
+        project: Project,
     ): EditorNotificationPanel? {
         val caosFile = virtualFile.getPsiFile(project) as? CaosScriptFile
             ?: return null
@@ -110,7 +110,7 @@ internal fun createCaosScriptHeaderComponent(
     project: Project,
     fileEditor: FileEditor,
     virtualFile: VirtualFile,
-    caosFile: CaosScriptFile
+    caosFile: CaosScriptFile,
 ): JComponent? {
 
     if (project.isDisposed) {
@@ -150,7 +150,7 @@ private fun populate(
     fileEditor: FileEditor,
     virtualFile: VirtualFile,
     pointer: SmartPsiElementPointer<CaosScriptFile>,
-    toolbar: JPanel
+    toolbar: JPanel,
 ) {
 
     if (project.isDisposed) {
@@ -276,7 +276,10 @@ private fun populate(
         if (e.button == MouseEvent.BUTTON1) {
             val variant = pointer.element?.variant?.nullIfUnknown()
                 ?: return@addClickListener
-            openDocs(project, variant)
+            if (!openDocs(project, variant)) {
+                docsButton.isEnabled = false
+                docsButton.isVisible = false
+            }
         }
     }
 
@@ -302,6 +305,7 @@ private fun populate(
 
         var file = pointer.element
             ?: return@select
+
         if (selected == file.variant) {
             return@select
         }
@@ -320,6 +324,15 @@ private fun populate(
         }
         file = pointer.element
             ?: return@select
+        selected?.let {
+            if (hasDocs(project, it)) {
+                docsButton.isEnabled = true
+                docsButton.isVisible = true
+            } else {
+                docsButton.isEnabled = false
+                docsButton.isVisible = false
+            }
+        }
         DaemonCodeAnalyzer.getInstance(project).restart(file)
     }
 
@@ -510,7 +523,7 @@ private fun interruptedInitializer(
     disposable: Disposable,
     pointer: SmartPsiElementPointer<CaosScriptFile>,
     setVariant: (variant: CaosVariant?) -> Unit,
-    setInitialInjector: (initialVariant: CaosVariant?, gameInterface: GameInterfaceName?) -> Unit
+    setInitialInjector: (initialVariant: CaosVariant?, gameInterface: GameInterfaceName?) -> Unit,
 ) {
     var initializer: DisposablePsiTreChangeListener? = null
     val delay = 800L
@@ -609,7 +622,7 @@ fun setWhenReady(
     project: Project,
     pointer: SmartPsiElementPointer<CaosScriptFile>,
     setVariant: (variant: CaosVariant?) -> Unit,
-    setInitialInjector: (initialVariant: CaosVariant?, gameInterface: GameInterfaceName?) -> Unit
+    setInitialInjector: (initialVariant: CaosVariant?, gameInterface: GameInterfaceName?) -> Unit,
 ) {
 
     if (project.isDisposed) {
@@ -634,7 +647,7 @@ private class RunInjectorAction(
     val project: Project,
     val pointer: SmartPsiElementPointer<CaosScriptFile>,
     action: AnAction?,
-    val injectors: JComboBox<AnAction>
+    val injectors: JComboBox<AnAction>,
 ) : AnAction(
     "Inject CAOS",
     "Inject CAOS",
@@ -666,23 +679,23 @@ private class RunInjectorAction(
     }
 
     override fun update(e: AnActionEvent) = runReadAction {
-            var injector: AnAction? = mAction
-            if (injector == null || injector is AddGameInterfaceAction) {
-                // Get the selected item
-                injector = injectors.selectItem(true) {
-                    it !is AddGameInterfaceAction
-                }
-                // Set selected as an action
-                setAction(injector, e.presentation)
-
-                // If injector is null, return
-                // NULL means this could be an AddGameInterfaceAction
-                if (injector == null) {
-                    return@runReadAction
-                }
+        var injector: AnAction? = mAction
+        if (injector == null || injector is AddGameInterfaceAction) {
+            // Get the selected item
+            injector = injectors.selectItem(true) {
+                it !is AddGameInterfaceAction
             }
-            updatePresentation(e.presentation, injector)
+            // Set selected as an action
+            setAction(injector, e.presentation)
+
+            // If injector is null, return
+            // NULL means this could be an AddGameInterfaceAction
+            if (injector == null) {
+                return@runReadAction
+            }
         }
+        updatePresentation(e.presentation, injector)
+    }
 
     private fun updatePresentation(presentation: Presentation, injector: AnAction?) {
         if (injector == null) {
@@ -739,7 +752,7 @@ private object ActionCellRender : ListCellRenderer<AnAction> {
         value: AnAction?,
         index: Int,
         isSelected: Boolean,
-        cellHasFocus: Boolean
+        cellHasFocus: Boolean,
     ): Component {
         label.isVisible = value != null
         if (value != null) {
