@@ -2,19 +2,26 @@
 
 package com.badahori.creatures.plugins.intellij.agenteering.caos.deducer
 
-import com.bedalton.common.util.className
-import com.bedalton.common.util.toListOf
 import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosLibs
-import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.CaosScriptNamedGameVarType.*
+import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.EqOp
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpressionValueType.*
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.impl.variant
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.isMVxxLike
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.isOVxxLike
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.isVAxxLike
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.getNamedGameVarElements
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isMVxxLike
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isOVxxLike
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isObjectVar
+import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.isVAxxLike
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.varTypes
 import com.badahori.creatures.plugins.intellij.agenteering.utils.*
+import com.bedalton.common.util.className
+import com.bedalton.common.util.toListOf
 import com.intellij.openapi.project.DumbService
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 
 object CaosScriptInferenceUtil {
 
@@ -36,7 +43,7 @@ object CaosScriptInferenceUtil {
         element: CaosScriptRvalue,
         bias: CaosExpressionValueType? = null,
         resolveVars: Boolean? = null,
-        lastChecked: MutableList<CaosScriptIsVariable>
+        lastChecked: MutableList<CaosScriptIsVariable>,
     ): List<CaosExpressionValueType> {
 //
 //        // If rvalue has any of these values
@@ -76,7 +83,7 @@ object CaosScriptInferenceUtil {
      */
     fun getInferredType(
         prime: CaosScriptRvaluePrime?,
-        bias: CaosExpressionValueType? = null
+        bias: CaosExpressionValueType? = null,
     ): List<CaosExpressionValueType>? {
         return prime?.getCommandDefinition(bias)?.returnType?.let { listOf(it) }
     }
@@ -89,7 +96,7 @@ object CaosScriptInferenceUtil {
         element: CaosScriptIsVariable?,
         bias: CaosExpressionValueType? = null,
         resolveVars: Boolean = false,
-        lastChecked: MutableList<CaosScriptIsVariable> = mutableListOf()
+        lastChecked: MutableList<CaosScriptIsVariable> = mutableListOf(),
     ): List<CaosExpressionValueType>? {
         if (element == null)
             return null
@@ -101,9 +108,11 @@ object CaosScriptInferenceUtil {
             is CaosScriptVarToken -> {
                 getIndexedVarInferredType(element, bias, lastChecked = lastChecked)
             }
+
             is CaosScriptNamedGameVar -> {
                 getNamedGameVarInferredType(element, bias, lastChecked = lastChecked)
             }
+
             else -> {
                 listOf(VARIABLE)
             }
@@ -114,7 +123,7 @@ object CaosScriptInferenceUtil {
     private fun getNamedGameVarInferredType(
         element: CaosScriptNamedGameVar,
         bias: CaosExpressionValueType? = null,
-        lastChecked: MutableList<CaosScriptIsVariable>
+        lastChecked: MutableList<CaosScriptIsVariable>,
     ): List<CaosExpressionValueType> {
 
         // Short out this check due to inability to ascertain agent class
@@ -143,42 +152,46 @@ object CaosScriptInferenceUtil {
     private fun getIndexedVarInferredType(
         element: CaosScriptVarToken,
         bias: CaosExpressionValueType? = null,
-        lastChecked: MutableList<CaosScriptIsVariable>
+        lastChecked: MutableList<CaosScriptIsVariable>,
     ): List<CaosExpressionValueType> {
-//        if (element.varGroup.isVAxxLike) {
-//            val parentScript = element.getParentOfType(CaosScriptScriptElement::class.java)
-//                ?: return arrayListOf(VARIABLE)
-//            val varIndex = element.varIndex
-//            val otherAssignments: List<CaosScriptVarToken> = PsiTreeUtil
-//                .collectElementsOfType(parentScript, CaosScriptVarToken::class.java)
-//                .filter { otherVariable ->
-//                    varIndex == otherVariable.varIndex &&
-//                            otherVariable.isVAxxLike &&
-//                            lastChecked.none { it.isEquivalentTo(element) } &&
-//                            element.scope.sharesScope(otherVariable.scope)
-//                }
-//            lastChecked.addAll(otherAssignments)
-//            return getInferredType(otherAssignments, bias)
-//        }
-//
-//        if (element.varGroup.isOVxxLike) {
-//            //TODO implement after learning to resolve targ
-//            return arrayListOf(VARIABLE)
-//        }
-//
-//        if (element.varGroup.isMVxxLike) {
-//            //TODO implement after learning to resolve targ
-//            return arrayListOf(VARIABLE)
-//        }
+        if (element.varGroup.isVAxxLike) {
+            val parentScript = element.getParentOfType(CaosScriptScriptElement::class.java)
+                ?: return arrayListOf(VARIABLE)
+            val varIndex = element.varIndex
+            val otherAssignments: List<CaosScriptVarToken> = PsiTreeUtil
+                .collectElementsOfType(parentScript, CaosScriptVarToken::class.java)
+                .filter { otherVariable ->
+                    varIndex == otherVariable.varIndex &&
+                            otherVariable.isVAxxLike &&
+                            lastChecked.none { it.isEquivalentTo(element) } &&
+                            element.scope.sharesScope(otherVariable.scope)
+                }
+
+            lastChecked.addAll(otherAssignments)
+            return getInferredType(otherAssignments, bias)
+        }
+
+        if (element.varGroup.isOVxxLike) {
+            //TODO implement after learning to resolve targ
+            return arrayListOf(VARIABLE)
+        }
+
+        if (element.varGroup.isMVxxLike) {
+            //TODO implement after learning to resolve targ
+            return arrayListOf(VARIABLE)
+        }
 
         return arrayListOf(VARIABLE)
     }
 
     private fun getInferredType(
         elements: List<CaosScriptIsVariable>,
-        bias: CaosExpressionValueType? = null
+        bias: CaosExpressionValueType? = null,
     ): List<CaosExpressionValueType> {
         for (element in elements.filter { it.parent is CaosScriptLvalue }.sortedByDescending { it.endOffset }) {
+            element.getParentOfType(CaosScriptEqualityExpressionPrime::class.java)?.let eq@{
+
+            }
             val parentLvalue = element.parent as? CaosScriptLvalue
                 ?: continue
             val parentCommandCall = element.parent as? CaosScriptCommandCall
@@ -193,6 +206,7 @@ object CaosScriptInferenceUtil {
                     listOf(INT)
                 else
                     listOf(STRING, INT)
+
                 "16" -> return listOf(DECIMAL)
                 "#" -> return listOf(DECIMAL)
                 else -> {
@@ -205,6 +219,48 @@ object CaosScriptInferenceUtil {
             }
         }
         return listOf(VARIABLE)
+    }
+
+
+    private fun getInferredTypeFromTypeCommandInEq(eqExpression: CaosScriptEqualityExpressionPrime, element: CaosScriptIsVariable): List<CaosExpressionValueType>? {
+        var second: CaosScriptRvalue? = null
+
+        val eqOp = eqExpression.eqOp?.eqOp
+            ?: return null
+
+        val int = when {
+            eqExpression.first.intValue != null -> {
+                second = eqExpression.second
+                eqExpression.first.intValue
+                    ?: return null
+            }
+
+            eqExpression.second?.intValue != null -> {
+                second = eqExpression.first
+                eqExpression.second?.intValue
+                    ?: return null
+            }
+
+            else -> return null
+        }
+
+        if (second == null) {
+            return null
+        }
+        if (second.commandString notLike "type") {
+            return null
+        }
+        val argument = second.arguments.firstOrNull() as? CaosScriptRvalue
+            ?: return null
+
+        if (argument.text notLike element.text) {
+            return null
+        }
+        return if (eqExpression.first.intValue != null) {
+            typeCommandValueTypes.filter { eqOp.evaluate(int, it.key) }
+        } else {
+            typeCommandValueTypes.filter { eqOp.evaluate(it.key, int) }
+        }.values.toList()
     }
 
     /**
@@ -239,7 +295,7 @@ private fun anyNotNull(vararg elements: PsiElement?): Boolean {
 internal fun getRvalueTypeWithoutInference(
     rvalue: CaosScriptRvalueLike?,
     bias: CaosExpressionValueType,
-    fuzzy: Boolean = true
+    fuzzy: Boolean = true,
 ): CaosExpressionValueType? {
     if (rvalue == null)
         return null
@@ -270,6 +326,7 @@ internal fun getRvalueTypeWithoutInference(
                 }
             }
         }
+
         rvalue.isToken -> TOKEN
         rvalue.isString -> STRING
         else -> rvalue.variant?.let { variant ->
@@ -291,3 +348,26 @@ internal fun getRvalueTypeWithoutInference(
 
 
 val LIST_OF_VARIABLE_VALUE_TYPE = listOf(VARIABLE)
+
+private fun CaosScriptVarToken.like(other: CaosScriptVarToken): Boolean {
+    if (this.varIndex != other.varIndex) {
+        return false
+    }
+    return (isVAxxLike && other.isVAxxLike) ||
+            (isOVxxLike && other.isOVxxLike) ||
+            (isMVxxLike && other.isMVxxLike)
+}
+
+
+private val typeCommandValueTypes get() = mapOf(
+    -2 to CaosExpressionValueType.AGENT,
+    -1 to CaosExpressionValueType.AGENT,
+    0 to CaosExpressionValueType.INT,
+    1 to CaosExpressionValueType.FLOAT,
+    2 to CaosExpressionValueType.STRING,
+    3 to CaosExpressionValueType.AGENT,// Simpl
+    4 to CaosExpressionValueType.AGENT, // Pointer
+    5 to CaosExpressionValueType.AGENT, // Compound
+    6 to CaosExpressionValueType.AGENT, // AGENT
+    7 to CaosExpressionValueType.AGENT, // Creature
+)

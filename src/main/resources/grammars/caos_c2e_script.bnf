@@ -2177,6 +2177,12 @@ equality_join
 eq_op
 	::= eq_op_old
 	|	eq_op_new
+	{
+		methods = [
+			getEqOp
+			evaluate
+		]
+	}
 	;
 
 eq_op_old

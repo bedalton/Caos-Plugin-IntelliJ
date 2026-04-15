@@ -4,6 +4,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosExpr
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.types.CaosScriptVarTokenGroup
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.util.nullIfUndefOrBlank
 import com.badahori.creatures.plugins.intellij.agenteering.utils.like
+import kotlin.math.abs
 
 
 typealias ReturnTypeId = Int
@@ -285,6 +286,68 @@ enum class EqOp(val commonName: String, vararg val values: String) {
     BITWISE_AND("Bitwise And", "BT"),
     BITWISE_NAND("Bitwise Nand", "BF"),
     INVALID("INVALID", "??");
+
+    fun evaluate(a: Any, b: Any): Boolean {
+        return when{
+            (a is Int && b is Int) -> evaluateInts(a, b)
+            (a is Int && b is Float) -> evaluateFloats(a.toFloat(), b)
+            (a is Int && b is Double) -> evaluateDoubles(a.toDouble(), b)
+            (a is Float && b is Int) -> evaluateFloats(a, b.toFloat())
+            (a is Double && b is Int) -> evaluateDoubles(a, b.toDouble())
+            (a is Float && b is Float) -> evaluateFloats(a, b)
+            (a is Double && b is Double) -> evaluateDoubles(a, b)
+            else -> evaluateAny(a.toString(), b.toString())
+        }
+    }
+
+    private fun evaluateAny(a: String, b: String): Boolean {
+        return when (this) {
+            EqOp.EQUAL -> a == b
+            EqOp.NOT_EQUAL -> a != b
+            EqOp.GREATER_THAN -> a > b
+            EqOp.LESS_THAN -> a < b
+            EqOp.GREATER_THAN_EQUAL -> a >= b
+            EqOp.LESS_THAN_EQUAL -> a <= b
+            else -> false
+        }
+    }
+
+    private fun evaluateInts(a: Int, b: Int): Boolean {
+        return when (this) {
+            EqOp.EQUAL -> a == b
+            EqOp.NOT_EQUAL -> a != b
+            EqOp.GREATER_THAN -> a > b
+            EqOp.LESS_THAN -> a < b
+            EqOp.GREATER_THAN_EQUAL -> a >= b
+            EqOp.LESS_THAN_EQUAL -> a <= b
+            EqOp.BITWISE_AND -> a and b != 0
+            EqOp.BITWISE_NAND -> a and b == 0
+            EqOp.INVALID -> false
+        }
+    }
+
+    private fun evaluateFloats(a: Float, b: Float): Boolean {
+        return when (this) {
+            EqOp.EQUAL -> abs(a - b) < 0.001
+            EqOp.NOT_EQUAL -> abs(a - b) > 0.001
+            EqOp.GREATER_THAN -> a > b
+            EqOp.LESS_THAN -> a < b
+            EqOp.GREATER_THAN_EQUAL -> a >= b
+            EqOp.LESS_THAN_EQUAL -> a <= b
+            else -> false
+        }
+    }
+    private fun evaluateDoubles(a: Double, b: Double): Boolean {
+        return when (this) {
+            EqOp.EQUAL -> abs(a - b) < 0.001
+            EqOp.NOT_EQUAL -> abs(a - b) > 0.001
+            EqOp.GREATER_THAN -> a > b
+            EqOp.LESS_THAN -> a < b
+            EqOp.GREATER_THAN_EQUAL -> a >= b
+            EqOp.LESS_THAN_EQUAL -> a <= b
+            else -> false
+        }
+    }
 
     companion object {
         fun fromValue(value: String?): EqOp {

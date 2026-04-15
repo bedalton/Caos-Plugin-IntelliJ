@@ -311,8 +311,7 @@ object CaosScriptPsiImplUtil {
      * A generic getter for command string in command elements
      */
     @JvmStatic
-    fun getCommandString(command: CaosScriptCommandElement): String {
-
+    fun getCommandString(command: CaosScriptCommandElement): String? {
         // Call getString on closest specific getString method
         return when (command.getEnclosingCommandType()) {
             CaosCommandType.COMMAND -> command
@@ -3285,6 +3284,21 @@ object CaosScriptPsiImplUtil {
                 } ?: UNPARSABLE_TARG
             }
             else -> null
+        }
+    }
+
+    @JvmStatic
+    fun getEqOp(eqOp: CaosScriptEqOp): EqOp {
+        return when (eqOp.text.uppercase()) {
+            "=", "EQ" -> EqOp.EQUAL
+            "!=", "<>", "NE" -> EqOp.NOT_EQUAL
+            ">", "GT" -> EqOp.GREATER_THAN
+            ">=", "GE" -> EqOp.GREATER_THAN_EQUAL
+            "<", "LT" -> EqOp.LESS_THAN_EQUAL
+            "<=", "LE" -> EqOp.LESS_THAN_EQUAL
+            "BT" -> EqOp.BITWISE_AND
+            "BF" -> EqOp.BITWISE_NAND
+            else -> EqOp.INVALID
         }
     }
 }
