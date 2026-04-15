@@ -8,6 +8,7 @@ import com.badahori.creatures.plugins.intellij.agenteering.caos.libs.nullIfUnkno
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosPresentation
 import com.badahori.creatures.plugins.intellij.agenteering.caos.psi.api.CaosScriptCompositeElement
 import com.badahori.creatures.plugins.intellij.agenteering.catalogue.lang.CatalogueFile
+import com.bedalton.common.util.trySilent
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
@@ -29,7 +30,9 @@ open class CaosScriptCompositeElementImpl(node:ASTNode) : ASTWrapperPsiElement(n
         get() = node.elementType
 }
 
-val CaosScriptCompositeElement.containingCaosFile : CaosScriptFile? get() = containingFile as? CaosScriptFile
+val CaosScriptCompositeElement.containingCaosFile : CaosScriptFile? get() = trySilent {
+    containingFile as? CaosScriptFile
+}
 
 val PsiElement.variant: CaosVariant?
     get() = ((containingFile as? CaosScriptFile)?.variant
